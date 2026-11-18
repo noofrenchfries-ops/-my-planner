@@ -1,0 +1,2809 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Planner ✨</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Mali (Weights 300, 400, 500, 600, 700) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mali:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Mali"', 'cursive', 'sans-serif'],
+          },
+          colors: {
+            cream: '#FAF9F6',
+            sand: '#F3F1EC',
+            sage: {
+              50: '#F4F7F4',
+              100: '#E3EBE3',
+              200: '#C7D8C7',
+              500: '#5C7C5C',
+              600: '#496649',
+              700: '#3A523A',
+            }
+          },
+          boxShadow: {
+            'soft': '0 4px 20px -2px rgba(28, 25, 23, 0.05)',
+            'card': '0 2px 10px -1px rgba(28, 25, 23, 0.04)',
+            'float': '0 16px 36px -4px rgba(28, 25, 23, 0.14)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body, input, textarea, select, button {
+      font-family: 'Mali', cursive, sans-serif;
+    }
+
+    body {
+      background-color: #FAF9F6;
+      color: #1C1917;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D6D3D1;
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #A8A29E;
+    }
+
+    @keyframes popBounce {
+      0% { transform: scale(0.85); }
+      55% { transform: scale(1.12); }
+      100% { transform: scale(1); }
+    }
+    .animate-check {
+      animation: popBounce 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes modalIn {
+      0% { opacity: 0; transform: scale(0.94) translateY(8px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .animate-modal {
+      animation: modalIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .dragging {
+      opacity: 0.45;
+      transform: scale(0.98);
+    }
+    .drop-zone-active {
+      background-color: rgba(92, 124, 92, 0.08) !important;
+      border-color: #5C7C5C !important;
+      box-shadow: inset 0 0 0 2px rgba(92, 124, 92, 0.25);
+    }
+
+    /* Soft pastel calendar palette */
+    .monthly-day-pink { background: #FFF1F5; }
+    .monthly-day-peach { background: #FFF3E8; }
+    .monthly-day-yellow { background: #FFF9DD; }
+    .monthly-day-mint { background: #EAF8F0; }
+    .monthly-day-blue { background: #EDF5FF; }
+    .monthly-day-lilac { background: #F3EEFF; }
+    .monthly-day-rose { background: #FFECEF; }
+    .monthly-day-today { box-shadow: 0 0 0 3px rgba(124, 153, 124, 0.14); }
+    .monthly-day-selected { box-shadow: 0 0 0 3px rgba(199, 216, 199, 0.55); }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-sage-100 selection:text-sage-700">
+
+  <!-- ========================================================= -->
+  <!-- TOP NAVIGATION & HEADER                                   -->
+  <!-- ========================================================= -->
+  <header class="sticky top-0 z-30 bg-cream/95 backdrop-blur-md border-b border-stone-200/80 px-4 sm:px-6 lg:px-8 py-3">
+    <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-3">
+      <!-- App Logo & Title -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-sage-500 to-emerald-600 flex items-center justify-center text-white shadow-soft">
+          <i data-lucide="sparkles" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-stone-800">My Planner <span class="text-sage-600">✨</span></h1>
+            <span class="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-sage-100 text-sage-700">
+              Cloud Sync Ready
+            </span>
+          </div>
+          <p class="text-[11px] text-stone-500 hidden sm:block">Plan your days, track habits, manage money & ideas</p>
+        </div>
+      </div>
+
+      <!-- Main Mode Navigation Tabs -->
+      <nav class="flex items-center p-1 rounded-2xl bg-stone-200/70 border border-stone-200/80 order-3 lg:order-2 w-full lg:w-auto justify-center overflow-x-auto">
+        <button
+          id="tab-btn-daily"
+          onclick="switchMainTab('daily')"
+          class="flex-1 lg:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer bg-white text-sage-700 shadow-xs whitespace-nowrap"
+        >
+          <span>📅 Planner</span>
+        </button>
+        <button
+          id="tab-btn-finance"
+          onclick="switchMainTab('finance')"
+          class="flex-1 lg:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer text-stone-600 hover:text-stone-900 whitespace-nowrap"
+        >
+          <span>💰 Money</span>
+        </button>
+        <button
+          id="tab-btn-content"
+          onclick="switchMainTab('content')"
+          class="flex-1 lg:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer text-stone-600 hover:text-stone-900 whitespace-nowrap"
+        >
+          <span>💡 Content Ideas</span>
+        </button>
+      </nav>
+
+      <!-- Top Right Utilities -->
+      <div class="flex items-center gap-2 order-2 lg:order-3">
+        <div id="cloud-status" class="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white border border-stone-200/90 text-stone-500">
+          <span id="cloud-status-dot" class="w-2 h-2 rounded-full bg-stone-300"></span>
+          <span id="cloud-status-text">Offline</span>
+        </div>
+        <button id="auth-button" onclick="openAuthModal()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white bg-sage-600 hover:bg-sage-700 shadow-card transition-all active:scale-95 cursor-pointer">
+          <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
+          <span>Login</span>
+        </button>
+        <button
+          onclick="exportAllData()"
+          title="Export all backup data (JSON)"
+          class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-stone-700 bg-white hover:bg-stone-50 border border-stone-200/90 shadow-card transition-all active:scale-95 cursor-pointer"
+        >
+          <i data-lucide="download" class="w-3.5 h-3.5 text-sage-600"></i>
+          <span>Export Data <span class="hidden xl:inline text-stone-400">(Export)</span></span>
+        </button>
+
+        <label
+          title="Import backup data (JSON)"
+          class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-stone-700 bg-white hover:bg-stone-50 border border-stone-200/90 shadow-card transition-all active:scale-95 cursor-pointer"
+        >
+          <i data-lucide="upload" class="w-3.5 h-3.5 text-amber-600"></i>
+          <span>Import Data <span class="hidden xl:inline text-stone-400">(Import)</span></span>
+          <input type="file" accept=".json" onchange="importAllData(event)" class="hidden" />
+        </label>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================= -->
+  <!-- TAB 1: DAILY PLANNER & HABIT TRACKER                      -->
+  <!-- ========================================================= -->
+  <main id="view-tab-daily" class="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
+
+    <!-- Daily Planner Sub Navigation -->
+    <div class="bg-white rounded-2xl border border-stone-200/80 shadow-card p-1.5 flex items-center gap-1 w-fit">
+      <button id="daily-subtab-monthly" onclick="switchDailySubTab('monthly')"
+        class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-sage-100 text-sage-700 transition-all cursor-pointer">
+        🗓️ Monthly
+      </button>
+      <button id="daily-subtab-daily" onclick="switchDailySubTab('daily')"
+        class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-stone-600 hover:text-stone-900 transition-all cursor-pointer">
+        📅 Today
+      </button>
+    </div>
+
+    <!-- MONTHLY OVERVIEW -->
+    <section id="daily-monthly-view" class="space-y-5">
+      <div class="bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5 sm:p-6">
+        <div class="mb-5">
+          <div class="flex items-end justify-between gap-3 mb-4">
+            <div>
+              <p class="text-xs font-semibold text-stone-400 mb-1">Monthly Overview</p>
+              <h2 id="monthly-overview-label" class="text-2xl sm:text-3xl font-extrabold text-stone-800 leading-tight"></h2>
+            </div>
+          </div>
+          <div id="monthly-month-tabs" class="grid grid-cols-3 gap-2"></div>
+        </div>
+
+        <!-- Monthly Calendar -->
+        <div class="rounded-2xl bg-cream border border-stone-200/80 p-4 mb-5">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h3 class="font-bold text-sm text-stone-800">📅 Monthly Calendar</h3>
+              <p class="text-[11px] text-stone-400 mt-0.5">Click a date to open your daily plan</p>
+            </div>
+            <span id="monthly-calendar-month" class="text-xs font-bold text-sage-700"></span>
+          </div>
+          <div id="monthly-calendar" class="grid grid-cols-7 gap-1.5 sm:gap-2"></div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div class="rounded-2xl bg-cream border border-stone-200/80 p-4">
+            <h3 class="font-bold text-sm text-stone-800 mb-1">🎯 Monthly Goals</h3>
+            <p class="text-[11px] text-stone-400 mb-3">Set your main goals for this month</p>
+            <div id="monthly-goals-list" class="space-y-2"></div>
+            <button type="button" onclick="addMonthlyGoal()" class="mt-3 px-3 py-1.5 rounded-xl text-xs font-bold text-sage-700 bg-sage-100 hover:bg-sage-200 cursor-pointer">＋ Add Goal</button>
+          </div>
+
+          <div class="rounded-2xl bg-cream border border-stone-200/80 p-4">
+            <h3 class="font-bold text-sm text-stone-800 mb-1">💭 Monthly Focus</h3>
+            <p class="text-[11px] text-stone-400 mb-3">What matters most this month?</p>
+            <textarea id="monthly-focus-input" rows="6" oninput="updateMonthlyFocus(this.value)"
+              placeholder="This month, I want to focus on..." class="w-full p-3 text-xs sm:text-sm bg-white rounded-xl border border-stone-200 focus:outline-none focus:border-sage-500 leading-relaxed"></textarea>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DAILY VIEW -->
+    <section id="daily-detail-view" class="space-y-5">
+
+    <!-- Date Navigator Bar -->
+    <div class="bg-white rounded-2xl border border-stone-200/80 shadow-card px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <button
+          onclick="changeSelectedDate(-1)"
+          class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold text-stone-700 bg-cream hover:bg-stone-100 border border-stone-200/80 transition-colors cursor-pointer"
+        >
+          <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+          <span>Previous</span>
+        </button>
+
+        <button
+          onclick="goToToday()"
+          class="px-3 py-1.5 rounded-xl text-xs font-bold text-sage-700 bg-sage-100/80 hover:bg-sage-200/70 transition-colors cursor-pointer"
+        >
+          Today
+        </button>
+
+        <button
+          onclick="changeSelectedDate(1)"
+          class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold text-stone-700 bg-cream hover:bg-stone-100 border border-stone-200/80 transition-colors cursor-pointer"
+        >
+          <span>Next</span>
+          <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+
+      <!-- Formatted Thai Date + Date Picker Input -->
+      <div class="flex items-center gap-3">
+        <div class="text-right">
+          <div id="thai-date-display" class="text-sm sm:text-base font-extrabold text-stone-800">Wednesday, November 18, 2026</div>
+        </div>
+        <input
+          type="date"
+          id="date-picker-input"
+          onchange="onDatePickerChange(this.value)"
+          aria-label="Select date"
+          class="px-2.5 py-1.5 text-xs font-semibold text-stone-700 bg-cream rounded-xl border border-stone-200 focus:outline-none focus:border-sage-500 cursor-pointer"
+        />
+      </div>
+    </div>
+
+    <!-- Top Strip: 2 Cards Side-by-Side (Mood + Top 3 Focus Priorities) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <!-- Card 1: Daily Mood & Energy Selector -->
+      <section class="lg:col-span-5 bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-bold text-stone-800 flex items-center gap-2">
+            <span>🌤️</span>
+            <span>Mood & Energy</span>
+          </h2>
+          <span id="mood-active-label" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sage-100 text-sage-700">
+            🤩 Great
+          </span>
+        </div>
+
+        <div id="mood-buttons-grid" class="grid grid-cols-5 gap-2">
+          <!-- Rendered by JS -->
+        </div>
+      </section>
+
+      <!-- Card 2: Top 3 Focus Priorities -->
+      <section class="lg:col-span-7 bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-bold text-stone-800 flex items-center gap-2">
+            <span>🎯</span>
+            <span>Top 3 Priorities</span>
+          </h2>
+          <span class="text-[11px] text-stone-400">Check when completed</span>
+        </div>
+
+        <div id="top-priorities-list" class="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+          <!-- Rendered by JS -->
+        </div>
+      </section>
+    </div>
+
+    <!-- Main 3-Column Responsive Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+      <!-- Column 1 (4 cols): ⏰ Time Blocks (07:00 – 22:00) -->
+      <section class="lg:col-span-4 bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5 flex flex-col">
+        <div class="flex items-center justify-between pb-3 border-b border-stone-100">
+          <div>
+            <h2 class="text-base font-bold text-stone-800">⏰ Time Blocks</h2>
+            <p class="text-[11px] text-stone-500">07:00 AM – 10:00 PM • Click to add an activity</p>
+          </div>
+        </div>
+
+        <!-- Category Legend -->
+        <div class="flex flex-wrap gap-1.5 py-2.5 border-b border-stone-100 text-[10px] font-semibold">
+          <span class="px-2 py-0.5 rounded-full bg-sky-100/80 text-sky-800">💼 Work</span>
+          <span class="px-2 py-0.5 rounded-full bg-amber-100/80 text-amber-800">🏡 Personal</span>
+          <span class="px-2 py-0.5 rounded-full bg-emerald-100/80 text-emerald-800">🌿 Health</span>
+          <span class="px-2 py-0.5 rounded-full bg-purple-100/80 text-purple-800">☕ Rest</span>
+        </div>
+
+        <!-- Hourly Rows -->
+        <div id="time-blocks-list" class="mt-3 space-y-1.5 max-h-[640px] overflow-y-auto pr-1">
+          <!-- Rendered by JS -->
+        </div>
+      </section>
+
+      <!-- Column 2 (4 cols): ✅ To-Do Checklist -->
+      <section class="lg:col-span-4 bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5 flex flex-col">
+        <div class="flex items-center justify-between gap-2 mb-3">
+          <div>
+            <h2 class="text-base font-bold text-stone-800">✅ To-Do List</h2>
+            <p class="text-[11px] text-stone-500">Tasks to complete today</p>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="bg-cream p-3 rounded-xl border border-stone-200/70 mb-3">
+          <div class="flex items-center justify-between text-xs font-bold mb-1.5">
+            <span class="text-stone-600">Progress</span>
+            <span id="todo-progress-label" class="text-sage-700">0%</span>
+          </div>
+          <div class="w-full h-2 bg-stone-200/80 rounded-full overflow-hidden">
+            <div id="todo-progress-fill" class="h-full bg-sage-500 rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Filter Pills -->
+        <div class="flex items-center gap-1.5 mb-3 text-xs font-semibold">
+          <button onclick="setTodoFilter('all')" id="todo-filter-all" class="px-3 py-1 rounded-full bg-stone-800 text-white cursor-pointer">All</button>
+          <button onclick="setTodoFilter('active')" id="todo-filter-active" class="px-3 py-1 rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200/70 cursor-pointer">Active</button>
+          <button onclick="setTodoFilter('done')" id="todo-filter-done" class="px-3 py-1 rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200/70 cursor-pointer">Done</button>
+        </div>
+
+        <!-- Quick Add Form -->
+        <form onsubmit="addTodoItem(event)" class="space-y-2 mb-3 bg-cream p-2.5 rounded-xl border border-stone-200/70">
+          <input
+            type="text"
+            id="todo-input-text"
+            required
+            placeholder="Add a new task..."
+            class="w-full px-3 py-2 text-xs sm:text-sm bg-white rounded-lg border border-stone-200 focus:outline-none focus:border-sage-500"
+          />
+          <div class="flex items-center gap-2">
+            <select id="todo-input-priority" class="flex-1 px-2.5 py-1.5 text-xs font-semibold bg-white rounded-lg border border-stone-200 text-stone-700 focus:outline-none">
+              <option value="urgent">🔥 Urgent</option>
+              <option value="normal" selected>📌 Normal</option>
+              <option value="chill">🌿 Chill</option>
+            </select>
+            <button type="submit" class="px-3.5 py-1.5 rounded-lg bg-sage-600 hover:bg-sage-700 text-white text-xs font-bold transition-colors cursor-pointer">
+              + Add Task
+            </button>
+          </div>
+        </form>
+
+        <!-- Task Items List -->
+        <div id="todo-items-container" class="space-y-2 max-h-[450px] overflow-y-auto pr-1">
+          <!-- Rendered by JS -->
+        </div>
+      </section>
+
+      <!-- Column 3 (4 cols): 🌱 Weekly Habit Tracker + Daily Reflection -->
+      <div class="lg:col-span-4 space-y-5">
+        <!-- Weekly Habit Tracker Card -->
+        <section class="bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5">
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <div>
+              <h2 class="text-base font-bold text-stone-800">🌱 Habit Tracker</h2>
+              <p id="habit-week-range" class="text-[11px] text-stone-500">This Week (Mon – Sun)</p>
+            </div>
+            <button
+              onclick="toggleAddHabitForm()"
+              class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold text-sage-700 bg-sage-100 hover:bg-sage-200/80 transition-colors cursor-pointer"
+            >
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>Add Habit</span>
+            </button>
+          </div>
+
+          <!-- Inline Add Habit Form (Hidden by default) -->
+          <form id="inline-habit-form" onsubmit="createNewHabit(event)" class="hidden mb-3 p-3 rounded-xl bg-sage-50 border border-sage-200/80 space-y-2">
+            <div class="flex items-center gap-2">
+              <input
+                type="text"
+                id="new-habit-emoji"
+                value="✨"
+                maxlength="4"
+                required
+                class="w-12 px-2 py-1.5 text-center text-sm bg-white rounded-lg border border-stone-200"
+              />
+              <input
+                type="text"
+                id="new-habit-name"
+                required
+                placeholder="Habit name, e.g. Meditate for 10 minutes"
+                class="flex-1 px-3 py-1.5 text-xs bg-white rounded-lg border border-stone-200 focus:outline-none focus:border-sage-500"
+              />
+            </div>
+            <div class="flex justify-end gap-1.5">
+              <button type="button" onclick="toggleAddHabitForm()" class="px-2.5 py-1 rounded-lg text-xs font-semibold text-stone-500 hover:bg-white cursor-pointer">Cancel</button>
+              <button type="submit" class="px-3 py-1 rounded-lg text-xs font-bold text-white bg-sage-600 hover:bg-sage-700 cursor-pointer">Save</button>
+            </div>
+          </form>
+
+          <!-- Habit Grid Table -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr id="habit-grid-header" class="border-b border-stone-100 text-[10px] font-bold text-stone-500">
+                  <!-- Rendered by JS -->
+                </tr>
+              </thead>
+              <tbody id="habit-grid-body" class="divide-y divide-stone-100">
+                <!-- Rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Daily Reflection Card -->
+        <section class="bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5">
+          <div class="flex items-center justify-between mb-2.5">
+            <h2 class="text-base font-bold text-stone-800 flex items-center gap-1.5">
+              <span>📝</span>
+              <span>Daily Reflection</span>
+            </h2>
+            <span id="reflection-save-status" class="text-[11px] text-stone-400">Auto-saved</span>
+          </div>
+
+          <textarea
+            id="daily-reflection-input"
+            rows="4"
+            oninput="updateReflection(this.value)"
+            placeholder="How was your day? What went well today?"
+            class="w-full p-3.5 text-xs sm:text-sm bg-cream rounded-xl border border-stone-200/80 focus:bg-white focus:outline-none focus:border-sage-500 leading-relaxed placeholder:text-stone-400"
+          ></textarea>
+        </section>
+      </div>
+    </div>
+  </main>
+
+    </section>
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- TAB 2: CONTENT STUDIO (IDEA BANK + SURPRISE ME + KANBAN)  -->
+  <!-- ========================================================= -->
+  <main id="view-tab-content" class="hidden flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
+
+    <!-- Top Action Bar -->
+    <div class="bg-white rounded-2xl border border-stone-200/80 shadow-soft p-4 sm:p-5 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+      <!-- Quick Add Content Idea Form -->
+      <form onsubmit="addQuickContentIdea(event)" class="flex-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+        <div class="flex-1 relative">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm">💡</span>
+          <input
+            type="text"
+            id="content-quick-title"
+            required
+            placeholder="Write a new content idea here... (e.g. 3 desk setup tips)"
+            class="w-full pl-9 pr-3.5 py-2.5 text-xs sm:text-sm bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500"
+          />
+        </div>
+
+        <div class="flex flex-wrap sm:flex-nowrap items-center gap-2">
+          <select id="content-quick-platform" class="px-3 py-2.5 text-xs font-semibold bg-cream rounded-xl border border-stone-200 text-stone-700 focus:outline-none">
+            <option value="TikTok">🎵 TikTok</option>
+            <option value="Instagram">📸 Instagram</option>
+            <option value="Facebook">📘 Facebook</option>
+            <option value="YouTube">▶️ YouTube</option>
+          </select>
+
+          <select id="content-quick-pillar" class="px-3 py-2.5 text-xs font-semibold bg-cream rounded-xl border border-stone-200 text-stone-700 focus:outline-none">
+            <option value="Tips & Tricks">💡 Tips & Tricks</option>
+            <option value="Product Highlight">✨ Product Highlight</option>
+            <option value="Behind the Scenes">🎬 Behind the Scenes</option>
+            <option value="Lifestyle">🌿 Lifestyle</option>
+          </select>
+
+          <button type="submit" class="px-4 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-white text-xs font-bold transition-colors shrink-0 cursor-pointer">
+            + Save Idea
+          </button>
+        </div>
+      </form>
+
+      <!-- Prominent Surprise Me Button -->
+      <button
+        onclick="openSurpriseModal()"
+        class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-sage-600 via-emerald-600 to-teal-600 hover:opacity-95 shadow-soft transition-all active:scale-95 shrink-0 cursor-pointer"
+      >
+        <span class="text-base">🎲</span>
+        <span>Surprise Me</span>
+      </button>
+    </div>
+
+    <!-- Workspace Layout: Left Sidebar (Idea Bank) + Main Board (4-Column Kanban) -->
+    <div class="flex flex-col lg:flex-row gap-5 items-start">
+
+      <!-- Left Sidebar: Idea Bank -->
+      <aside
+        ondragover="handleDragOver(event)"
+        ondragleave="handleDragLeave(event)"
+        ondrop="handleContentDrop(event, 'idea')"
+        class="w-full lg:w-[30%] xl:w-[28%] bg-white rounded-2xl border border-stone-200/80 shadow-soft p-4 sm:p-5 flex flex-col lg:max-h-[calc(100vh-13rem)] transition-colors"
+      >
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-base font-bold text-stone-800 flex items-center gap-1.5">
+            <span>📦</span>
+            <span>Idea Bank</span>
+          </h2>
+          <span id="idea-bank-counter" class="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-amber-100 text-amber-800">0</span>
+        </div>
+
+        <!-- Search Input -->
+        <div class="relative mb-3">
+          <i data-lucide="search" class="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+          <input
+            type="text"
+            id="idea-bank-search"
+            oninput="renderContentStudio()"
+            placeholder="Search ideas..."
+            class="w-full pl-8 pr-3 py-2 text-xs bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500"
+          />
+        </div>
+
+        <!-- Unscheduled Ideas List -->
+        <div id="idea-bank-container" class="space-y-2.5 overflow-y-auto flex-1 pr-1 min-h-[240px]">
+          <!-- Rendered by JS -->
+        </div>
+      </aside>
+
+      <!-- Main Kanban Board: 4 Workflow Columns -->
+      <section class="w-full lg:w-[70%] xl:w-[72%] grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <!-- Rendered by JS -->
+        <div id="kanban-columns-wrapper" class="contents"></div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- TAB 3: FINANCE TRACKER (Income & Expense Tracker)              -->
+  <!-- ========================================================= -->
+  <main id="view-tab-finance" class="hidden flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
+
+    <!-- Month Tabs -->
+    <div class="bg-white rounded-2xl border border-stone-200/80 shadow-card p-3 sm:p-4">
+      <div class="mb-3">
+        <p class="text-xs font-semibold text-stone-400 mb-1">Monthly Money</p>
+        <h2 id="finance-month-display" class="text-2xl sm:text-3xl font-extrabold text-stone-800 leading-tight">November 2026</h2>
+      </div>
+      <div id="finance-month-tabs" class="grid grid-cols-3 gap-2"></div>
+    </div>
+
+    <!-- 3 Summary Cards (Income, Expense, Net Balance) -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <!-- Total Income -->
+      <div class="bg-emerald-50/80 rounded-2xl border border-emerald-200/80 p-5 shadow-card flex items-center justify-between">
+        <div>
+          <p class="text-xs font-bold text-emerald-800/80 mb-1">Total Income</p>
+          <p id="fin-summary-income" class="text-2xl sm:text-3xl font-extrabold text-emerald-700">+฿0</p>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-2xl">
+          📈
+        </div>
+      </div>
+
+      <!-- Total Expense -->
+      <div class="bg-rose-50/80 rounded-2xl border border-rose-200/80 p-5 shadow-card flex items-center justify-between">
+        <div>
+          <p class="text-xs font-bold text-rose-800/80 mb-1">Total Expense</p>
+          <p id="fin-summary-expense" class="text-2xl sm:text-3xl font-extrabold text-rose-600">-฿0</p>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-2xl">
+          💸
+        </div>
+      </div>
+
+      <!-- Net Balance -->
+      <div class="bg-amber-50/80 rounded-2xl border border-amber-200/80 p-5 shadow-card flex items-center justify-between">
+        <div>
+          <p class="text-xs font-bold text-amber-900/80 mb-1">Net Balance</p>
+          <p id="fin-summary-balance" class="text-2xl sm:text-3xl font-extrabold text-amber-800">฿0</p>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center text-2xl">
+          👛
+        </div>
+      </div>
+    </div>
+
+    <!-- Two-Column Workspace: Left (Entry Form + Category Breakdown) | Right (Transaction History) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+      <!-- Left Column (5 cols): Quick Entry Form + Category Breakdown -->
+      <div class="lg:col-span-5 space-y-5">
+        <!-- Quick Transaction Entry Form -->
+        <section class="bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5">
+          <h2 class="text-base font-bold text-stone-800 mb-3 flex items-center gap-2">
+            <span>✍️</span>
+            <span>Add Transaction</span>
+          </h2>
+
+          <form onsubmit="addFinanceTransaction(event)" class="space-y-3.5">
+            <!-- Toggle Type: Expense vs Income -->
+            <div class="grid grid-cols-2 gap-2 p-1 rounded-xl bg-stone-100 border border-stone-200/70">
+              <button
+                type="button"
+                id="fin-type-btn-expense"
+                onclick="setFinanceEntryType('expense')"
+                class="py-2 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer bg-rose-500 text-white shadow-xs"
+              >
+                💸 Expense
+              </button>
+              <button
+                type="button"
+                id="fin-type-btn-income"
+                onclick="setFinanceEntryType('income')"
+                class="py-2 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer text-stone-600 hover:text-stone-900"
+              >
+                💰 Income
+              </button>
+            </div>
+
+            <!-- Amount & Date -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-bold text-stone-700 mb-1">Amount (THB) *</label>
+                <div class="relative">
+                  <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-stone-400">฿</span>
+                  <input
+                    type="number"
+                    id="fin-amount-input"
+                    min="1"
+                    step="any"
+                    required
+                    placeholder="0.00"
+                    class="w-full pl-8 pr-3.5 py-2.5 text-sm font-bold bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-stone-700 mb-1">Transaction Date</label>
+                <input
+                  type="date"
+                  id="fin-date-input"
+                  required
+                  class="w-full px-3 py-2.5 text-xs sm:text-sm font-semibold bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500"
+                />
+              </div>
+            </div>
+
+            <!-- Dynamic Category Dropdown -->
+            <div>
+              <label class="block text-xs font-bold text-stone-700 mb-1">Category</label>
+              <select
+                id="fin-category-select"
+                class="w-full px-3.5 py-2.5 text-xs sm:text-sm font-semibold bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500"
+              >
+                <!-- Populated dynamically by JS -->
+              </select>
+            </div>
+
+            <!-- Note / Description -->
+            <div>
+              <label class="block text-xs font-bold text-stone-700 mb-1">Additional Note</label>
+              <input
+                type="text"
+                id="fin-note-input"
+                placeholder="e.g. Americano, toll, freelance payment..."
+                class="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500"
+              />
+            </div>
+
+            <button
+              type="submit"
+              class="w-full py-3 rounded-xl text-sm font-bold text-white bg-sage-600 hover:bg-sage-700 shadow-soft transition-all active:scale-[0.99] cursor-pointer"
+            >
+              + Save Transaction
+            </button>
+          </form>
+        </section>
+
+        <!-- Expense Category Breakdown -->
+        <section class="bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-base font-bold text-stone-800 flex items-center gap-2">
+              <span>📊</span>
+              <span>Monthly Expense Breakdown</span>
+            </h2>
+            <span class="text-[11px] text-stone-400">Highest to lowest</span>
+          </div>
+
+          <div id="fin-category-breakdown" class="space-y-3">
+            <!-- Rendered by JS -->
+          </div>
+        </section>
+      </div>
+
+      <!-- Right Column (7 cols): Transaction History List -->
+      <section class="lg:col-span-7 bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5 flex flex-col">
+        <div class="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-stone-100">
+          <div>
+            <h2 class="text-base font-bold text-stone-800 flex items-center gap-2">
+              <span>🧾</span>
+              <span>Transaction History</span>
+            </h2>
+            <p id="fin-history-count" class="text-[11px] text-stone-500">0 transactions this month</p>
+          </div>
+
+          <!-- Filter Pills -->
+          <div class="flex items-center gap-1.5 text-xs font-semibold">
+            <button onclick="setFinanceFilter('all')" id="fin-filter-all" class="px-3 py-1.5 rounded-full bg-stone-800 text-white cursor-pointer">All</button>
+            <button onclick="setFinanceFilter('income')" id="fin-filter-income" class="px-3 py-1.5 rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200/70 cursor-pointer">Income</button>
+            <button onclick="setFinanceFilter('expense')" id="fin-filter-expense" class="px-3 py-1.5 rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200/70 cursor-pointer">Expense</button>
+          </div>
+        </div>
+
+        <div id="fin-transactions-list" class="mt-4 space-y-2.5 max-h-[620px] overflow-y-auto pr-1">
+          <!-- Rendered by JS -->
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Subtle Footer -->
+  <footer class="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 mt-4 border-t border-stone-200/60 flex flex-wrap items-center justify-between gap-2 text-xs text-stone-400">
+    <div>My Planner ✨ • Auto-saves in your browser (LocalStorage) • 100% free</div>
+    <button onclick="openResetConfirm()" class="inline-flex items-center gap-1 text-stone-500 hover:text-rose-600 font-medium cursor-pointer">
+      <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+      <span>Reset Demo Data</span>
+    </button>
+  </footer>
+
+  <!-- ========================================================= -->
+  <!-- MODAL 1: ADD TIME BLOCK MODAL                             -->
+  <!-- ========================================================= -->
+  <div id="timeblock-modal" class="hidden fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-float border border-stone-100 animate-modal">
+      <div class="flex items-center justify-between pb-3 border-b border-stone-100">
+        <h3 id="tb-modal-heading" class="text-base font-bold text-stone-800">⏰ Add activity at 09:00</h3>
+        <button onclick="closeModal('timeblock-modal')" class="p-1.5 rounded-full text-stone-400 hover:bg-stone-100 cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form onsubmit="saveTimeBlock(event)" class="mt-4 space-y-4">
+        <input type="hidden" id="tb-hour-value" />
+
+        <div>
+          <label class="block text-xs font-bold text-stone-700 mb-1">Activity / Task Name *</label>
+          <input
+            type="text"
+            id="tb-title-input"
+            required
+            placeholder="e.g. Plan weekly content, team meeting..."
+            class="w-full px-3.5 py-2.5 text-sm bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-stone-700 mb-1.5">Category Badge</label>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="cursor-pointer">
+              <input type="radio" name="tb-cat" value="work" checked class="peer hidden" />
+              <div class="px-3 py-2 rounded-xl border border-stone-200 peer-checked:border-sky-500 peer-checked:bg-sky-50 text-xs font-semibold text-stone-700 text-center">
+                💼 Work
+              </div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="tb-cat" value="personal" class="peer hidden" />
+              <div class="px-3 py-2 rounded-xl border border-stone-200 peer-checked:border-amber-500 peer-checked:bg-amber-50 text-xs font-semibold text-stone-700 text-center">
+                🏡 Personal
+              </div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="tb-cat" value="health" class="peer hidden" />
+              <div class="px-3 py-2 rounded-xl border border-stone-200 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 text-xs font-semibold text-stone-700 text-center">
+                🌿 Health
+              </div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="tb-cat" value="rest" class="peer hidden" />
+              <div class="px-3 py-2 rounded-xl border border-stone-200 peer-checked:border-purple-500 peer-checked:bg-purple-50 text-xs font-semibold text-stone-700 text-center">
+                ☕ Rest
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('timeblock-modal')" class="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100 cursor-pointer">Cancel</button>
+          <button type="submit" class="px-5 py-2 rounded-xl text-xs font-bold text-white bg-sage-600 hover:bg-sage-700 cursor-pointer">Save Schedule</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MODAL 2: SURPRISE ME (RANDOM CONTENT IDEA PICKER)         -->
+  <!-- ========================================================= -->
+  <div id="surprise-modal" class="hidden fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-float border border-stone-100 animate-modal relative overflow-hidden">
+      <div class="flex items-center justify-between mb-4">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sage-100 text-sage-700">
+          🎲 Here is your content idea!
+        </span>
+        <button onclick="closeModal('surprise-modal')" class="p-1.5 rounded-full text-stone-400 hover:bg-stone-100 cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div id="surprise-card-body" class="my-4">
+        <!-- Rendered by JS -->
+      </div>
+
+      <div id="surprise-card-footer" class="mt-6 flex flex-col sm:flex-row gap-2.5">
+        <button
+          onclick="rollSurpriseIdea()"
+          class="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl text-xs sm:text-sm font-bold text-stone-700 bg-stone-100 hover:bg-stone-200/80 transition-colors cursor-pointer"
+        >
+          <span>🔄 Reroll</span>
+        </button>
+        <button
+          onclick="acceptSurpriseIdea()"
+          class="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl text-xs sm:text-sm font-bold text-white bg-sage-600 hover:bg-sage-700 shadow-soft transition-colors cursor-pointer"
+        >
+          <span>✍️ Start Now (Move to Script)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MODAL 3: EDIT CONTENT SCRIPT / DETAILS MODAL              -->
+  <!-- ========================================================= -->
+  <div id="content-edit-modal" class="hidden fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-float border border-stone-100 animate-modal max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-stone-100">
+        <h3 class="text-base font-bold text-stone-800">📝 Edit Details & Write Script</h3>
+        <button onclick="closeModal('content-edit-modal')" class="p-1.5 rounded-full text-stone-400 hover:bg-stone-100 cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form onsubmit="saveEditedContent(event)" class="mt-4 space-y-4">
+        <input type="hidden" id="edit-content-id" />
+
+        <div>
+          <label class="block text-xs font-bold text-stone-700 mb-1">Content Title *</label>
+          <input
+            type="text"
+            id="edit-content-title"
+            required
+            class="w-full px-3.5 py-2.5 text-sm bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500"
+          />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Platform</label>
+            <select id="edit-content-platform" class="w-full px-2.5 py-2 text-xs font-semibold bg-cream rounded-xl border border-stone-200">
+              <option value="TikTok">🎵 TikTok</option>
+              <option value="Instagram">📸 Instagram</option>
+              <option value="Facebook">📘 Facebook</option>
+              <option value="YouTube">▶️ YouTube</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Pillar</label>
+            <select id="edit-content-pillar" class="w-full px-2.5 py-2 text-xs font-semibold bg-cream rounded-xl border border-stone-200">
+              <option value="Tips & Tricks">💡 Tips & Tricks</option>
+              <option value="Product Highlight">✨ Product Highlight</option>
+              <option value="Behind the Scenes">🎬 Behind the Scenes</option>
+              <option value="Lifestyle">🌿 Lifestyle</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Status</label>
+            <select id="edit-content-status" class="w-full px-2.5 py-2 text-xs font-semibold bg-cream rounded-xl border border-stone-200">
+              <option value="idea">📦 Idea Bank</option>
+              <option value="script">✍️ Script</option>
+              <option value="film">🎬 Film / Visuals</option>
+              <option value="edit">💻 Edit</option>
+              <option value="posted">🚀 Posted</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-stone-700 mb-1">Script / Caption / Notes</label>
+          <textarea
+            id="edit-content-notes"
+            rows="5"
+            placeholder="Write the 3-second hook, content details, or caption..."
+            class="w-full p-3.5 text-xs sm:text-sm bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500 leading-relaxed"
+          ></textarea>
+        </div>
+
+        <div class="pt-3 border-t border-stone-100 flex items-center justify-between">
+          <button
+            type="button"
+            onclick="deleteContentItem()"
+            class="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 cursor-pointer"
+          >
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            <span>Delete Idea</span>
+          </button>
+
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="closeModal('content-edit-modal')" class="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100 cursor-pointer">Cancel</button>
+            <button type="submit" class="px-5 py-2 rounded-xl text-xs font-bold text-white bg-sage-600 hover:bg-sage-700 cursor-pointer">Save Changes</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MODAL 4: RESET CONFIRMATION MODAL                         -->
+  <!-- ========================================================= -->
+  <div id="reset-confirm-modal" class="hidden fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-float border border-stone-100 animate-modal">
+      <h3 class="text-base font-bold text-stone-800">Reset to demo data?</h3>
+      <p class="text-xs text-stone-500 mt-1.5 leading-relaxed">
+        Your planner, habits, and content data will be reset to the demo data. Export your data first if you want to keep a backup.
+      </p>
+      <div class="mt-5 flex justify-end gap-2">
+        <button onclick="closeModal('reset-confirm-modal')" class="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100 cursor-pointer">Cancel</button>
+        <button onclick="confirmResetAll()" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 cursor-pointer">Confirm Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- CLOUD LOGIN MODAL -->
+  <!-- ========================================================= -->
+  <div id="auth-modal" class="hidden fixed inset-0 z-[70] bg-stone-900/40 backdrop-blur-sm p-4 flex items-center justify-center">
+    <div class="w-full max-w-md bg-white rounded-3xl shadow-float border border-stone-200/80 p-6">
+      <div class="flex items-start justify-between gap-4 mb-5">
+        <div>
+          <div class="text-2xl mb-1">☁️</div>
+          <h2 class="text-xl font-extrabold text-stone-800">My Planner Cloud</h2>
+          <p class="text-xs text-stone-500 mt-1">Use the same account on your home and office computers.</p>
+        </div>
+        <button onclick="closeModal('auth-modal')" class="w-8 h-8 rounded-xl bg-stone-100 text-stone-500 hover:bg-stone-200">✕</button>
+      </div>
+      <div id="auth-config-warning" class="hidden mb-4 p-3 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-800">
+        Cloud is not connected yet. Add your Supabase URL and Anon Key in the <b>CONFIG</b> section of this file first.
+      </div>
+      <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-3">
+        <input id="auth-email" type="email" required placeholder="Email address" class="w-full px-4 py-3 rounded-2xl bg-cream border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500 text-sm">
+        <input id="auth-password" type="password" required minlength="6" placeholder="Password (6+ characters)" class="w-full px-4 py-3 rounded-2xl bg-cream border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500 text-sm">
+        <label class="flex items-center gap-2 text-xs text-stone-600 select-none">
+          <input id="remember-login" type="checkbox" checked class="accent-sage-600">
+          Remember my login on this computer
+        </label>
+        <button id="auth-submit" type="submit" class="w-full py-3 rounded-2xl bg-sage-600 hover:bg-sage-700 text-white font-bold text-sm">Log In</button>
+      </form>
+      <div class="flex items-center gap-2 my-4"><div class="h-px bg-stone-200 flex-1"></div><span class="text-[10px] text-stone-400">OR</span><div class="h-px bg-stone-200 flex-1"></div></div>
+      <button onclick="handleSignUp()" class="w-full py-2.5 rounded-2xl border border-sage-200 bg-sage-50 text-sage-700 font-bold text-xs hover:bg-sage-100">Create New Account</button>
+      <p class="text-[10px] text-stone-400 mt-4 text-center">One account is enough for your home + office computers.</p>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- ACCOUNT MENU -->
+  <!-- ========================================================= -->
+  <div id="account-modal" class="hidden fixed inset-0 z-[70] bg-stone-900/20" onclick="if(event.target===this) closeModal('account-modal')">
+    <div class="absolute top-20 right-4 sm:right-8 w-64 bg-white rounded-2xl shadow-float border border-stone-200 p-4">
+      <p id="account-email" class="text-xs font-bold text-stone-800 truncate"></p>
+      <p class="text-[10px] text-stone-400 mt-1 mb-3">Cloud sync is active</p>
+      <button onclick="syncNow()" class="w-full py-2 rounded-xl bg-sage-50 text-sage-700 text-xs font-bold mb-2">☁️ Sync Now</button>
+      <button onclick="signOutCloud()" class="w-full py-2 rounded-xl bg-stone-100 text-stone-700 text-xs font-bold">Log Out</button>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="bg-stone-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-float flex items-center gap-2">
+      <span>✨</span>
+      <span id="toast-message">Saved</span>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================
+    // 1. CONSTANTS & DESIGN TOKENS
+    // =========================================================
+    const STORAGE_KEY = 'my_zen_planner_all_in_one_v1';
+
+    // =========================================================
+    // CLOUD CONFIG — fill these 2 values after creating Supabase
+    // =========================================================
+    const SUPABASE_URL = 'https://rljjmdmgdmdlirnkyhll.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_RBYX-zXMQiNb9b90qp35VA_pgJmpdDk';
+    const CLOUD_TABLE = 'planner_data';
+    let supabaseClient = null;
+    let cloudUser = null;
+    let cloudSaveTimer = null;
+    let isCloudHydrating = false;
+
+    const HOURS = Array.from({ length: 16 }, (_, i) => `${String(i + 7).padStart(2, '0')}:00`);
+
+    const MOOD_OPTIONS = [
+      { id: 'great',    emoji: '🤩', label: 'Great' },
+      { id: 'okay',     emoji: '😊', label: 'Good' },
+      { id: 'neutral',  emoji: '😐', label: 'Neutral' },
+      { id: 'tired',    emoji: '😴', label: 'Tired' },
+      { id: 'stressed', emoji: '😫', label: 'Stressed' }
+    ];
+
+    const TB_CATEGORIES = {
+      work:     { label: 'Work',       bg: 'bg-sky-50',     border: 'border-sky-200',     badge: 'bg-sky-100 text-sky-800' },
+      personal: { label: 'Personal', bg: 'bg-amber-50',   border: 'border-amber-200',   badge: 'bg-amber-100 text-amber-800' },
+      health:   { label: 'Health',   bg: 'bg-emerald-50', border: 'border-emerald-200', badge: 'bg-emerald-100 text-emerald-800' },
+      rest:     { label: 'Rest',    bg: 'bg-purple-50',  border: 'border-purple-200',  badge: 'bg-purple-100 text-purple-800' }
+    };
+
+    const TODO_PRIORITIES = {
+      urgent: { label: '🔥 Urgent', badge: 'bg-rose-100 text-rose-700' },
+      normal: { label: '📌 Normal',    badge: 'bg-amber-100 text-amber-800' },
+      chill:  { label: '🌿 Chill',   badge: 'bg-emerald-100 text-emerald-700' }
+    };
+
+    const CONTENT_COLUMNS = [
+      { id: 'script', title: '✍️ Script', bg: 'bg-amber-50/70',   border: 'border-amber-200/70',   badge: 'bg-amber-100 text-amber-800' },
+      { id: 'film',   title: '🎬 Film / Visuals', bg: 'bg-sky-50/70',     border: 'border-sky-200/70',     badge: 'bg-sky-100 text-sky-800' },
+      { id: 'edit',   title: '💻 Edit',       bg: 'bg-purple-50/70',  border: 'border-purple-200/70',  badge: 'bg-purple-100 text-purple-800' },
+      { id: 'posted', title: '🚀 Posted',    bg: 'bg-emerald-50/70', border: 'border-emerald-200/70', badge: 'bg-emerald-100 text-emerald-800' }
+    ];
+
+    const PLATFORM_BADGES = {
+      'TikTok':    'bg-stone-900 text-white',
+      'Instagram': 'bg-pink-100 text-pink-800',
+      'Facebook':  'bg-blue-100 text-blue-800',
+      'YouTube':   'bg-rose-100 text-rose-800'
+    };
+
+    const PILLAR_BADGES = {
+      'Tips & Tricks':     'bg-emerald-100/80 text-emerald-800',
+      'Product Highlight': 'bg-indigo-100/80 text-indigo-800',
+      'Behind the Scenes': 'bg-orange-100/80 text-orange-800',
+      'Lifestyle':         'bg-sage-100 text-sage-700'
+    };
+
+    const FINANCE_CATEGORIES = {
+      expense: [
+        { id: 'food',     emoji: '🍜', label: 'Food & Drinks', barColor: 'bg-amber-400' },
+        { id: 'travel',   emoji: '🚗', label: 'Transport',            barColor: 'bg-sky-400' },
+        { id: 'shopping', emoji: '🛍️', label: 'Shopping',           barColor: 'bg-pink-400' },
+        { id: 'bills',    emoji: '🏠', label: 'Bills / Lodging',      barColor: 'bg-purple-400' },
+        { id: 'health',   emoji: '💊', label: 'Health',             barColor: 'bg-emerald-400' },
+        { id: 'other',    emoji: '🎁', label: 'Other',              barColor: 'bg-stone-400' }
+      ],
+      income: [
+        { id: 'salary',    emoji: '💼', label: 'Salary',         barColor: 'bg-emerald-500' },
+        { id: 'freelance', emoji: '💻', label: 'Freelance / Side Income', barColor: 'bg-teal-500' },
+        { id: 'other',     emoji: '🎁', label: 'Other',             barColor: 'bg-lime-500' }
+      ]
+    };
+
+    // =========================================================
+    // 2. APPLICATION STATE & SEED DATA
+    // =========================================================
+    let currentDateStr = getTodayISO();
+    let todoFilter = 'all';
+    let draggedContentId = null;
+    let currentSurpriseId = null;
+
+    // Finance Tracker State
+    let financeMonthStr = getTodayISO().slice(0, 7); // YYYY-MM
+    let financeEntryType = 'expense';
+    let financeFilter = 'all';
+
+    let store = {
+      days: {},
+      habits: [],
+      contents: [],
+      transactions: []
+    };
+
+    function getTodayISO() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    function parseISO(isoStr) {
+      const [y, m, d] = isoStr.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+
+    function formatISO(dateObj) {
+      return `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+    }
+
+    function getSeedData() {
+      const today = new Date();
+      const todayStr = formatISO(today);
+
+      // Find Monday of current week for realistic habit logs
+      const day = today.getDay();
+      const diff = day === 0 ? -6 : 1 - day;
+      const mon = new Date(today);
+      mon.setDate(today.getDate() + diff);
+      const monStr = formatISO(mon);
+
+      return {
+        days: {
+          [todayStr]: {
+            mood: 'great',
+            priorities: [
+              { text: 'Finalize the main plan and this week’s content schedule', done: true },
+              { text: 'Reply to customer chats and check inventory', done: false },
+              { text: 'Drink 2L of water and sleep before 10 PM', done: false }
+            ],
+            timeBlocks: {
+              '08:00': { title: 'Coffee + check today’s plan', category: 'personal', done: true },
+              '09:00': { title: 'Plan and write scripts for 3 videos', category: 'work', done: false },
+              '12:00': { title: 'Lunch break & relaxing walk', category: 'rest', done: false },
+              '15:00': { title: 'Weekly update meeting and summary', category: 'work', done: false },
+              '18:00': { title: 'Exercise / stretch for 30 minutes', category: 'health', done: false }
+            },
+            todos: [
+              { id: 'td-1', text: 'Send weekly summary file', priority: 'urgent', done: true },
+              { id: 'td-2', text: 'Organize desk and clear documents', priority: 'normal', done: false },
+              { id: 'td-3', text: 'Find ideas for a new room corner', priority: 'chill', done: false }
+            ],
+            reflection: 'Started the morning feeling great. Time blocking helps me focus on one important task at a time without feeling overwhelmed. ✨'
+          }
+        },
+        habits: [
+          { id: 'hb-1', emoji: '💧', name: 'Drink 2L of water', logs: { [monStr]: true, [todayStr]: true } },
+          { id: 'hb-2', emoji: '🏃', name: 'Exercise for 30 minutes', logs: { [monStr]: true } },
+          { id: 'hb-3', emoji: '📖', name: 'Read 15 pages', logs: { [todayStr]: true } }
+        ],
+        contents: [
+          {
+            id: 'ct-1',
+            title: '3 minimalist desk setup tips that look 200% better on camera',
+            platform: 'TikTok',
+            pillar: 'Tips & Tricks',
+            status: 'idea',
+            notes: 'Hook: If your desk never looks quite right, try these 3 changes\n1. Use side natural light\n2. Hide cables out of frame\n3. Add a green plant against cream tones'
+          },
+          {
+            id: 'ct-2',
+            title: 'Behind the scenes: packing a large nationwide order 📦',
+            platform: 'Instagram',
+            pillar: 'Behind the Scenes',
+            status: 'idea',
+            notes: 'Film a short timelapse with chill music and thank the customers'
+          },
+          {
+            id: 'ct-3',
+            title: 'Review a favorite item that makes everyday planning easier ✨',
+            platform: 'YouTube',
+            pillar: 'Product Highlight',
+            status: 'idea',
+            notes: 'Show how it is actually used from morning to bedtime'
+          },
+          {
+            id: 'ct-4',
+            title: 'One Day With Me: a relaxed minimalist workday',
+            platform: 'TikTok',
+            pillar: 'Lifestyle',
+            status: 'script',
+            notes: 'Focus on morning light, coffee-making sounds, and planner writing'
+          },
+          {
+            id: 'ct-5',
+            title: '5 time-saving ideas for office workers',
+            platform: 'Facebook',
+            pillar: 'Tips & Tricks',
+            status: 'posted',
+            notes: 'Post as a 5-image carousel; great share potential'
+          }
+        ],
+        transactions: [
+          {
+            id: 'tx-1',
+            type: 'income',
+            amount: 35000,
+            categoryId: 'salary',
+            note: 'Monthly salary',
+            date: todayStr
+          },
+          {
+            id: 'tx-2',
+            type: 'income',
+            amount: 4500,
+            categoryId: 'freelance',
+            note: 'Graphic design and short video editing',
+            date: todayStr
+          },
+          {
+            id: 'tx-3',
+            type: 'expense',
+            amount: 145,
+            categoryId: 'food',
+            note: 'Americano + breakfast bread',
+            date: todayStr
+          },
+          {
+            id: 'tx-4',
+            type: 'expense',
+            amount: 320,
+            categoryId: 'travel',
+            note: 'BTS and motorcycle taxi',
+            date: todayStr
+          },
+          {
+            id: 'tx-5',
+            type: 'expense',
+            amount: 890,
+            categoryId: 'shopping',
+            note: 'Planner notebook and desk accessories',
+            date: todayStr
+          }
+        ]
+      };
+    }
+
+    function loadStore() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          store = JSON.parse(saved);
+          if (!Array.isArray(store.transactions)) {
+            store.transactions = getSeedData().transactions;
+          }
+        } else {
+          store = getSeedData();
+          saveStore();
+        }
+      } catch (e) {
+        console.error('Error loading localStorage:', e);
+        store = getSeedData();
+      }
+    }
+
+    function saveStore() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+      } catch (e) {
+        console.error('Error saving localStorage:', e);
+      }
+      if (cloudUser && !isCloudHydrating) scheduleCloudSave();
+    }
+
+    function cloudConfigured() {
+      return Boolean(SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase);
+    }
+
+    function setCloudStatus(text, state='offline') {
+      const wrap = document.getElementById('cloud-status');
+      const label = document.getElementById('cloud-status-text');
+      const dot = document.getElementById('cloud-status-dot');
+      if (!wrap || !label || !dot) return;
+      wrap.classList.remove('hidden');
+      label.textContent = text;
+      dot.className = 'w-2 h-2 rounded-full ' + ({online:'bg-emerald-400', syncing:'bg-amber-400', error:'bg-rose-400', offline:'bg-stone-300'}[state] || 'bg-stone-300');
+    }
+
+    function openAuthModal() {
+      if (cloudUser) {
+        document.getElementById('account-email').textContent = cloudUser.email || 'Signed in';
+        document.getElementById('account-modal').classList.remove('hidden');
+        return;
+      }
+      document.getElementById('auth-config-warning').classList.toggle('hidden', cloudConfigured());
+      document.getElementById('auth-modal').classList.remove('hidden');
+    }
+
+    function initCloud() {
+      if (!cloudConfigured()) {
+        setCloudStatus('Local only', 'offline');
+        return;
+      }
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+      supabaseClient.auth.onAuthStateChange(async (_event, session) => {
+        cloudUser = session?.user || null;
+        updateAuthButton();
+        if (cloudUser) await hydrateFromCloud();
+        else setCloudStatus('Signed out', 'offline');
+      });
+      supabaseClient.auth.getSession().then(async ({ data }) => {
+        cloudUser = data.session?.user || null;
+        updateAuthButton();
+        if (cloudUser) await hydrateFromCloud();
+        else setCloudStatus('Ready to login', 'offline');
+      });
+    }
+
+    function updateAuthButton() {
+      const btn = document.getElementById('auth-button');
+      if (!btn) return;
+      if (cloudUser) {
+        btn.innerHTML = '<i data-lucide="cloud" class="w-3.5 h-3.5"></i><span>Account</span>';
+      } else {
+        btn.innerHTML = '<i data-lucide="log-in" class="w-3.5 h-3.5"></i><span>Login</span>';
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    async function handleAuthSubmit(e) {
+      e.preventDefault();
+      if (!cloudConfigured()) return showToast('Cloud is not configured yet');
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value;
+      const remember = document.getElementById('remember-login').checked;
+      try {
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        if (!remember) await supabaseClient.auth.signOut({ scope: 'local' });
+        closeModal('auth-modal');
+        showToast('Welcome back ✨');
+      } catch (err) {
+        showToast(err.message || 'Login failed');
+      }
+    }
+
+    async function handleSignUp() {
+      if (!cloudConfigured()) return showToast('Cloud is not configured yet');
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value;
+      if (!email || password.length < 6) return showToast('Enter email and a 6+ character password');
+      try {
+        const { error } = await supabaseClient.auth.signUp({ email, password });
+        if (error) throw error;
+        showToast('Account created — check your email if confirmation is required');
+      } catch (err) {
+        showToast(err.message || 'Sign up failed');
+      }
+    }
+
+    async function hydrateFromCloud() {
+      if (!supabaseClient || !cloudUser) return;
+      isCloudHydrating = true;
+      setCloudStatus('Syncing...', 'syncing');
+      try {
+        const { data, error } = await supabaseClient.from(CLOUD_TABLE).select('data, updated_at').eq('user_id', cloudUser.id).maybeSingle();
+        if (error) throw error;
+        if (data?.data) {
+          store = data.data;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+          renderDailyPlanner(); renderMonthlyOverview(); renderContentStudio(); renderFinanceTracker();
+          showToast('Cloud data loaded ☁️');
+        } else {
+          await pushStoreToCloud();
+        }
+        setCloudStatus('Synced', 'online');
+      } catch (err) {
+        console.error(err);
+        setCloudStatus('Sync error', 'error');
+        showToast('Could not sync cloud data');
+      } finally {
+        isCloudHydrating = false;
+      }
+    }
+
+    function scheduleCloudSave() {
+      clearTimeout(cloudSaveTimer);
+      cloudSaveTimer = setTimeout(pushStoreToCloud, 700);
+    }
+
+    async function pushStoreToCloud() {
+      if (!supabaseClient || !cloudUser || isCloudHydrating) return;
+      setCloudStatus('Saving...', 'syncing');
+      try {
+        const { error } = await supabaseClient.from(CLOUD_TABLE).upsert({ user_id: cloudUser.id, data: store, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+        if (error) throw error;
+        setCloudStatus('Synced', 'online');
+      } catch (err) {
+        console.error(err);
+        setCloudStatus('Sync error', 'error');
+      }
+    }
+
+    async function syncNow() {
+      closeModal('account-modal');
+      await pushStoreToCloud();
+      showToast('Synced ☁️');
+    }
+
+    async function signOutCloud() {
+      if (supabaseClient) await supabaseClient.auth.signOut();
+      cloudUser = null;
+      closeModal('account-modal');
+      updateAuthButton();
+      setCloudStatus('Signed out', 'offline');
+      showToast('Logged out');
+    }
+
+    function ensureDayRecord(dateStr) {
+      if (!store.days[dateStr]) {
+        store.days[dateStr] = {
+          mood: 'okay',
+          priorities: [
+            { text: '', done: false },
+            { text: '', done: false },
+            { text: '', done: false }
+          ],
+          timeBlocks: {},
+          todos: [],
+          reflection: ''
+        };
+      }
+      return store.days[dateStr];
+    }
+
+    // =========================================================
+    // 3. TAB SWITCHING & RENDERING ORCHESTRATOR
+    // =========================================================
+    function switchMainTab(tab) {
+      const dailyView = document.getElementById('view-tab-daily');
+      const contentView = document.getElementById('view-tab-content');
+      const financeView = document.getElementById('view-tab-finance');
+      const btnDaily = document.getElementById('tab-btn-daily');
+      const btnContent = document.getElementById('tab-btn-content');
+      const btnFinance = document.getElementById('tab-btn-finance');
+
+      const activeClass = 'flex-1 lg:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer bg-white text-sage-700 shadow-xs whitespace-nowrap';
+      const inactiveClass = 'flex-1 lg:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer text-stone-600 hover:text-stone-900 whitespace-nowrap';
+
+      dailyView.classList.add('hidden');
+      contentView.classList.add('hidden');
+      financeView.classList.add('hidden');
+      btnDaily.className = inactiveClass;
+      btnContent.className = inactiveClass;
+      btnFinance.className = inactiveClass;
+
+      if (tab === 'daily') {
+        dailyView.classList.remove('hidden');
+        btnDaily.className = activeClass;
+        renderDailyPlanner();
+      } else if (tab === 'content') {
+        contentView.classList.remove('hidden');
+        btnContent.className = activeClass;
+        renderContentStudio();
+      } else if (tab === 'finance') {
+        financeView.classList.remove('hidden');
+        btnFinance.className = activeClass;
+        renderFinanceTracker();
+      }
+      lucide.createIcons();
+    }
+
+    // =========================================================
+    // 4. TAB 1: DAILY PLANNER RENDER & ACTIONS
+    // =========================================================
+    function renderDailyPlanner() {
+      const dayData = ensureDayRecord(currentDateStr);
+
+      // 1. Date Header
+      const dateObj = parseISO(currentDateStr);
+      const displayDate = dateObj.toLocaleDateString('en-US', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+      const isToday = currentDateStr === getTodayISO();
+      document.getElementById('thai-date-display').innerHTML = `${displayDate} ${isToday ? '<span class="ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-sage-100 text-sage-700 align-middle">Today</span>' : ''}`;
+      document.getElementById('date-picker-input').value = currentDateStr;
+
+      // 2. Mood Selector
+      const activeMood = MOOD_OPTIONS.find(m => m.id === dayData.mood) || MOOD_OPTIONS[1];
+      document.getElementById('mood-active-label').textContent = `${activeMood.emoji} ${activeMood.label}`;
+      document.getElementById('mood-buttons-grid').innerHTML = MOOD_OPTIONS.map(m => {
+        const selected = dayData.mood === m.id;
+        return `
+          <button
+            type="button"
+            onclick="selectDayMood('${m.id}')"
+            class="flex flex-col items-center justify-center p-2 rounded-xl border transition-all cursor-pointer ${
+              selected
+                ? 'bg-sage-100/90 border-sage-500 scale-105 shadow-xs'
+                : 'bg-cream border-stone-200/70 hover:bg-stone-100 opacity-75 hover:opacity-100'
+            }"
+          >
+            <span class="text-xl mb-0.5">${m.emoji}</span>
+            <span class="text-[10px] font-semibold text-stone-700 truncate w-full text-center">${m.label}</span>
+          </button>
+        `;
+      }).join('');
+
+      // 3. Top 3 Focus Priorities
+      document.getElementById('top-priorities-list').innerHTML = dayData.priorities.map((p, idx) => `
+        <div class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border transition-all ${
+          p.done ? 'bg-stone-50 border-stone-200/70' : 'bg-cream border-stone-200/90 focus-within:bg-white focus-within:border-sage-500'
+        }">
+          <button
+            type="button"
+            onclick="togglePriorityDone(${idx})"
+            class="w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors cursor-pointer ${
+              p.done ? 'bg-sage-500 border-sage-500 text-white animate-check' : 'bg-white border-stone-300 hover:border-sage-500'
+            }"
+          >
+            ${p.done ? '<i data-lucide="check" class="w-3.5 h-3.5 stroke-[3]"></i>' : ''}
+          </button>
+          <input
+            type="text"
+            value="${escapeHtml(p.text)}"
+            oninput="updatePriorityText(${idx}, this.value)"
+            placeholder="Goal ${idx + 1}..."
+            class="w-full bg-transparent text-xs sm:text-sm font-medium focus:outline-none ${
+              p.done ? 'line-through text-stone-400' : 'text-stone-800'
+            }"
+          />
+        </div>
+      `).join('');
+
+      // 4. Time Blocks (07:00 - 22:00)
+      renderTimeBlocks(dayData);
+
+      // 5. To-Do List
+      renderTodoList(dayData);
+
+      // 6. Weekly Habit Tracker
+      renderHabitTracker();
+
+      // 7. Reflection
+      document.getElementById('daily-reflection-input').value = dayData.reflection || '';
+    }
+
+    function renderTimeBlocks(dayData) {
+      const container = document.getElementById('time-blocks-list');
+      container.innerHTML = HOURS.map(hour => {
+        const block = dayData.timeBlocks[hour];
+        if (block) {
+          const cat = TB_CATEGORIES[block.category] || TB_CATEGORIES.work;
+          return `
+            <div class="flex items-center gap-2">
+              <span class="w-11 text-right text-xs font-bold text-stone-500 shrink-0">${hour}</span>
+              <div class="flex-1 flex items-center justify-between gap-2 px-3 py-2 rounded-xl border ${cat.border} ${cat.bg} transition-all">
+                <div class="flex items-center gap-2 min-w-0">
+                  <button
+                    type="button"
+                    onclick="toggleTimeBlockDone('${hour}')"
+                    class="w-4 h-4 rounded border flex items-center justify-center shrink-0 cursor-pointer ${
+                      block.done ? 'bg-sage-600 border-sage-600 text-white' : 'bg-white border-stone-300'
+                    }"
+                  >
+                    ${block.done ? '<i data-lucide="check" class="w-3 h-3 stroke-[3]"></i>' : ''}
+                  </button>
+                  <span class="text-xs font-semibold text-stone-800 truncate ${block.done ? 'line-through opacity-50' : ''}">
+                    ${escapeHtml(block.title)}
+                  </span>
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${cat.badge}">${cat.label.split(' ')[0]}</span>
+                  <button
+                    type="button"
+                    onclick="deleteTimeBlock('${hour}')"
+                    title="Delete activity"
+                    class="p-1 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-white/70 cursor-pointer"
+                  >
+                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        return `
+          <div class="flex items-center gap-2">
+            <span class="w-11 text-right text-xs font-medium text-stone-400 shrink-0">${hour}</span>
+            <button
+              type="button"
+              onclick="openTimeBlockModal('${hour}')"
+              class="flex-1 h-8 px-3 rounded-xl border border-dashed border-stone-200 hover:border-sage-500 hover:bg-sage-50/50 flex items-center justify-between text-[11px] text-stone-400 hover:text-sage-700 transition-colors cursor-pointer"
+            >
+              <span>+ Add Activity</span>
+              <i data-lucide="plus" class="w-3 h-3"></i>
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderTodoList(dayData) {
+      const total = dayData.todos.length;
+      const doneCount = dayData.todos.filter(t => t.done).length;
+      const pct = total === 0 ? 0 : Math.round((doneCount / total) * 100);
+
+      document.getElementById('todo-progress-label').textContent = `${pct}% (${doneCount}/${total})`;
+      document.getElementById('todo-progress-fill').style.width = `${pct}%`;
+
+      // Update Filter Buttons
+      ['all', 'active', 'done'].forEach(key => {
+        const btn = document.getElementById(`todo-filter-${key}`);
+        if (todoFilter === key) {
+          btn.className = 'px-3 py-1 rounded-full bg-stone-800 text-white cursor-pointer';
+        } else {
+          btn.className = 'px-3 py-1 rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200/70 cursor-pointer';
+        }
+      });
+
+      const filtered = dayData.todos.filter(t => {
+        if (todoFilter === 'active') return !t.done;
+        if (todoFilter === 'done') return t.done;
+        return true;
+      });
+
+      const container = document.getElementById('todo-items-container');
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 px-3 rounded-xl border border-dashed border-stone-200 bg-cream/60 text-xs text-stone-400">
+            No tasks in this category 🍃
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(todo => {
+        const pStyle = TODO_PRIORITIES[todo.priority] || TODO_PRIORITIES.normal;
+        return `
+          <div class="group flex items-center justify-between gap-2 p-2.5 rounded-xl border transition-all ${
+            todo.done ? 'bg-stone-50 border-stone-200/60' : 'bg-cream/80 hover:bg-white border-stone-200/90'
+          }">
+            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+              <button
+                type="button"
+                onclick="toggleTodoDone('${todo.id}')"
+                class="w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 cursor-pointer ${
+                  todo.done ? 'bg-sage-500 border-sage-500 text-white animate-check' : 'bg-white border-stone-300 hover:border-sage-500'
+                }"
+              >
+                ${todo.done ? '<i data-lucide="check" class="w-3.5 h-3.5 stroke-[3]"></i>' : ''}
+              </button>
+              <span
+                onclick="toggleTodoDone('${todo.id}')"
+                class="text-xs sm:text-sm font-medium cursor-pointer truncate ${
+                  todo.done ? 'line-through text-stone-400' : 'text-stone-800'
+                }"
+              >
+                ${escapeHtml(todo.text)}
+              </span>
+            </div>
+
+            <div class="flex items-center gap-1.5 shrink-0">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${pStyle.badge}">${pStyle.label}</span>
+              <button
+                type="button"
+                onclick="deleteTodoItem('${todo.id}')"
+                class="p-1 rounded-lg text-stone-300 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              >
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderHabitTracker() {
+      const selDate = parseISO(currentDateStr);
+      const dayOfWeek = selDate.getDay();
+      const diffToMon = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      const monday = new Date(selDate);
+      monday.setDate(selDate.getDate() + diffToMon);
+
+      const shortEnglishDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const weekDates = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        return {
+          iso: formatISO(d),
+          dayName: shortEnglishDays[i],
+          dayNum: d.getDate()
+        };
+      });
+
+      document.getElementById('habit-week-range').textContent = `Week of ${weekDates[0].dayNum} – ${weekDates[6].dayNum} ${selDate.toLocaleDateString('en-US', { month: 'short' })}`;
+
+      // Header
+      document.getElementById('habit-grid-header').innerHTML = `
+        <th class="py-2 pr-2 font-bold text-stone-600">Habit</th>
+        ${weekDates.map(wd => `
+          <th class="py-1.5 px-0.5 text-center">
+            <div class="inline-flex flex-col items-center justify-center w-7 h-9 rounded-lg ${
+              wd.iso === currentDateStr ? 'bg-sage-100 text-sage-700 font-extrabold' : 'text-stone-400'
+            }">
+              <span class="text-[9px]">${wd.dayName}</span>
+              <span class="text-[10px]">${wd.dayNum}</span>
+            </div>
+          </th>
+        `).join('')}
+        <th class="py-2 pl-1 text-right font-bold text-stone-600">Summary</th>
+        <th class="w-5"></th>
+      `;
+
+      // Body
+      const tbody = document.getElementById('habit-grid-body');
+      if (store.habits.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" class="py-6 text-center text-xs text-stone-400">Click “+ Add Habit” above to start tracking habits</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = store.habits.map(h => {
+        let count = 0;
+        const cells = weekDates.map(wd => {
+          const checked = !!(h.logs && h.logs[wd.iso]);
+          if (checked) count++;
+          return `
+            <td class="py-2 px-0.5 text-center">
+              <button
+                type="button"
+                onclick="toggleHabitLog('${h.id}', '${wd.iso}')"
+                class="w-6 h-6 rounded-full border flex items-center justify-center mx-auto transition-all cursor-pointer ${
+                  checked
+                    ? 'bg-sage-500 border-sage-500 text-white animate-check'
+                    : 'bg-cream hover:bg-stone-100 border-stone-200 text-transparent'
+                }"
+              >
+                <i data-lucide="check" class="w-3 h-3 stroke-[3]"></i>
+              </button>
+            </td>
+          `;
+        }).join('');
+
+        return `
+          <tr class="group hover:bg-stone-50/70">
+            <td class="py-2.5 pr-2 font-semibold text-stone-800 text-xs">
+              <span class="mr-1">${escapeHtml(h.emoji)}</span>${escapeHtml(h.name)}
+            </td>
+            ${cells}
+            <td class="py-2.5 pl-1 text-right">
+              <span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                count >= 5 ? 'bg-sage-100 text-sage-700' : 'bg-stone-100 text-stone-600'
+              }">${count}/7 days</span>
+            </td>
+            <td class="py-2.5 text-right">
+              <button
+                type="button"
+                onclick="deleteHabit('${h.id}')"
+                class="p-0.5 text-stone-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 cursor-pointer"
+              >
+                <i data-lucide="x" class="w-3 h-3"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // =========================================================
+    // Monthly Overview
+    // =========================================================
+    let monthlyViewDate = new Date();
+
+    function getMonthKey(date = monthlyViewDate) {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    function ensureMonthRecord(monthKey = getMonthKey()) {
+      if (!store.months) store.months = {};
+      if (!store.months[monthKey]) {
+        store.months[monthKey] = {
+          goals: [
+            { text: '', done: false },
+            { text: '', done: false },
+            { text: '', done: false }
+          ],
+          focus: ''
+        };
+      }
+      if (!Array.isArray(store.months[monthKey].goals)) {
+        store.months[monthKey].goals = [];
+      }
+      return store.months[monthKey];
+    }
+
+    function switchDailySubTab(tab) {
+      const monthly = document.getElementById('daily-monthly-view');
+      const daily = document.getElementById('daily-detail-view');
+      const mb = document.getElementById('daily-subtab-monthly');
+      const db = document.getElementById('daily-subtab-daily');
+
+      if (tab === 'monthly') {
+        monthly.classList.remove('hidden');
+        daily.classList.add('hidden');
+        mb.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-sage-100 text-sage-700 transition-all cursor-pointer';
+        db.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-stone-600 hover:text-stone-900 transition-all cursor-pointer';
+        renderMonthlyOverview();
+      } else {
+        monthly.classList.add('hidden');
+        daily.classList.remove('hidden');
+        db.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-sage-100 text-sage-700 transition-all cursor-pointer';
+        mb.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-stone-600 hover:text-stone-900 transition-all cursor-pointer';
+      }
+      lucide.createIcons();
+    }
+
+    function formatMonthEnglish(dateObj) {
+      return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(dateObj);
+    }
+
+    function monthTabButtonHtml(dateObj, onClick, active = false, isCurrent = false) {
+      const label = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(dateObj);
+      return `<button type="button" onclick="${onClick}" class="min-w-0 rounded-xl border px-3 py-2.5 sm:py-3 text-left transition-all cursor-pointer ${active ? 'bg-sage-100 border-sage-400 shadow-xs' : 'bg-cream border-stone-200 hover:border-sage-300 hover:bg-sage-50/50'}">
+        <div class="text-[10px] sm:text-[11px] font-semibold ${active ? 'text-sage-700' : 'text-stone-400'}">${isCurrent ? 'Current' : active ? 'Selected' : ' '}</div>
+        <div class="text-xs sm:text-sm font-extrabold ${active ? 'text-sage-800' : 'text-stone-700'} truncate">${label}</div>
+      </button>`;
+    }
+
+    function renderMonthlyMonthTabs() {
+      const el = document.getElementById('monthly-month-tabs');
+      if (!el) return;
+      const prev = new Date(monthlyViewDate.getFullYear(), monthlyViewDate.getMonth() - 1, 1);
+      const curr = new Date(monthlyViewDate.getFullYear(), monthlyViewDate.getMonth(), 1);
+      const next = new Date(monthlyViewDate.getFullYear(), monthlyViewDate.getMonth() + 1, 1);
+      const todayKey = getTodayISO().slice(0, 7);
+      const selectedKey = getMonthKey();
+      el.innerHTML = [
+        monthTabButtonHtml(prev, "changeSelectedMonth(-1)", false, formatMonthKey(prev) === todayKey),
+        monthTabButtonHtml(curr, "changeSelectedMonth(0)", true, formatMonthKey(curr) === todayKey),
+        monthTabButtonHtml(next, "changeSelectedMonth(1)", false, formatMonthKey(next) === todayKey)
+      ].join('');
+    }
+
+    function formatMonthKey(dateObj) {
+      return `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    function renderMonthlyOverview() {
+      const monthKey = getMonthKey();
+      const monthData = ensureMonthRecord(monthKey);
+      const label = new Intl.DateTimeFormat('en-US', {
+        month: 'long',
+        year: 'numeric'
+      }).format(monthlyViewDate);
+
+      document.getElementById('monthly-overview-label').textContent = label;
+      renderMonthlyMonthTabs();
+      document.getElementById('monthly-focus-input').value = monthData.focus || '';
+      renderMonthlyCalendar();
+
+      const goals = monthData.goals || [];
+      document.getElementById('monthly-goals-list').innerHTML = goals.map((g, idx) => `
+        <div class="flex items-center gap-2.5 bg-white rounded-xl border ${g.done ? 'border-sage-200' : 'border-stone-200'} px-3 py-2.5">
+          <button type="button" onclick="toggleMonthlyGoal(${idx})"
+            class="w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 ${g.done ? 'bg-sage-500 border-sage-500 text-white' : 'bg-white border-stone-300 hover:border-sage-500'} cursor-pointer">
+            ${g.done ? '<i data-lucide="check" class="w-3.5 h-3.5 stroke-[3]"></i>' : ''}
+          </button>
+          <input type="text" value="${escapeHtml(g.text || '')}" oninput="updateMonthlyGoal(${idx}, this.value)"
+            placeholder="Goal ${idx + 1}..."
+            class="w-full bg-transparent text-xs sm:text-sm focus:outline-none ${g.done ? 'line-through text-stone-400' : 'text-stone-800'}">
+          <button type="button" onclick="deleteMonthlyGoal(${idx})" class="p-1 text-stone-300 hover:text-rose-500 cursor-pointer">
+            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    function renderMonthlyCalendar() {
+      const calendar = document.getElementById('monthly-calendar');
+      const labelEl = document.getElementById('monthly-calendar-month');
+      if (!calendar) return;
+
+      const year = monthlyViewDate.getFullYear();
+      const month = monthlyViewDate.getMonth();
+      const monthLabel = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(monthlyViewDate);
+      if (labelEl) labelEl.textContent = monthLabel;
+
+      const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const pastel = [
+        'monthly-day-pink', 'monthly-day-peach', 'monthly-day-yellow',
+        'monthly-day-mint', 'monthly-day-blue', 'monthly-day-lilac', 'monthly-day-rose'
+      ];
+      const firstDay = new Date(year, month, 1);
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const startOffset = (firstDay.getDay() + 6) % 7; // Monday = 0
+      const today = new Date();
+      const todayKey = formatISO(today);
+
+      let html = weekdays.map((d, idx) => `
+        <div class="text-center text-[10px] sm:text-[11px] font-bold py-1 ${idx === 5 ? 'text-blue-400' : idx === 6 ? 'text-rose-400' : 'text-stone-400'}">${d}</div>
+      `).join('');
+
+      for (let i = 0; i < startOffset; i++) {
+        html += '<div class="min-h-[58px] sm:min-h-[72px] rounded-xl bg-stone-50/50 border border-transparent"></div>';
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, month, day);
+        const key = formatISO(date);
+        const isToday = key === todayKey;
+        const isSelected = key === currentDateStr;
+        const daily = store.days?.[key] || {};
+        const todos = Array.isArray(daily.todos) ? daily.todos : [];
+        const done = todos.filter(t => t.done).length;
+        const total = todos.length;
+        const hasPlan = Boolean((daily.priorities && daily.priorities.some(p => p && p.text)) || total || (daily.mood && daily.mood !== ''));
+        const pastelClass = pastel[(day - 1) % pastel.length];
+
+        let stateClass = `${pastelClass} border-white/80 hover:scale-[1.01] hover:shadow-sm`;
+        if (isSelected) stateClass = 'monthly-day-selected border-sage-400 bg-sage-100 ring-2 ring-sage-200';
+        else if (isToday) stateClass = 'monthly-day-today border-sage-300 bg-white ring-1 ring-sage-200';
+
+        html += `
+          <button type="button" onclick="selectCalendarDate('${key}')"
+            class="min-h-[58px] sm:min-h-[72px] rounded-xl border text-left p-2 transition-all cursor-pointer ${stateClass}">
+            <div class="flex items-start justify-between gap-1">
+              <span class="text-xs sm:text-sm font-extrabold ${isToday || isSelected ? 'text-sage-700' : 'text-stone-700'}">${day}</span>
+              ${isToday ? '<span class="text-[8px] sm:text-[9px] font-bold text-sage-600">Today</span>' : ''}
+            </div>
+            <div class="mt-2 flex items-center gap-1">
+              ${hasPlan ? '<span class="w-1.5 h-1.5 rounded-full bg-sage-500"></span>' : ''}
+              ${total ? `<span class="text-[9px] text-stone-500 font-semibold">${done}/${total}</span>` : '<span class="text-[9px] text-stone-400">Free</span>'}
+            </div>
+          </button>`;
+      }
+
+      calendar.innerHTML = html;
+    }
+
+    function selectCalendarDate(dateKey) {
+      currentDateStr = dateKey;
+      switchDailySubTab('daily');
+      renderDailyPlanner();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function changeSelectedMonth(delta) {
+      monthlyViewDate.setMonth(monthlyViewDate.getMonth() + delta);
+      renderMonthlyOverview();
+    }
+
+    function goToCurrentMonth() {
+      monthlyViewDate = new Date();
+      renderMonthlyOverview();
+    }
+
+    function updateMonthlyGoal(idx, text) {
+      const monthData = ensureMonthRecord();
+      monthData.goals[idx].text = text;
+      saveStore();
+    }
+
+    function toggleMonthlyGoal(idx) {
+      const monthData = ensureMonthRecord();
+      monthData.goals[idx].done = !monthData.goals[idx].done;
+      saveStore();
+      renderMonthlyOverview();
+    }
+
+    function addMonthlyGoal() {
+      const monthData = ensureMonthRecord();
+      monthData.goals.push({ text: '', done: false });
+      saveStore();
+      renderMonthlyOverview();
+      const inputs = document.querySelectorAll('#monthly-goals-list input');
+      if (inputs.length) inputs[inputs.length - 1].focus();
+    }
+
+    function deleteMonthlyGoal(idx) {
+      const monthData = ensureMonthRecord();
+      monthData.goals.splice(idx, 1);
+      saveStore();
+      renderMonthlyOverview();
+    }
+
+    function updateMonthlyFocus(value) {
+      ensureMonthRecord().focus = value;
+      saveStore();
+    }
+
+        // Daily Planner Interactions
+    function changeSelectedDate(delta) {
+      const d = parseISO(currentDateStr);
+      d.setDate(d.getDate() + delta);
+      currentDateStr = formatISO(d);
+      renderDailyPlanner();
+      lucide.createIcons();
+    }
+
+    function goToToday() {
+      currentDateStr = getTodayISO();
+      renderDailyPlanner();
+      lucide.createIcons();
+      showToast('Returned to today');
+    }
+
+    function onDatePickerChange(val) {
+      if (!val) return;
+      currentDateStr = val;
+      renderDailyPlanner();
+      lucide.createIcons();
+    }
+
+    function selectDayMood(moodId) {
+      const dayData = ensureDayRecord(currentDateStr);
+      dayData.mood = moodId;
+      saveStore();
+      renderDailyPlanner();
+      lucide.createIcons();
+    }
+
+    function updatePriorityText(idx, text) {
+      const dayData = ensureDayRecord(currentDateStr);
+      dayData.priorities[idx].text = text;
+      saveStore();
+    }
+
+    function togglePriorityDone(idx) {
+      const dayData = ensureDayRecord(currentDateStr);
+      dayData.priorities[idx].done = !dayData.priorities[idx].done;
+      saveStore();
+      renderDailyPlanner();
+      lucide.createIcons();
+    }
+
+    function openTimeBlockModal(hour) {
+      document.getElementById('tb-hour-value').value = hour;
+      document.getElementById('tb-modal-heading').textContent = `⏰ Add activity at ${hour} `;
+      document.getElementById('tb-title-input').value = '';
+      document.getElementById('timeblock-modal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('tb-title-input').focus(), 50);
+    }
+
+    function saveTimeBlock(e) {
+      e.preventDefault();
+      const hour = document.getElementById('tb-hour-value').value;
+      const title = document.getElementById('tb-title-input').value.trim();
+      const category = document.querySelector('input[name="tb-cat"]:checked').value;
+      if (!title) return;
+
+      const dayData = ensureDayRecord(currentDateStr);
+      dayData.timeBlocks[hour] = { title, category, done: false };
+      saveStore();
+      closeModal('timeblock-modal');
+      renderDailyPlanner();
+      lucide.createIcons();
+      showToast('Activity added to schedule');
+    }
+
+    function toggleTimeBlockDone(hour) {
+      const dayData = ensureDayRecord(currentDateStr);
+      if (dayData.timeBlocks[hour]) {
+        dayData.timeBlocks[hour].done = !dayData.timeBlocks[hour].done;
+        saveStore();
+        renderDailyPlanner();
+        lucide.createIcons();
+      }
+    }
+
+    function deleteTimeBlock(hour) {
+      const dayData = ensureDayRecord(currentDateStr);
+      delete dayData.timeBlocks[hour];
+      saveStore();
+      renderDailyPlanner();
+      lucide.createIcons();
+    }
+
+    function addTodoItem(e) {
+      e.preventDefault();
+      const input = document.getElementById('todo-input-text');
+      const priority = document.getElementById('todo-input-priority').value;
+      const text = input.value.trim();
+      if (!text) return;
+
+      const dayData = ensureDayRecord(currentDateStr);
+      dayData.todos.unshift({
+        id: 'td-' + Date.now(),
+        text,
+        priority,
+        done: false
+      });
+      input.value = '';
+      saveStore();
+      renderDailyPlanner();
+      lucide.createIcons();
+      showToast('Task added');
+    }
+
+    function toggleTodoDone(id) {
+      const dayData = ensureDayRecord(currentDateStr);
+      const item = dayData.todos.find(t => t.id === id);
+      if (item) {
+        item.done = !item.done;
+        saveStore();
+        renderDailyPlanner();
+        lucide.createIcons();
+      }
+    }
+
+    function deleteTodoItem(id) {
+      const dayData = ensureDayRecord(currentDateStr);
+      dayData.todos = dayData.todos.filter(t => t.id !== id);
+      saveStore();
+      renderDailyPlanner();
+      lucide.createIcons();
+    }
+
+    function setTodoFilter(filter) {
+      todoFilter = filter;
+      renderDailyPlanner();
+      lucide.createIcons();
+    }
+
+    function toggleAddHabitForm() {
+      const form = document.getElementById('inline-habit-form');
+      form.classList.toggle('hidden');
+    }
+
+    function createNewHabit(e) {
+      e.preventDefault();
+      const emoji = document.getElementById('new-habit-emoji').value.trim() || '✨';
+      const name = document.getElementById('new-habit-name').value.trim();
+      if (!name) return;
+
+      store.habits.push({
+        id: 'hb-' + Date.now(),
+        emoji,
+        name,
+        logs: {}
+      });
+      document.getElementById('new-habit-name').value = '';
+      toggleAddHabitForm();
+      saveStore();
+      renderDailyPlanner();
+      lucide.createIcons();
+      showToast('Habit added');
+    }
+
+    function toggleHabitLog(habitId, dateIso) {
+      const habit = store.habits.find(h => h.id === habitId);
+      if (!habit) return;
+      if (!habit.logs) habit.logs = {};
+      habit.logs[dateIso] = !habit.logs[dateIso];
+      saveStore();
+      renderDailyPlanner();
+      lucide.createIcons();
+    }
+
+    function deleteHabit(habitId) {
+      store.habits = store.habits.filter(h => h.id !== habitId);
+      saveStore();
+      renderDailyPlanner();
+      lucide.createIcons();
+    }
+
+    let reflectionTimer;
+    function updateReflection(val) {
+      const dayData = ensureDayRecord(currentDateStr);
+      dayData.reflection = val;
+      saveStore();
+      const status = document.getElementById('reflection-save-status');
+      status.textContent = 'Saving...';
+      clearTimeout(reflectionTimer);
+      reflectionTimer = setTimeout(() => {
+        status.textContent = 'Auto-saved ✓';
+      }, 600);
+    }
+
+    // =========================================================
+    // 5. TAB 2: CONTENT STUDIO RENDER & ACTIONS
+    // =========================================================
+    function renderContentStudio() {
+      const search = document.getElementById('idea-bank-search').value.trim().toLowerCase();
+      const allIdeas = store.contents.filter(c => c.status === 'idea');
+      document.getElementById('idea-bank-counter').textContent = allIdeas.length;
+
+      const filteredIdeas = allIdeas.filter(c =>
+        c.title.toLowerCase().includes(search) || (c.notes && c.notes.toLowerCase().includes(search))
+      );
+
+      // Render Idea Bank Sidebar
+      const bankContainer = document.getElementById('idea-bank-container');
+      if (filteredIdeas.length === 0) {
+        bankContainer.innerHTML = `
+          <div class="text-center py-8 px-4 rounded-xl border border-dashed border-stone-200 bg-cream/60 text-xs text-stone-400">
+            No ideas yet. Add one above 💡
+          </div>
+        `;
+      } else {
+        bankContainer.innerHTML = filteredIdeas.map(item => `
+          <div
+            draggable="true"
+            ondragstart="handleContentDragStart(event, '${item.id}')"
+            ondragend="handleContentDragEnd(event)"
+            onclick="openContentEditModal('${item.id}')"
+            class="group bg-cream hover:bg-white p-3.5 rounded-xl border border-stone-200/80 hover:border-sage-500 shadow-2xs hover:shadow-card transition-all cursor-grab active:cursor-grabbing"
+          >
+            <div class="flex flex-wrap items-center gap-1.5 mb-2">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${PLATFORM_BADGES[item.platform] || 'bg-stone-200'}">${item.platform}</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${PILLAR_BADGES[item.pillar] || 'bg-stone-100'}">${item.pillar}</span>
+            </div>
+            <p class="text-xs sm:text-sm font-bold text-stone-800 leading-snug mb-3">${escapeHtml(item.title)}</p>
+            <div class="flex items-center justify-between pt-2 border-t border-stone-200/60">
+              <span class="text-[10px] text-stone-400">${item.notes ? '📝 Has script/notes' : 'Click to write a script'}</span>
+              <button
+                type="button"
+                onclick="event.stopPropagation(); moveContentStatus('${item.id}', 'script')"
+                class="px-2.5 py-1 rounded-lg text-[11px] font-bold text-sage-700 bg-sage-100 hover:bg-sage-600 hover:text-white transition-colors cursor-pointer"
+              >
+                Move to board →
+              </button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Render 4 Kanban Columns
+      const kanbanWrapper = document.getElementById('kanban-columns-wrapper');
+      kanbanWrapper.innerHTML = CONTENT_COLUMNS.map(col => {
+        const colItems = store.contents.filter(c => c.status === col.id);
+        return `
+          <div
+            ondragover="handleDragOver(event)"
+            ondragleave="handleDragLeave(event)"
+            ondrop="handleContentDrop(event, '${col.id}')"
+            class="flex flex-col rounded-2xl border ${col.border} ${col.bg} p-3.5 min-h-[420px] transition-colors"
+          >
+            <div class="flex items-center justify-between mb-3 px-1">
+              <h3 class="text-sm font-bold text-stone-800">${col.title}</h3>
+              <span class="px-2 py-0.5 rounded-full text-xs font-extrabold ${col.badge}">${colItems.length}</span>
+            </div>
+
+            <div class="space-y-2.5 flex-1">
+              ${colItems.length === 0 ? `
+                <div class="h-24 rounded-xl border border-dashed border-stone-300/80 flex items-center justify-center text-[11px] text-stone-400">
+                  Drag cards here
+                </div>
+              ` : colItems.map(item => `
+                <div
+                  draggable="true"
+                  ondragstart="handleContentDragStart(event, '${item.id}')"
+                  ondragend="handleContentDragEnd(event)"
+                  onclick="openContentEditModal('${item.id}')"
+                  class="bg-white p-3.5 rounded-xl border border-stone-200/90 hover:border-sage-500 shadow-card transition-all cursor-grab active:cursor-grabbing"
+                >
+                  <div class="flex flex-wrap items-center gap-1.5 mb-2">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${PLATFORM_BADGES[item.platform] || 'bg-stone-200'}">${item.platform}</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${PILLAR_BADGES[item.pillar] || 'bg-stone-100'}">${item.pillar}</span>
+                  </div>
+                  <h4 class="text-xs sm:text-sm font-bold text-stone-800 leading-snug mb-2.5">${escapeHtml(item.title)}</h4>
+                  <div class="flex items-center justify-between pt-2 border-t border-stone-100">
+                    <span class="text-[10px] text-stone-400">${item.notes ? '📝 Has notes' : 'Edit script'}</span>
+                    <select
+                      onclick="event.stopPropagation()"
+                      onchange="moveContentStatus('${item.id}', this.value)"
+                      class="text-[10px] font-bold bg-stone-100 text-stone-700 rounded-lg px-2 py-1 focus:outline-none cursor-pointer"
+                    >
+                      <option value="idea" ${item.status === 'idea' ? 'selected' : ''}>📦 Idea</option>
+                      <option value="script" ${item.status === 'script' ? 'selected' : ''}>✍️ Script</option>
+                      <option value="film" ${item.status === 'film' ? 'selected' : ''}>🎬 Film</option>
+                      <option value="edit" ${item.status === 'edit' ? 'selected' : ''}>💻 Edit</option>
+                      <option value="posted" ${item.status === 'posted' ? 'selected' : ''}>🚀 Posted</option>
+                    </select>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function addQuickContentIdea(e) {
+      e.preventDefault();
+      const titleInput = document.getElementById('content-quick-title');
+      const platform = document.getElementById('content-quick-platform').value;
+      const pillar = document.getElementById('content-quick-pillar').value;
+      const title = titleInput.value.trim();
+      if (!title) return;
+
+      store.contents.unshift({
+        id: 'ct-' + Date.now(),
+        title,
+        platform,
+        pillar,
+        status: 'idea',
+        notes: ''
+      });
+      titleInput.value = '';
+      saveStore();
+      renderContentStudio();
+      lucide.createIcons();
+      showToast('💡 New idea saved!');
+    }
+
+    function moveContentStatus(id, newStatus) {
+      const item = store.contents.find(c => c.id === id);
+      if (!item || item.status === newStatus) return;
+      item.status = newStatus;
+      saveStore();
+      renderContentStudio();
+      lucide.createIcons();
+      showToast('Content status updated');
+    }
+
+    // Drag and Drop Handlers
+    function handleContentDragStart(e, id) {
+      draggedContentId = id;
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', id);
+      setTimeout(() => e.target.classList.add('dragging'), 0);
+    }
+
+    function handleContentDragEnd(e) {
+      e.target.classList.remove('dragging');
+      document.querySelectorAll('.drop-zone-active').forEach(el => el.classList.remove('drop-zone-active'));
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.currentTarget.classList.add('drop-zone-active');
+    }
+
+    function handleDragLeave(e) {
+      e.currentTarget.classList.remove('drop-zone-active');
+    }
+
+    function handleContentDrop(e, targetStatus) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('drop-zone-active');
+      const id = e.dataTransfer.getData('text/plain') || draggedContentId;
+      if (id) moveContentStatus(id, targetStatus);
+    }
+
+    // Surprise Me Modal Logic
+    function openSurpriseModal() {
+      document.getElementById('surprise-modal').classList.remove('hidden');
+      rollSurpriseIdea();
+    }
+
+    function rollSurpriseIdea() {
+      const ideas = store.contents.filter(c => c.status === 'idea');
+      const body = document.getElementById('surprise-card-body');
+      const footer = document.getElementById('surprise-card-footer');
+
+      if (ideas.length === 0) {
+        currentSurpriseId = null;
+        body.innerHTML = `
+          <div class="text-center py-6 bg-cream rounded-2xl border border-stone-200 p-4">
+            <p class="text-3xl mb-2">🎉</p>
+            <h4 class="text-sm font-bold text-stone-800">You have moved all ideas into production!</h4>
+            <p class="text-xs text-stone-500 mt-1">Add a few new ideas to the bank, then try again</p>
+          </div>
+        `;
+        footer.classList.add('hidden');
+        return;
+      }
+
+      footer.classList.remove('hidden');
+      let pool = ideas;
+      if (ideas.length > 1 && currentSurpriseId) {
+        pool = ideas.filter(i => i.id !== currentSurpriseId);
+      }
+      const picked = pool[Math.floor(Math.random() * pool.length)];
+      currentSurpriseId = picked.id;
+
+      body.innerHTML = `
+        <div class="bg-cream p-5 rounded-2xl border border-sage-200 shadow-xs animate-modal">
+          <div class="flex flex-wrap items-center gap-2 mb-3">
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${PLATFORM_BADGES[picked.platform] || 'bg-stone-200'}">${picked.platform}</span>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold ${PILLAR_BADGES[picked.pillar] || 'bg-stone-100'}">${picked.pillar}</span>
+          </div>
+          <h3 class="text-base sm:text-lg font-extrabold text-stone-800 leading-snug">"${escapeHtml(picked.title)}"</h3>
+          ${picked.notes ? `<p class="text-xs text-stone-500 mt-3 bg-white p-3 rounded-xl border border-stone-200/60 line-clamp-3">${escapeHtml(picked.notes)}</p>` : ''}
+        </div>
+      `;
+    }
+
+    function acceptSurpriseIdea() {
+      if (!currentSurpriseId) return;
+      moveContentStatus(currentSurpriseId, 'script');
+      closeModal('surprise-modal');
+    }
+
+    // Edit Content Modal Logic
+    function openContentEditModal(id) {
+      const item = store.contents.find(c => c.id === id);
+      if (!item) return;
+
+      document.getElementById('edit-content-id').value = item.id;
+      document.getElementById('edit-content-title').value = item.title;
+      document.getElementById('edit-content-platform').value = item.platform;
+      document.getElementById('edit-content-pillar').value = item.pillar;
+      document.getElementById('edit-content-status').value = item.status;
+      document.getElementById('edit-content-notes').value = item.notes || '';
+      document.getElementById('content-edit-modal').classList.remove('hidden');
+    }
+
+    function saveEditedContent(e) {
+      e.preventDefault();
+      const id = document.getElementById('edit-content-id').value;
+      const item = store.contents.find(c => c.id === id);
+      if (!item) return;
+
+      item.title = document.getElementById('edit-content-title').value.trim();
+      item.platform = document.getElementById('edit-content-platform').value;
+      item.pillar = document.getElementById('edit-content-pillar').value;
+      item.status = document.getElementById('edit-content-status').value;
+      item.notes = document.getElementById('edit-content-notes').value.trim();
+
+      saveStore();
+      renderContentStudio();
+      lucide.createIcons();
+      closeModal('content-edit-modal');
+      showToast('Script saved');
+    }
+
+    function deleteContentItem() {
+      const id = document.getElementById('edit-content-id').value;
+      store.contents = store.contents.filter(c => c.id !== id);
+      saveStore();
+      renderContentStudio();
+      lucide.createIcons();
+      closeModal('content-edit-modal');
+      showToast('Deleted successfully');
+    }
+
+    // =========================================================
+    // 5.5 TAB 3: FINANCE TRACKER RENDER & ACTIONS
+    // =========================================================
+    function formatTHB(num) {
+      return Number(num || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+    }
+
+    function setFinanceEntryType(type) {
+      financeEntryType = type;
+      const btnExpense = document.getElementById('fin-type-btn-expense');
+      const btnIncome = document.getElementById('fin-type-btn-income');
+
+      if (type === 'expense') {
+        btnExpense.className = 'py-2 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer bg-rose-500 text-white shadow-xs';
+        btnIncome.className = 'py-2 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer text-stone-600 hover:text-stone-900';
+      } else {
+        btnIncome.className = 'py-2 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer bg-emerald-600 text-white shadow-xs';
+        btnExpense.className = 'py-2 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer text-stone-600 hover:text-stone-900';
+      }
+
+      const selectEl = document.getElementById('fin-category-select');
+      const list = FINANCE_CATEGORIES[type] || [];
+      selectEl.innerHTML = list.map(c => `<option value="${c.id}">${c.emoji} ${c.label}</option>`).join('');
+    }
+
+    function changeFinanceMonth(delta) {
+      const [y, m] = financeMonthStr.split('-').map(Number);
+      const d = new Date(y, m - 1 + delta, 1);
+      financeMonthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      renderFinanceTracker();
+      lucide.createIcons();
+    }
+
+    function resetFinanceToCurrentMonth() {
+      financeMonthStr = getTodayISO().slice(0, 7);
+      renderFinanceTracker();
+      lucide.createIcons();
+      showToast('Returned to current month');
+    }
+
+    function setFinanceFilter(filter) {
+      financeFilter = filter;
+      renderFinanceTracker();
+      lucide.createIcons();
+    }
+
+    function addFinanceTransaction(e) {
+      e.preventDefault();
+      const amountVal = parseFloat(document.getElementById('fin-amount-input').value);
+      const dateVal = document.getElementById('fin-date-input').value || getTodayISO();
+      const categoryId = document.getElementById('fin-category-select').value;
+      const noteVal = document.getElementById('fin-note-input').value.trim();
+
+      if (!amountVal || amountVal <= 0) return;
+
+      store.transactions.unshift({
+        id: 'tx-' + Date.now(),
+        type: financeEntryType,
+        amount: amountVal,
+        categoryId,
+        note: noteVal,
+        date: dateVal
+      });
+
+      // Jump view to the month of the added transaction so user sees it immediately
+      financeMonthStr = dateVal.slice(0, 7);
+
+      document.getElementById('fin-amount-input').value = '';
+      document.getElementById('fin-note-input').value = '';
+      saveStore();
+      renderFinanceTracker();
+      lucide.createIcons();
+      showToast(financeEntryType === 'income' ? '💰 Income saved!' : '💸 Expense saved!');
+    }
+
+    function deleteFinanceTransaction(id) {
+      store.transactions = store.transactions.filter(t => t.id !== id);
+      saveStore();
+      renderFinanceTracker();
+      lucide.createIcons();
+      showToast('Deleted successfully');
+    }
+
+    function renderFinanceMonthTabs() {
+      const el = document.getElementById('finance-month-tabs');
+      if (!el) return;
+      const [y, m] = financeMonthStr.split('-').map(Number);
+      const selected = new Date(y, m - 1, 1);
+      const prev = new Date(y, m - 2, 1);
+      const next = new Date(y, m, 1);
+      const todayKey = getTodayISO().slice(0, 7);
+      el.innerHTML = [
+        monthTabButtonHtml(prev, "changeFinanceMonth(-1)", false, formatMonthKey(prev) === todayKey),
+        monthTabButtonHtml(selected, "changeFinanceMonth(0)", true, formatMonthKey(selected) === todayKey),
+        monthTabButtonHtml(next, "changeFinanceMonth(1)", false, formatMonthKey(next) === todayKey)
+      ].join('');
+    }
+
+    function renderFinanceTracker() {
+      // Set default date input if empty
+      const dateInput = document.getElementById('fin-date-input');
+      if (!dateInput.value) {
+        dateInput.value = getTodayISO();
+      }
+
+      // Format English Month & Year + month tabs
+      const [y, m] = financeMonthStr.split('-').map(Number);
+      const monthDateObj = new Date(y, m - 1, 1);
+      document.getElementById('finance-month-display').textContent = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(monthDateObj);
+      renderFinanceMonthTabs();
+
+      // Filter transactions for the selected month
+      const monthTx = (store.transactions || []).filter(t => t.date && t.date.startsWith(financeMonthStr));
+
+      let totalIncome = 0;
+      let totalExpense = 0;
+      const expenseByCat = {};
+
+      monthTx.forEach(t => {
+        if (t.type === 'income') {
+          totalIncome += Number(t.amount);
+        } else {
+          totalExpense += Number(t.amount);
+          expenseByCat[t.categoryId] = (expenseByCat[t.categoryId] || 0) + Number(t.amount);
+        }
+      });
+
+      const netBalance = totalIncome - totalExpense;
+
+      document.getElementById('fin-summary-income').textContent = `+฿${formatTHB(totalIncome)}`;
+      document.getElementById('fin-summary-expense').textContent = `-฿${formatTHB(totalExpense)}`;
+      const balEl = document.getElementById('fin-summary-balance');
+      balEl.textContent = `${netBalance < 0 ? '-' : ''}฿${formatTHB(Math.abs(netBalance))}`;
+
+      // Render Category Breakdown
+      const breakdownEl = document.getElementById('fin-category-breakdown');
+      const sortedCats = Object.entries(expenseByCat).sort((a, b) => b[1] - a[1]);
+
+      if (sortedCats.length === 0) {
+        breakdownEl.innerHTML = `
+          <div class="text-center py-6 px-3 rounded-xl border border-dashed border-stone-200 bg-cream/60 text-xs text-stone-400">
+            No expenses this month 🌿
+          </div>
+        `;
+      } else {
+        breakdownEl.innerHTML = sortedCats.map(([catId, amt]) => {
+          const catMeta = FINANCE_CATEGORIES.expense.find(c => c.id === catId) || { emoji: '🎁', label: 'Other', barColor: 'bg-stone-400' };
+          const pct = totalExpense > 0 ? Math.round((amt / totalExpense) * 100) : 0;
+          return `
+            <div class="space-y-1">
+              <div class="flex items-center justify-between text-xs font-bold">
+                <span class="text-stone-700">${catMeta.emoji} ${catMeta.label}</span>
+                <span class="text-stone-800">฿${formatTHB(amt)} <span class="text-stone-400 font-normal">(${pct}%)</span></span>
+              </div>
+              <div class="w-full h-2 bg-stone-100 rounded-full overflow-hidden">
+                <div class="h-full ${catMeta.barColor} rounded-full transition-all duration-300" style="width: ${pct}%"></div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Update Filter Buttons
+      ['all', 'income', 'expense'].forEach(key => {
+        const btn = document.getElementById(`fin-filter-${key}`);
+        if (financeFilter === key) {
+          btn.className = 'px-3 py-1.5 rounded-full bg-stone-800 text-white cursor-pointer';
+        } else {
+          btn.className = 'px-3 py-1.5 rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200/70 cursor-pointer';
+        }
+      });
+
+      // Filter & Sort History List (Newest date first)
+      const filteredTx = monthTx
+        .filter(t => financeFilter === 'all' || t.type === financeFilter)
+        .sort((a, b) => b.date.localeCompare(a.date));
+
+      document.getElementById('fin-history-count').textContent = `Showing ${filteredTx.length} of ${monthTx.length} transactions this month`;
+
+      const listEl = document.getElementById('fin-transactions-list');
+      if (filteredTx.length === 0) {
+        listEl.innerHTML = `
+          <div class="text-center py-12 px-4 rounded-2xl border border-dashed border-stone-200 bg-cream/60">
+            <p class="text-2xl mb-1">📒</p>
+            <p class="text-xs font-bold text-stone-600">No transactions found</p>
+            <p class="text-[11px] text-stone-400 mt-0.5">Try adding income or expenses using the form on the left</p>
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = filteredTx.map(tx => {
+        const catList = FINANCE_CATEGORIES[tx.type] || [];
+        const catMeta = catList.find(c => c.id === tx.categoryId) || { emoji: '✨', label: 'General' };
+        const isIncome = tx.type === 'income';
+        const dObj = parseISO(tx.date);
+        const englishShortDate = dObj.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+
+        return `
+          <div class="group flex items-center justify-between gap-3 p-3.5 rounded-xl border border-stone-200/80 bg-cream/60 hover:bg-white transition-all">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 ${
+                isIncome ? 'bg-emerald-100/80' : 'bg-rose-100/80'
+              }">
+                ${catMeta.emoji}
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs sm:text-sm font-bold text-stone-800 truncate">${escapeHtml(tx.note || catMeta.label)}</span>
+                </div>
+                <div class="flex items-center gap-2 text-[11px] text-stone-400 mt-0.5">
+                  <span>${englishShortDate}</span>
+                  <span>•</span>
+                  <span>${catMeta.label}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2.5 shrink-0">
+              <span class="text-sm sm:text-base font-extrabold ${
+                isIncome ? 'text-emerald-600' : 'text-rose-600'
+              }">
+                ${isIncome ? '+' : '-'}฿${formatTHB(tx.amount)}
+              </span>
+              <button
+                type="button"
+                onclick="deleteFinanceTransaction('${tx.id}')"
+                title="Delete transaction"
+                class="p-1.5 rounded-lg text-stone-300 hover:text-rose-600 hover:bg-rose-50 opacity-70 sm:opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+              >
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // =========================================================
+    // 6. EXPORT / IMPORT JSON & UTILITIES
+    // =========================================================
+    function exportAllData() {
+      const jsonStr = JSON.stringify(store, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `my-planner-backup-${getTodayISO()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Backup downloaded successfully');
+    }
+
+    function importAllData(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          if (parsed && parsed.days && Array.isArray(parsed.habits) && Array.isArray(parsed.contents)) {
+            if (!Array.isArray(parsed.transactions)) parsed.transactions = [];
+            if (!parsed.months) parsed.months = {};
+            store = parsed;
+            saveStore();
+            renderDailyPlanner();
+            renderContentStudio();
+            renderFinanceTracker();
+            lucide.createIcons();
+            showToast('Data imported successfully!');
+          } else {
+            showToast('Invalid JSON file format');
+          }
+        } catch (err) {
+          showToast('Could not read the file');
+        }
+        e.target.value = '';
+      };
+      reader.readAsText(file);
+    }
+
+    function openResetConfirm() {
+      document.getElementById('reset-confirm-modal').classList.remove('hidden');
+    }
+
+    function confirmResetAll() {
+      store = getSeedData();
+      currentDateStr = getTodayISO();
+      financeMonthStr = getTodayISO().slice(0, 7);
+      saveStore();
+      renderDailyPlanner();
+      renderMonthlyOverview();
+      renderContentStudio();
+      renderFinanceTracker();
+      lucide.createIcons();
+      closeModal('reset-confirm-modal');
+      showToast('Demo data has been reset');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    let toastTimeout;
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-message').textContent = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 2400);
+    }
+
+    window.addEventListener('click', (e) => {
+      ['timeblock-modal', 'surprise-modal', 'content-edit-modal', 'reset-confirm-modal', 'auth-modal'].forEach(id => {
+        if (e.target === document.getElementById(id)) closeModal(id);
+      });
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadStore();
+      initCloud();
+      setFinanceEntryType('expense');
+      renderDailyPlanner();
+      renderContentStudio();
+      renderFinanceTracker();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
