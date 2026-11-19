@@ -1991,14 +1991,26 @@
                   <span class="inline-flex mt-1 px-2 py-0.5 rounded-full text-[9px] font-bold ${cat.badge}">${cat.label}</span>
                 </div>
               </div>
-              <button
-                type="button"
-                onclick="deleteTimeBlock('${block.id}')"
-                title="Delete activity"
-                class="p-1 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-white/70 cursor-pointer shrink-0"
-              >
-                <i data-lucide="x" class="w-3.5 h-3.5"></i>
-              </button>
+              <div class="flex items-center gap-1 shrink-0">
+                <button
+                  type="button"
+                  onclick="openTimeBlockModal('${block.id}')"
+                  title="Edit activity"
+                  aria-label="Edit activity"
+                  class="p-1.5 rounded-lg text-stone-400 hover:text-sage-700 hover:bg-white/80 cursor-pointer"
+                >
+                  <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                </button>
+                <button
+                  type="button"
+                  onclick="deleteTimeBlock('${block.id}')"
+                  title="Delete activity"
+                  aria-label="Delete activity"
+                  class="p-1.5 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-white/70 cursor-pointer"
+                >
+                  <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
             </div>
           </div>
         `;
