@@ -287,6 +287,21 @@
     stroke-width:2.5;
   }
 
+
+  .finance-add-btn{
+    width:24px;height:24px;border-radius:8px;
+    display:inline-flex;align-items:center;justify-content:center;
+    background:#F0EAF7;color:#8C6FA8;border:1px solid #E3D7EE;
+    font-size:15px;line-height:1;cursor:pointer;
+  }
+  .finance-add-btn:hover{background:#E7DDF0}
+  .finance-item-actions{display:flex;gap:3px;opacity:.5}
+  .finance-budget-row:hover .finance-item-actions{opacity:1}
+  .finance-item-action{
+    width:22px;height:22px;border-radius:7px;border:1px solid #E7E1E7;
+    background:#fff;font-size:10px;cursor:pointer;
+  }
+
   /* Keep text readable */
   .text-stone-800{color:#403A40 !important}
   .text-stone-700{color:#554D55 !important}
@@ -1014,7 +1029,7 @@
               <h3 class="text-xs sm:text-sm font-extrabold text-stone-800">🌱 เงินออม & ลงทุน</h3>
               <span class="inline-flex mt-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-700">เป้าหมาย 10–20%</span>
             </div>
-            <span id="finance-fixed-total-wealth" class="text-xs font-extrabold text-stone-800">รวม ฿0</span>
+            <div class="flex items-center gap-2"><span id="finance-fixed-total-wealth" class="text-xs font-extrabold text-stone-800">รวม ฿0</span><button type="button" onclick="openFinanceItemModal('wealth')" class="finance-add-btn">＋</button></div>
           </div>
           <div id="finance-fixed-group-wealth" class="space-y-2 mt-3"></div>
         </div>
@@ -1026,7 +1041,7 @@
               <h3 class="text-xs sm:text-sm font-extrabold text-stone-800">🏠 ค่าจำเป็น & รายจ่ายประจำ</h3>
               <span class="inline-flex mt-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-sky-100 text-sky-700">ส่วนใหญ่ 40–50%</span>
             </div>
-            <span id="finance-fixed-total-living" class="text-xs font-extrabold text-stone-800">รวม ฿0</span>
+            <div class="flex items-center gap-2"><span id="finance-fixed-total-living" class="text-xs font-extrabold text-stone-800">รวม ฿0</span><button type="button" onclick="openFinanceItemModal('living')" class="finance-add-btn">＋</button></div>
           </div>
           <div id="finance-fixed-group-living" class="space-y-2 mt-3"></div>
         </div>
@@ -1038,13 +1053,54 @@
               <h3 class="text-xs sm:text-sm font-extrabold text-stone-800">🎉 งบความสุข & รางวัลชีวิต</h3>
               <span class="inline-flex mt-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-violet-100 text-violet-700">เป้าหมาย 10–15%</span>
             </div>
-            <span id="finance-fixed-total-fun" class="text-xs font-extrabold text-stone-800">รวม ฿0</span>
+            <div class="flex items-center gap-2"><span id="finance-fixed-total-fun" class="text-xs font-extrabold text-stone-800">รวม ฿0</span><button type="button" onclick="openFinanceItemModal('fun')" class="finance-add-btn">＋</button></div>
           </div>
           <div id="finance-fixed-group-fun" class="space-y-2 mt-3"></div>
         </div>
 
       </div>
     </section>
+
+
+    <!-- Monthly Budget item editor -->
+    <div id="finance-item-modal" class="hidden fixed inset-0 z-[80] bg-stone-900/25 backdrop-blur-sm items-center justify-center p-4">
+      <div class="w-full max-w-sm bg-white rounded-2xl border border-stone-200 shadow-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <p class="text-[10px] font-bold text-stone-400">MONTHLY BUDGET</p>
+            <h3 id="finance-item-modal-title" class="text-base font-extrabold text-stone-800">เพิ่มรายการ</h3>
+          </div>
+          <button type="button" onclick="closeFinanceItemModal()" class="w-8 h-8 rounded-xl bg-stone-100 text-stone-500">×</button>
+        </div>
+
+        <input type="hidden" id="finance-item-group">
+        <input type="hidden" id="finance-item-id">
+
+        <div class="grid grid-cols-[58px_1fr] gap-2.5">
+          <label>
+            <span class="text-[10px] font-bold text-stone-500">ไอคอน</span>
+            <input id="finance-item-emoji" maxlength="4" value="💰"
+              class="mt-1 w-full px-2 py-2.5 text-center bg-cream rounded-xl border border-stone-200 focus:outline-none focus:border-sage-500">
+          </label>
+          <label>
+            <span class="text-[10px] font-bold text-stone-500">ชื่อรายการ</span>
+            <input id="finance-item-label" maxlength="40" placeholder="เช่น ค่าโทรศัพท์"
+              class="mt-1 w-full px-3 py-2.5 text-xs font-semibold bg-cream rounded-xl border border-stone-200 focus:outline-none focus:border-sage-500">
+          </label>
+        </div>
+
+        <div class="flex items-center justify-between mt-5">
+          <button id="finance-item-delete" type="button" onclick="deleteFinanceItem()"
+            class="hidden px-3 py-2 rounded-xl bg-rose-50 text-rose-600 text-[11px] font-bold">
+            🗑️ ลบ
+          </button>
+          <div class="ml-auto flex gap-2">
+            <button type="button" onclick="closeFinanceItemModal()" class="px-3 py-2 rounded-xl bg-stone-100 text-stone-600 text-[11px] font-bold">ยกเลิก</button>
+            <button type="button" onclick="saveFinanceItem()" class="px-3 py-2 rounded-xl bg-sage-500 text-white text-[11px] font-bold">บันทึก</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Money Insights -->
     <section class="bg-stone-50/80 rounded-2xl border border-stone-200/80 shadow-soft p-5">
@@ -1721,12 +1777,26 @@
       }
 
       const plan = store.financeFixedPlans[monthKey];
-      Object.entries(FINANCE_FIXED_BUDGET).forEach(([group, items]) => {
+
+      // Keep the original items and add an editable item list for each month.
+      if (!plan.items || typeof plan.items !== 'object') {
+        plan.items = {};
+        Object.entries(FINANCE_FIXED_BUDGET).forEach(([group, items]) => {
+          plan.items[group] = items.map(item => ({ ...item }));
+        });
+      }
+
+      Object.entries(FINANCE_FIXED_BUDGET).forEach(([group, defaults]) => {
         if (!plan[group] || typeof plan[group] !== 'object') plan[group] = {};
-        items.forEach(item => {
-          plan[group][item.id] = Math.max(0, Number(plan[group][item.id] || 0));
+        if (!Array.isArray(plan.items[group])) plan.items[group] = [];
+        defaults.forEach(item => {
+          if (!plan.items[group].some(x => x.id === item.id)) {
+            plan.items[group].push({ ...item });
+          }
+          if (!(item.id in plan[group])) plan[group][item.id] = 0;
         });
       });
+
       return plan;
     }
 
@@ -1737,446 +1807,115 @@
       renderFinanceFixedBudget();
     }
 
+    function openFinanceItemModal(group, itemId = '') {
+      const plan = ensureFinanceFixedPlan();
+      const item = itemId ? plan.items[group].find(x => x.id === itemId) : null;
+
+      document.getElementById('finance-item-group').value = group;
+      document.getElementById('finance-item-id').value = item?.id || '';
+      document.getElementById('finance-item-emoji').value = item?.emoji || '💰';
+      document.getElementById('finance-item-label').value = item?.label || '';
+      document.getElementById('finance-item-modal-title').textContent = item ? 'แก้ไขรายการ' : 'เพิ่มรายการ';
+      document.getElementById('finance-item-delete').classList.toggle('hidden', !item);
+
+      const modal = document.getElementById('finance-item-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeFinanceItemModal() {
+      const modal = document.getElementById('finance-item-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function saveFinanceItem() {
+      const group = document.getElementById('finance-item-group').value;
+      const itemId = document.getElementById('finance-item-id').value;
+      const emoji = document.getElementById('finance-item-emoji').value.trim() || '💰';
+      const label = document.getElementById('finance-item-label').value.trim();
+      if (!group || !label) return;
+
+      const plan = ensureFinanceFixedPlan();
+
+      if (itemId) {
+        const item = plan.items[group].find(x => x.id === itemId);
+        if (item) {
+          item.emoji = emoji;
+          item.label = label;
+        }
+      } else {
+        const id = `custom_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
+        plan.items[group].push({ id, emoji, label });
+        plan[group][id] = 0;
+      }
+
+      saveStore();
+      renderFinanceFixedBudget();
+      closeFinanceItemModal();
+    }
+
+    function deleteFinanceItem() {
+      const group = document.getElementById('finance-item-group').value;
+      const itemId = document.getElementById('finance-item-id').value;
+      if (!group || !itemId) return;
+
+      const plan = ensureFinanceFixedPlan();
+      const item = plan.items[group].find(x => x.id === itemId);
+      if (!item) return;
+
+      if (!confirm(`ลบ "${item.label}" ใช่ไหม?`)) return;
+
+      plan.items[group] = plan.items[group].filter(x => x.id !== itemId);
+      delete plan[group][itemId];
+
+      saveStore();
+      renderFinanceFixedBudget();
+      closeFinanceItemModal();
+    }
+
     function renderFinanceFixedBudget() {
       const plan = ensureFinanceFixedPlan();
       let grandTotal = 0;
 
-      Object.entries(FINANCE_FIXED_BUDGET).forEach(([group, items]) => {
+      Object.keys(FINANCE_FIXED_BUDGET).forEach(group => {
         const container = document.getElementById(`finance-fixed-group-${group}`);
         if (!container) return;
 
         let groupTotal = 0;
+        const items = plan.items[group] || [];
+
         container.innerHTML = items.map(item => {
           const value = Number(plan[group][item.id] || 0);
           groupTotal += value;
+
           return `
-            <div class="flex items-center gap-2 p-2.5 rounded-xl border border-stone-200/80 bg-stone-50/60">
+            <div class="finance-budget-row flex items-center gap-2 p-2.5 rounded-xl border border-stone-200/80 bg-stone-50/60">
               <div class="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-sm shrink-0">${item.emoji}</div>
               <span class="text-[10px] sm:text-[11px] font-semibold text-stone-700 flex-1 min-w-0 truncate">${item.label}</span>
+
               <div class="relative w-[82px] shrink-0">
                 <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-stone-400">฿</span>
-                <input
-                  type="number"
-                  min="0"
-                  step="1"
-                  value="${value || ''}"
-                  placeholder="0.00"
+                <input type="number" min="0" step="1" value="${value || ''}" placeholder="0.00"
                   oninput="updateFinanceFixedBudget('${group}','${item.id}',this.value)"
-                  class="w-full pl-6 pr-2 py-1.5 text-[10px] sm:text-[11px] font-bold text-right bg-white rounded-lg border border-stone-200 focus:outline-none focus:border-sage-500"
-                />
+                  class="w-full pl-6 pr-2 py-1.5 text-[10px] sm:text-[11px] font-bold text-right bg-white rounded-lg border border-stone-200 focus:outline-none focus:border-sage-500">
+              </div>
+
+              <div class="finance-item-actions">
+                <button type="button" class="finance-item-action" onclick="openFinanceItemModal('${group}','${item.id}')" title="แก้ไข">✏️</button>
+                <button type="button" class="finance-item-action" onclick="openFinanceItemModal('${group}','${item.id}'); setTimeout(deleteFinanceItem, 0)" title="ลบ">🗑️</button>
               </div>
             </div>
           `;
         }).join('');
 
         grandTotal += groupTotal;
-        const groupTotalEl = document.getElementById(`finance-fixed-total-${group}`);
-        if (groupTotalEl) groupTotalEl.textContent = `รวม ฿${formatTHB(groupTotal)}`;
+        const totalEl = document.getElementById(`finance-fixed-total-${group}`);
+        if (totalEl) totalEl.textContent = `รวม ฿${formatTHB(groupTotal)}`;
       });
 
       const totalEl = document.getElementById('finance-fixed-total');
       if (totalEl) totalEl.textContent = `฿${formatTHB(grandTotal)}`;
-    }
-
-    let currentDateStr = getTodayISO();
-    let todoFilter = 'all';
-    window.currentSelfRating = 5;
-    let draggedContentId = null;
-    let currentSurpriseId = null;
-
-    // Finance Tracker State
-    let financeMonthStr = getTodayISO().slice(0, 7); // YYYY-MM
-    let financeEntryType = 'expense';
-    let financeFilter = 'all';
-
-    let store = {
-      days: {},
-      habits: [],
-      contents: [],
-      transactions: [],
-      financeFixedPlans: {},
-      debts: [],
-      workTasks: [],
-      workRoutines: [],
-      workProfile: { position: 'Product Marketing (BD)', jd: '', actual: '' }
-    };
-
-    function getTodayISO() {
-      const d = new Date();
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    }
-
-    function parseISO(isoStr) {
-      const [y, m, d] = isoStr.split('-').map(Number);
-      return new Date(y, m - 1, d);
-    }
-
-    function formatISO(dateObj) {
-      return `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
-    }
-
-    function getSeedData() {
-      const today = new Date();
-      const todayStr = formatISO(today);
-
-      // Find Monday of current week for realistic habit logs
-      const day = today.getDay();
-      const diff = day === 0 ? -6 : 1 - day;
-      const mon = new Date(today);
-      mon.setDate(today.getDate() + diff);
-      const monStr = formatISO(mon);
-
-      return {
-        days: {
-          [todayStr]: {
-            mood: 'great',
-            priorities: [
-              { text: 'Finalize the main plan and this week’s content schedule', done: true },
-              { text: 'Reply to customer chats and check inventory', done: false },
-              { text: 'Drink 2L of water and sleep before 10 PM', done: false }
-            ],
-            timeBlocks: [
-              { id: 'tb-demo-1', start: '08:00', end: '09:00', title: 'Coffee + check today’s plan', category: 'personal', done: true },
-              { id: 'tb-demo-2', start: '09:00', end: '11:00', title: 'Plan and write scripts for 3 videos', category: 'work', done: false },
-              { id: 'tb-demo-3', start: '12:00', end: '13:00', title: 'Lunch break & relaxing walk', category: 'rest', done: false },
-              { id: 'tb-demo-4', start: '15:00', end: '16:00', title: 'Weekly update meeting and summary', category: 'work', done: false },
-              { id: 'tb-demo-5', start: '18:00', end: '18:30', title: 'Exercise / stretch for 30 minutes', category: 'health', done: false }
-            ],
-            todos: [
-              { id: 'td-1', text: 'Send weekly summary file', priority: 'urgent', done: true },
-              { id: 'td-2', text: 'Organize desk and clear documents', priority: 'normal', done: false },
-              { id: 'td-3', text: 'Find ideas for a new room corner', priority: 'chill', done: false }
-            ],
-            selfRatings: [],
-            reflection: 'Started the morning feeling great. Time blocking helps me focus on one important task at a time without feeling overwhelmed. ✨'
-          }
-        },
-        habits: [
-          { id: 'hb-1', emoji: '💧', name: 'Drink 2L of water', schedule: [1,2,3,4,5,6,7], logs: { [monStr]: true, [todayStr]: true } },
-          { id: 'hb-2', emoji: '🏃', name: 'Exercise for 30 minutes', schedule: [1,2,3,4,5,6,7], logs: { [monStr]: true } },
-          { id: 'hb-3', emoji: '📖', name: 'Read 15 pages', schedule: [1,2,3,4,5,6,7], logs: { [todayStr]: true } }
-        ],
-        contents: [
-          {
-            id: 'ct-1',
-            title: '3 minimalist desk setup tips that look 200% better on camera',
-            platform: 'TikTok',
-            pillar: 'Tips & Tricks',
-            status: 'idea',
-            notes: 'Hook: If your desk never looks quite right, try these 3 changes\n1. Use side natural light\n2. Hide cables out of frame\n3. Add a green plant against cream tones'
-          },
-          {
-            id: 'ct-2',
-            title: 'Behind the scenes: packing a large nationwide order 📦',
-            platform: 'Instagram',
-            pillar: 'Behind the Scenes',
-            status: 'idea',
-            notes: 'Film a short timelapse with chill music and thank the customers'
-          },
-          {
-            id: 'ct-3',
-            title: 'Review a favorite item that makes everyday planning easier ✨',
-            platform: 'YouTube',
-            pillar: 'Product Highlight',
-            status: 'idea',
-            notes: 'Show how it is actually used from morning to bedtime'
-          },
-          {
-            id: 'ct-4',
-            title: 'One Day With Me: a relaxed minimalist workday',
-            platform: 'TikTok',
-            pillar: 'Lifestyle',
-            status: 'script',
-            notes: 'Focus on morning light, coffee-making sounds, and planner writing'
-          },
-          {
-            id: 'ct-5',
-            title: '5 time-saving ideas for office workers',
-            platform: 'Facebook',
-            pillar: 'Tips & Tricks',
-            status: 'posted',
-            notes: 'Post as a 5-image carousel; great share potential'
-          }
-        ],
-        transactions: [
-          {
-            id: 'tx-1',
-            type: 'income',
-            amount: 35000,
-            categoryId: 'salary',
-            note: 'Monthly salary',
-            date: todayStr
-          },
-          {
-            id: 'tx-2',
-            type: 'income',
-            amount: 4500,
-            categoryId: 'freelance',
-            note: 'Graphic design and short video editing',
-            date: todayStr
-          },
-          {
-            id: 'tx-3',
-            type: 'expense',
-            amount: 145,
-            categoryId: 'food',
-            note: 'Americano + breakfast bread',
-            date: todayStr
-          },
-          {
-            id: 'tx-4',
-            type: 'expense',
-            amount: 320,
-            categoryId: 'travel',
-            note: 'BTS and motorcycle taxi',
-            date: todayStr
-          },
-          {
-            id: 'tx-5',
-            type: 'expense',
-            amount: 890,
-            categoryId: 'shopping',
-            note: 'Planner notebook and desk accessories',
-            date: todayStr
-          }
-        ],
-        debts: []
-      };
-    }
-
-    function normalizeHabits() {
-      if (!Array.isArray(store.habits)) store.habits = [];
-      store.habits.forEach(h => {
-        if (!Array.isArray(h.schedule) || !h.schedule.length) h.schedule = [1,2,3,4,5,6,7];
-        h.schedule = [...new Set(h.schedule.map(Number).filter(n => n >= 1 && n <= 7))].sort((a, b) => a - b);
-        if (!h.schedule.length) h.schedule = [1,2,3,4,5,6,7];
-        if (!h.logs || typeof h.logs !== 'object') h.logs = {};
-        if (!h.emoji) h.emoji = '✨';
-      });
-    }
-
-    function normalizeDebts() {
-      if (!Array.isArray(store.debts)) store.debts = [];
-      store.debts.forEach(d => {
-        if (!d.id) d.id = 'debt-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
-        if (!d.name) d.name = 'Debt';
-        if (!d.emoji) d.emoji = '💳';
-        d.originalBalance = Math.max(0, Number(d.originalBalance ?? d.balance ?? 0));
-        d.balance = Math.max(0, Number(d.balance ?? d.originalBalance ?? 0));
-        d.monthlyPayment = Math.max(0, Number(d.monthlyPayment ?? 0));
-        d.dueDay = Math.min(31, Math.max(1, Number(d.dueDay || 1)));
-        d.status = d.balance <= 0 ? 'Paid Off' : (d.status || 'Active');
-        if (!Array.isArray(d.paymentHistory)) d.paymentHistory = [];
-        d.paymentHistory = d.paymentHistory.map(p => ({
-          date: p.date || getTodayISO(),
-          amount: Math.max(0, Number(p.amount || 0)),
-          note: p.note || ''
-        }));
-        if (typeof d.notes !== 'string') d.notes = '';
-      });
-    }
-
-    function loadStore() {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          store = JSON.parse(saved);
-          if (!Array.isArray(store.transactions)) {
-            store.transactions = getSeedData().transactions;
-          }
-          if (!Array.isArray(store.workTasks)) store.workTasks = [];
-          Object.values(store.days || {}).forEach(day => {
-            if (!Array.isArray(day.selfRatings)) day.selfRatings = [];
-          });
-          if (!Array.isArray(store.workRoutines)) store.workRoutines = [];
-          if (!store.workProfile || typeof store.workProfile !== 'object') store.workProfile = { position: 'Product Marketing (BD)', jd: '', actual: '' };
-          if (typeof store.workProfile.position !== 'string') store.workProfile.position = 'Product Marketing (BD)';
-          if (typeof store.workProfile.jd !== 'string') store.workProfile.jd = '';
-          if (typeof store.workProfile.actual !== 'string') store.workProfile.actual = '';
-          normalizeHabits();
-          normalizeDebts();
-        } else {
-          store = getSeedData();
-          saveStore();
-        }
-      } catch (e) {
-        console.error('Error loading localStorage:', e);
-        store = getSeedData();
-      }
-    }
-
-    function saveStore() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
-      } catch (e) {
-        console.error('Error saving localStorage:', e);
-      }
-      if (cloudUser && !isCloudHydrating) scheduleCloudSave();
-    }
-
-    function cloudConfigured() {
-      return Boolean(SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase);
-    }
-
-    function setCloudStatus(text, state='offline') {
-      const wrap = document.getElementById('cloud-status');
-      const label = document.getElementById('cloud-status-text');
-      const dot = document.getElementById('cloud-status-dot');
-      if (!wrap || !label || !dot) return;
-      wrap.classList.remove('hidden');
-      label.textContent = text;
-      dot.className = 'w-2 h-2 rounded-full ' + ({online:'bg-emerald-400', syncing:'bg-amber-400', error:'bg-rose-400', offline:'bg-stone-300'}[state] || 'bg-stone-300');
-    }
-
-    function openAuthModal() {
-      if (cloudUser) {
-        document.getElementById('account-email').textContent = cloudUser.email || 'Signed in';
-        document.getElementById('account-modal').classList.remove('hidden');
-        return;
-      }
-      document.getElementById('auth-config-warning').classList.toggle('hidden', cloudConfigured());
-      document.getElementById('auth-modal').classList.remove('hidden');
-    }
-
-    function initCloud() {
-      if (!cloudConfigured()) {
-        setCloudStatus('Local only', 'offline');
-        return;
-      }
-      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
-      supabaseClient.auth.onAuthStateChange(async (_event, session) => {
-        cloudUser = session?.user || null;
-        updateAuthButton();
-        if (cloudUser) await hydrateFromCloud();
-        else setCloudStatus('Signed out', 'offline');
-      });
-      supabaseClient.auth.getSession().then(async ({ data }) => {
-        cloudUser = data.session?.user || null;
-        updateAuthButton();
-        if (cloudUser) await hydrateFromCloud();
-        else setCloudStatus('Ready to login', 'offline');
-      });
-    }
-
-    function updateAuthButton() {
-      const btn = document.getElementById('auth-button');
-      if (!btn) return;
-      if (cloudUser) {
-        btn.innerHTML = '<i data-lucide="cloud" class="w-3.5 h-3.5"></i><span>Account</span>';
-      } else {
-        btn.innerHTML = '<i data-lucide="log-in" class="w-3.5 h-3.5"></i><span>Login</span>';
-      }
-      if (window.lucide) lucide.createIcons();
-    }
-
-    async function handleAuthSubmit(e) {
-      e.preventDefault();
-      if (!cloudConfigured()) return showToast('Cloud is not configured yet');
-      const email = document.getElementById('auth-email').value.trim();
-      const password = document.getElementById('auth-password').value;
-      const remember = document.getElementById('remember-login').checked;
-      try {
-        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        if (!remember) await supabaseClient.auth.signOut({ scope: 'local' });
-        closeModal('auth-modal');
-        showToast('Welcome back ✨');
-      } catch (err) {
-        showToast(err.message || 'Login failed');
-      }
-    }
-
-    async function handleSignUp() {
-      if (!cloudConfigured()) return showToast('Cloud is not configured yet');
-      const email = document.getElementById('auth-email').value.trim();
-      const password = document.getElementById('auth-password').value;
-      if (!email || password.length < 6) return showToast('Enter email and a 6+ character password');
-      try {
-        const { error } = await supabaseClient.auth.signUp({ email, password });
-        if (error) throw error;
-        showToast('Account created — check your email if confirmation is required');
-      } catch (err) {
-        showToast(err.message || 'Sign up failed');
-      }
-    }
-
-    async function hydrateFromCloud() {
-      if (!supabaseClient || !cloudUser) return;
-      isCloudHydrating = true;
-      setCloudStatus('Syncing...', 'syncing');
-      try {
-        const { data, error } = await supabaseClient.from(CLOUD_TABLE).select('data, updated_at').eq('user_id', cloudUser.id).maybeSingle();
-        if (error) throw error;
-        if (data?.data) {
-          store = data.data;
-          normalizeHabits();
-          normalizeDebts();
-          ensureWorkStore();
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
-          renderDailyPlanner(); renderMonthlyOverview(); renderContentStudio(); renderFinanceTracker(); renderWorkDashboard();
-          showToast('Cloud data loaded ☁️');
-        } else {
-          await pushStoreToCloud();
-        }
-        setCloudStatus('Synced', 'online');
-      } catch (err) {
-        console.error(err);
-        setCloudStatus('Sync error', 'error');
-        showToast('Could not sync cloud data');
-      } finally {
-        isCloudHydrating = false;
-      }
-    }
-
-    function scheduleCloudSave() {
-      clearTimeout(cloudSaveTimer);
-      cloudSaveTimer = setTimeout(pushStoreToCloud, 700);
-    }
-
-    async function pushStoreToCloud() {
-      if (!supabaseClient || !cloudUser || isCloudHydrating) return;
-      setCloudStatus('Saving...', 'syncing');
-      try {
-        const { error } = await supabaseClient.from(CLOUD_TABLE).upsert({ user_id: cloudUser.id, data: store, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
-        if (error) throw error;
-        setCloudStatus('Synced', 'online');
-      } catch (err) {
-        console.error(err);
-        setCloudStatus('Sync error', 'error');
-      }
-    }
-
-    async function syncNow() {
-      closeModal('account-modal');
-      await pushStoreToCloud();
-      showToast('Synced ☁️');
-    }
-
-    async function signOutCloud() {
-      if (supabaseClient) await supabaseClient.auth.signOut();
-      cloudUser = null;
-      closeModal('account-modal');
-      updateAuthButton();
-      setCloudStatus('Signed out', 'offline');
-      showToast('Logged out');
-    }
-
-    function ensureDayRecord(dateStr) {
-      if (!store.days[dateStr]) {
-        store.days[dateStr] = {
-          mood: 'okay',
-          priorities: [
-            { text: '', done: false },
-            { text: '', done: false },
-            { text: '', done: false }
-          ],
-          timeBlocks: [],
-          todos: [],
-          selfRatings: [],
-          reflection: ''
-        };
-      }
-      return store.days[dateStr];
     }
 
     // =========================================================
@@ -4370,7 +4109,7 @@
             </div>
             <div class="mt-2 flex items-center gap-1">
               ${hasPlan ? '<span class="w-1.5 h-1.5 rounded-full bg-sage-500"></span>' : ''}
-              ${total ? `<span class="text-[9px] text-stone-500 font-semibold">${done}/${total}</span>` : '<span class="text-[9px] text-stone-400">Free</span>'}
+              ${total ? `<span class="text-[9px] text-stone-500 font-semibold">${done}/${total}</span>` : ''}
             </div>
           </button>`;
       }
