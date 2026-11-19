@@ -989,21 +989,13 @@
           <div>
             <label class="block text-xs font-bold text-stone-700 mb-1">Category</label>
             <select id="work-task-category" class="w-full px-3 py-2.5 text-xs font-semibold bg-cream rounded-xl border border-stone-200 focus:outline-none">
-              <option>🎉 Event</option>
-              <option>💻 Digital / Online</option>
-              <option>🎨 Content</option>
-              <option>📊 Strategy / Research</option>
-              <option>🗂️ Admin / Routine</option>
-              <option>📁 Report</option>
+              <option>🎨 Content & Digital</option>
+              <option>📊 Research & Strategy</option>
+              <option>🛍️ Product & Catalog</option>
               <option>🤝 Sales Support</option>
-              <option>📄 Sales Materials</option>
-              <option>📞 Supplier Contact</option>
-              <option>☂️ Sourcing & Costing</option>
-              <option>📋 BOQ</option>
-              <option>🔎 In Progress / Check</option>
-              <option>💠 Daily Tasks</option>
-              <option>📌 Other</option>
-            </select>
+              <option>📦 Supplier & Sourcing</option>
+              <option>📋 Admin & Report</option>
+              <option>🎪 Project & Event</option></select>
           </div>
           <div>
             <label class="block text-xs font-bold text-stone-700 mb-1">Priority</label>
@@ -1063,21 +1055,13 @@
           <div>
             <label class="block text-xs font-bold text-stone-700 mb-1">Category</label>
             <select id="work-routine-category" class="w-full px-3 py-2.5 text-xs font-semibold bg-cream rounded-xl border border-stone-200 focus:outline-none">
-              <option>🎉 Event</option>
-              <option>💻 Digital / Online</option>
-              <option>🎨 Content</option>
-              <option>📊 Strategy / Research</option>
-              <option>🗂️ Admin / Routine</option>
-              <option selected>📁 Report</option>
+              <option>🎨 Content & Digital</option>
+              <option>📊 Research & Strategy</option>
+              <option>🛍️ Product & Catalog</option>
               <option>🤝 Sales Support</option>
-              <option>📄 Sales Materials</option>
-              <option>📞 Supplier Contact</option>
-              <option>☂️ Sourcing & Costing</option>
-              <option>📋 BOQ</option>
-              <option>🔎 In Progress / Check</option>
-              <option>💠 Daily Tasks</option>
-              <option>📌 Other</option>
-            </select>
+              <option>📦 Supplier & Sourcing</option>
+              <option>📋 Admin & Report</option>
+              <option>🎪 Project & Event</option></select>
           </div>
           <div>
             <label class="block text-xs font-bold text-stone-700 mb-1">Frequency</label>
@@ -3312,6 +3296,27 @@
     function ensureWorkStore() {
       if (!Array.isArray(store.workTasks)) store.workTasks = [];
       if (!Array.isArray(store.workRoutines)) store.workRoutines = [];
+
+      // v2.2: consolidate work categories into 7 clearer groups.
+      const categoryMap = {
+        '🎉 Event': '🎪 Project & Event',
+        '💻 Digital / Online': '🎨 Content & Digital',
+        '🎨 Content': '🎨 Content & Digital',
+        '📊 Strategy / Research': '📊 Research & Strategy',
+        '🗂️ Admin / Routine': '📋 Admin & Report',
+        '📁 Report': '📋 Admin & Report',
+        '🤝 Sales Support': '🤝 Sales Support',
+        '📄 Sales Materials': '🛍️ Product & Catalog',
+        '📞 Supplier Contact': '📦 Supplier & Sourcing',
+        '☂️ Sourcing & Costing': '📦 Supplier & Sourcing',
+        '📋 BOQ': '🤝 Sales Support',
+        '🔎 In Progress / Check': '📋 Admin & Report',
+        '💠 Daily Tasks': '📋 Admin & Report',
+        '📌 Other': '📋 Admin & Report'
+      };
+      store.workTasks = store.workTasks.map(task => ({ ...task, category: categoryMap[task.category] || task.category || '📋 Admin & Report' }));
+      store.workRoutines = store.workRoutines.map(routine => ({ ...routine, category: categoryMap[routine.category] || routine.category || '📋 Admin & Report' }));
+
       if (!store.workProfile || typeof store.workProfile !== 'object') {
         store.workProfile = { position: 'Product Marketing (BD)', jdItems: [], actualItems: [] };
       }
@@ -3555,7 +3560,7 @@
       document.getElementById('work-task-id').value = task?.id || '';
       document.getElementById('work-task-modal-heading').textContent = task ? '💼 Edit Work Task' : '💼 Add Work Task';
       document.getElementById('work-task-name').value = task?.name || '';
-      document.getElementById('work-task-category').value = task?.category || '💻 Digital / Online';
+      document.getElementById('work-task-category').value = task?.category || '🎨 Content & Digital';
       document.getElementById('work-task-priority').value = task?.priority || 'Medium';
       document.getElementById('work-task-deadline').value = task?.deadline || '';
       document.getElementById('work-task-status').value = task?.status || 'Not Started';
