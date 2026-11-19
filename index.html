@@ -383,56 +383,44 @@
         </button>
       </section>
 
-      <!-- Column 2 (6 cols): ✅ To-Do Checklist -->
+      <!-- Column 2 (6 cols): 🌱 Self Check-in -->
       <section class="lg:col-span-1 w-full bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5 flex flex-col">
         <div class="flex items-center justify-between gap-2 mb-3">
           <div>
-            <h2 class="text-base font-bold text-stone-800">✅ To-Do List</h2>
-            <p class="text-[11px] text-stone-500">Tasks to complete today</p>
+            <h2 class="text-base font-bold text-stone-800">🌱 Self Check-in</h2>
+            <p class="text-[11px] text-stone-500">Choose something important and give yourself a rating</p>
           </div>
         </div>
 
-        <!-- Progress Bar -->
-        <div class="bg-cream p-3 rounded-xl border border-stone-200/70 mb-3">
-          <div class="flex items-center justify-between text-xs font-bold mb-1.5">
-            <span class="text-stone-600">Progress</span>
-            <span id="todo-progress-label" class="text-sage-700">0%</span>
-          </div>
-          <div class="w-full h-2 bg-stone-200/80 rounded-full overflow-hidden">
-            <div id="todo-progress-fill" class="h-full bg-sage-500 rounded-full transition-all duration-300" style="width: 0%"></div>
-          </div>
-        </div>
-
-        <!-- Filter Pills -->
-        <div class="flex items-center gap-1.5 mb-3 text-xs font-semibold">
-          <button onclick="setTodoFilter('all')" id="todo-filter-all" class="px-3 py-1 rounded-full bg-stone-800 text-white cursor-pointer">All</button>
-          <button onclick="setTodoFilter('active')" id="todo-filter-active" class="px-3 py-1 rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200/70 cursor-pointer">Active</button>
-          <button onclick="setTodoFilter('done')" id="todo-filter-done" class="px-3 py-1 rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200/70 cursor-pointer">Done</button>
-        </div>
-
-        <!-- Quick Add Form -->
-        <form onsubmit="addTodoItem(event)" class="space-y-2 mb-3 bg-cream p-2.5 rounded-xl border border-stone-200/70">
+        <!-- Add Rating -->
+        <form onsubmit="addSelfRating(event)" class="bg-cream p-3 rounded-xl border border-stone-200/70 mb-3">
+          <label class="block text-[11px] font-bold text-stone-600 mb-1.5">What would you like to rate?</label>
           <input
             type="text"
-            id="todo-input-text"
+            id="self-rating-title"
             required
-            placeholder="Add a new task..."
+            maxlength="80"
+            placeholder="e.g. Confidence, Work, Self-care..."
             class="w-full px-3 py-2 text-xs sm:text-sm bg-white rounded-lg border border-stone-200 focus:outline-none focus:border-sage-500"
           />
-          <div class="flex items-center gap-2">
-            <select id="todo-input-priority" class="flex-1 px-2.5 py-1.5 text-xs font-semibold bg-white rounded-lg border border-stone-200 text-stone-700 focus:outline-none">
-              <option value="urgent">🔥 Urgent</option>
-              <option value="normal" selected>📌 Normal</option>
-              <option value="chill">🌿 Chill</option>
-            </select>
-            <button type="submit" class="px-3.5 py-1.5 rounded-lg bg-sage-600 hover:bg-sage-700 text-white text-xs font-bold transition-colors cursor-pointer">
-              + Add Task
-            </button>
+
+          <div class="mt-3">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[11px] font-bold text-stone-600">Your rating</span>
+              <span id="self-rating-value" class="text-[11px] font-bold text-sage-700">5 / 5</span>
+            </div>
+            <div id="self-rating-stars" class="flex items-center gap-1">
+              <!-- Rendered by JS -->
+            </div>
           </div>
+
+          <button type="submit" class="mt-3 w-full py-2 rounded-lg bg-sage-600 hover:bg-sage-700 text-white text-xs font-bold transition-colors cursor-pointer">
+            + Add Rating
+          </button>
         </form>
 
-        <!-- Task Items List -->
-        <div id="todo-items-container" class="space-y-2 max-h-[450px] overflow-y-auto pr-1">
+        <!-- Ratings -->
+        <div id="self-ratings-container" class="space-y-2 flex-1 overflow-y-auto max-h-[450px] pr-1">
           <!-- Rendered by JS -->
         </div>
       </section>
@@ -1465,6 +1453,7 @@
     // =========================================================
     let currentDateStr = getTodayISO();
     let todoFilter = 'all';
+    window.currentSelfRating = 5;
     let draggedContentId = null;
     let currentSurpriseId = null;
 
@@ -1530,6 +1519,7 @@
               { id: 'td-2', text: 'Organize desk and clear documents', priority: 'normal', done: false },
               { id: 'td-3', text: 'Find ideas for a new room corner', priority: 'chill', done: false }
             ],
+            selfRatings: [],
             reflection: 'Started the morning feeling great. Time blocking helps me focus on one important task at a time without feeling overwhelmed. ✨'
           }
         },
@@ -1667,6 +1657,9 @@
             store.transactions = getSeedData().transactions;
           }
           if (!Array.isArray(store.workTasks)) store.workTasks = [];
+          Object.values(store.days || {}).forEach(day => {
+            if (!Array.isArray(day.selfRatings)) day.selfRatings = [];
+          });
           if (!Array.isArray(store.workRoutines)) store.workRoutines = [];
           if (!store.workProfile || typeof store.workProfile !== 'object') store.workProfile = { position: 'Product Marketing (BD)', jd: '', actual: '' };
           if (typeof store.workProfile.position !== 'string') store.workProfile.position = 'Product Marketing (BD)';
@@ -1851,6 +1844,7 @@
           ],
           timeBlocks: [],
           todos: [],
+          selfRatings: [],
           reflection: ''
         };
       }
@@ -1945,8 +1939,8 @@
       // 3. Time Blocks
       renderTimeBlocks(dayData);
 
-      // 4. To-Do List
-      renderTodoList(dayData);
+      // 4. Self Check-in
+      renderSelfCheckIn(dayData);
 
       // 5. Weekly Habit Tracker
       renderHabitTracker();
@@ -2012,706 +2006,102 @@
       lucide.createIcons();
     }
 
-    function renderTodoList(dayData) {
-      const total = dayData.todos.length;
-      const doneCount = dayData.todos.filter(t => t.done).length;
-      const pct = total === 0 ? 0 : Math.round((doneCount / total) * 100);
+    function renderSelfCheckIn(dayData) {
+      if (!Array.isArray(dayData.selfRatings)) dayData.selfRatings = [];
 
-      document.getElementById('todo-progress-label').textContent = `${pct}% (${doneCount}/${total})`;
-      document.getElementById('todo-progress-fill').style.width = `${pct}%`;
+      const selected = window.currentSelfRating || 5;
+      const stars = document.getElementById('self-rating-stars');
+      const value = document.getElementById('self-rating-value');
+      const container = document.getElementById('self-ratings-container');
+      if (!stars || !value || !container) return;
 
-      // Update Filter Buttons
-      ['all', 'active', 'done'].forEach(key => {
-        const btn = document.getElementById(`todo-filter-${key}`);
-        if (todoFilter === key) {
-          btn.className = 'px-3 py-1 rounded-full bg-stone-800 text-white cursor-pointer';
-        } else {
-          btn.className = 'px-3 py-1 rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200/70 cursor-pointer';
-        }
-      });
+      value.textContent = `${selected} / 5`;
+      stars.innerHTML = [1,2,3,4,5].map(n => `
+        <button
+          type="button"
+          onclick="setSelfRating(${n})"
+          aria-label="Rate ${n} out of 5"
+          class="text-2xl leading-none transition-transform hover:scale-110 cursor-pointer ${n <= selected ? 'text-amber-400' : 'text-stone-300'}"
+        >★</button>
+      `).join('');
 
-      const filtered = dayData.todos.filter(t => {
-        if (todoFilter === 'active') return !t.done;
-        if (todoFilter === 'done') return t.done;
-        return true;
-      });
-
-      const container = document.getElementById('todo-items-container');
-      if (filtered.length === 0) {
+      if (dayData.selfRatings.length === 0) {
         container.innerHTML = `
-          <div class="text-center py-8 px-3 rounded-xl border border-dashed border-stone-200 bg-cream/60 text-xs text-stone-400">
-            No tasks in this category 🍃
+          <div class="h-full min-h-[180px] flex flex-col items-center justify-center text-center py-8 px-4 rounded-xl border border-dashed border-stone-200 bg-cream/60">
+            <div class="text-3xl mb-2">🌱</div>
+            <p class="text-xs font-semibold text-stone-500">Nothing to rate yet</p>
+            <p class="text-[10px] mt-1 text-stone-400">Give yourself credit for something today ✨</p>
           </div>
         `;
         return;
       }
 
-      container.innerHTML = filtered.map(todo => {
-        const pStyle = TODO_PRIORITIES[todo.priority] || TODO_PRIORITIES.normal;
+      container.innerHTML = dayData.selfRatings.map(item => {
+        const rating = Math.max(1, Math.min(5, Number(item.rating) || 1));
         return `
-          <div class="group flex items-center justify-between gap-2 p-2.5 rounded-xl border transition-all ${
-            todo.done ? 'bg-stone-50 border-stone-200/60' : 'bg-cream/80 hover:bg-white border-stone-200/90'
-          }">
-            <div class="flex items-center gap-2.5 min-w-0 flex-1">
-              <button
-                type="button"
-                onclick="toggleTodoDone('${todo.id}')"
-                class="w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 cursor-pointer ${
-                  todo.done ? 'bg-sage-500 border-sage-500 text-white animate-check' : 'bg-white border-stone-300 hover:border-sage-500'
-                }"
-              >
-                ${todo.done ? '<i data-lucide="check" class="w-3.5 h-3.5 stroke-[3]"></i>' : ''}
-              </button>
-              <span
-                onclick="toggleTodoDone('${todo.id}')"
-                class="text-xs sm:text-sm font-medium cursor-pointer truncate ${
-                  todo.done ? 'line-through text-stone-400' : 'text-stone-800'
-                }"
-              >
-                ${escapeHtml(todo.text)}
-              </span>
-            </div>
-
-            <div class="flex items-center gap-1.5 shrink-0">
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${pStyle.badge}">${pStyle.label}</span>
-              <button
-                type="button"
-                onclick="deleteTodoItem('${todo.id}')"
-                class="p-1 rounded-lg text-stone-300 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-              >
+          <div class="group p-3 rounded-xl border border-stone-200/80 bg-cream/70 hover:bg-white transition-colors">
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0 flex-1">
+                <div class="text-xs sm:text-sm font-semibold text-stone-800 break-words">${escapeHtml(item.title)}</div>
+                <div class="flex items-center gap-1 mt-1.5">
+                  ${[1,2,3,4,5].map(n => `<button type="button" onclick="setExistingSelfRating('${item.id}', ${n})" class="text-base leading-none cursor-pointer ${n <= rating ? 'text-amber-400' : 'text-stone-300'}" aria-label="Set ${n} stars">★</button>`).join('')}
+                  <span class="ml-1 text-[10px] font-bold text-stone-500">${rating}/5</span>
+                </div>
+                ${item.note ? `<p class="mt-2 text-[10px] text-stone-500">${escapeHtml(item.note)}</p>` : ''}
+              </div>
+              <button type="button" onclick="deleteSelfRating('${item.id}')" class="p-1 rounded-lg text-stone-300 hover:text-rose-600 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shrink-0" aria-label="Delete rating">
                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
               </button>
             </div>
           </div>
         `;
       }).join('');
-    }
-
-    function getHabitSchedule(habit) {
-      const schedule = Array.isArray(habit.schedule) ? habit.schedule.map(Number).filter(n => n >= 1 && n <= 7) : [];
-      return schedule.length ? [...new Set(schedule)].sort((a, b) => a - b) : [1,2,3,4,5,6,7];
-    }
-
-    function getMondayDayNumber(dateObj) {
-      const day = dateObj.getDay();
-      return day === 0 ? 7 : day;
-    }
-
-    function isHabitScheduled(habit, isoDate) {
-      const d = parseISO(isoDate);
-      return getHabitSchedule(habit).includes(getMondayDayNumber(d));
-    }
-
-    function getHabitScheduledDates(habit, weekDates, throughDate = null) {
-      return weekDates.filter(wd => {
-        if (!isHabitScheduled(habit, wd.iso)) return false;
-        if (!throughDate) return true;
-        return wd.iso <= throughDate;
-      });
-    }
-
-    function renderHabitEmojiPicker() {
-      const picker = document.getElementById('habit-emoji-picker');
-      if (!picker) return;
-      const selected = document.getElementById('new-habit-emoji')?.value || '✨';
-      picker.innerHTML = HABIT_EMOJIS.map(emoji => `
-        <button type="button" onclick="selectHabitEmoji('${emoji}')"
-          class="h-8 rounded-lg border text-base transition-all cursor-pointer ${emoji === selected ? 'bg-white border-sage-500 ring-1 ring-sage-300 scale-105' : 'bg-white/70 border-stone-200 hover:bg-white hover:border-sage-300'}"
-          title="${emoji}">${emoji}</button>
-      `).join('');
-    }
-
-    function renderHabitSchedulePicker(schedule = [1,2,3,4,5,6,7]) {
-      const picker = document.getElementById('habit-schedule-picker');
-      if (!picker) return;
-      const selected = new Set(schedule.map(Number));
-      picker.innerHTML = HABIT_WEEKDAYS.map(day => `
-        <button type="button" onclick="toggleHabitScheduleDay(${day.value})"
-          class="py-1.5 rounded-lg border text-[9px] font-bold transition-all cursor-pointer ${selected.has(day.value) ? 'bg-sage-100 border-sage-400 text-sage-700' : 'bg-white border-stone-200 text-stone-400 hover:bg-stone-50'}"
-          data-habit-schedule-day="${day.value}">${day.label}</button>
-      `).join('');
-    }
-
-    function getSelectedHabitSchedule() {
-      return HABIT_WEEKDAYS.map(d => d.value).filter(value => document.querySelector(`[data-habit-schedule-day="${value}"]`)?.classList.contains('bg-sage-100'));
-    }
-
-    function selectHabitEmoji(emoji) {
-      document.getElementById('new-habit-emoji').value = emoji;
-      renderHabitEmojiPicker();
-    }
-
-    function setHabitSchedule(type) {
-      const schedule = type === 'weekdays' ? [1,2,3,4,5] : type === 'weekends' ? [6,7] : [1,2,3,4,5,6,7];
-      renderHabitSchedulePicker(schedule);
-    }
-
-    function toggleHabitScheduleDay(dayValue) {
-      const selected = new Set(getSelectedHabitSchedule());
-      if (selected.has(dayValue)) selected.delete(dayValue);
-      else selected.add(dayValue);
-      renderHabitSchedulePicker([...selected]);
-    }
-
-    function renderHabitTracker() {
-      const selDate = parseISO(currentDateStr);
-      const dayOfWeek = selDate.getDay();
-      const diffToMon = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-      const monday = new Date(selDate);
-      monday.setDate(selDate.getDate() + diffToMon);
-
-      const shortEnglishDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-      const weekDates = Array.from({ length: 7 }, (_, i) => {
-        const d = new Date(monday);
-        d.setDate(monday.getDate() + i);
-        return { iso: formatISO(d), dayName: shortEnglishDays[i], dayNum: d.getDate() };
-      });
-
-      document.getElementById('habit-week-range').textContent = `Week of ${weekDates[0].dayNum} – ${weekDates[6].dayNum} ${selDate.toLocaleDateString('en-US', { month: 'short' })}`;
-
-      document.getElementById('habit-grid-header').innerHTML = `
-        <th class="py-2 pr-2 font-bold text-stone-600">Habit</th>
-        ${weekDates.map(wd => `
-          <th class="py-1.5 px-0.5 text-center">
-            <div class="inline-flex flex-col items-center justify-center w-7 h-9 rounded-lg ${wd.iso === currentDateStr ? 'bg-sage-100 text-sage-700 font-extrabold' : 'text-stone-400'}">
-              <span class="text-[9px]">${wd.dayName}</span>
-              <span class="text-[10px]">${wd.dayNum}</span>
-            </div>
-          </th>
-        `).join('')}
-        <th class="py-2 pl-1 text-right font-bold text-stone-600">Summary</th>
-        <th class="w-5"></th>
-      `;
-
-      const tbody = document.getElementById('habit-grid-body');
-      if (store.habits.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" class="py-6 text-center text-xs text-stone-400">Click “+ Add Habit” above to start tracking habits</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = store.habits.map(h => {
-        const scheduledDates = getHabitScheduledDates(h, weekDates);
-        const scheduledElapsed = getHabitScheduledDates(h, weekDates, currentDateStr);
-        const count = scheduledElapsed.filter(wd => !!(h.logs && h.logs[wd.iso])).length;
-        const scheduledTotal = scheduledDates.length;
-        const scheduledElapsedTotal = scheduledElapsed.length;
-        const pct = scheduledElapsedTotal ? Math.round((count / scheduledElapsedTotal) * 100) : 0;
-        const scheduleLabel = scheduledTotal === 7 ? 'Every day' : `${scheduledTotal} days/week`;
-
-        const cells = weekDates.map(wd => {
-          const scheduled = isHabitScheduled(h, wd.iso);
-          const checked = !!(h.logs && h.logs[wd.iso]);
-          if (!scheduled) {
-            return `<td class="py-2 px-0.5 text-center"><span class="inline-flex items-center justify-center w-6 h-6 text-stone-300">—</span></td>`;
-          }
-          return `
-            <td class="py-2 px-0.5 text-center">
-              <button type="button" onclick="toggleHabitLog('${h.id}', '${wd.iso}')"
-                class="w-6 h-6 rounded-full border flex items-center justify-center mx-auto transition-all cursor-pointer ${checked ? 'bg-sage-500 border-sage-500 text-white animate-check' : 'bg-cream hover:bg-stone-100 border-stone-200 text-transparent'}">
-                <i data-lucide="check" class="w-3 h-3 stroke-[3]"></i>
-              </button>
-            </td>
-          `;
-        }).join('');
-
-        return `
-          <tr class="group hover:bg-stone-50/70">
-            <td class="py-2.5 pr-2 font-semibold text-stone-800 text-xs">
-              <div class="flex items-center gap-1 min-w-0">
-                <span class="shrink-0">${escapeHtml(h.emoji)}</span>
-                <span class="truncate">${escapeHtml(h.name)}</span>
-              </div>
-              <span class="block mt-0.5 text-[9px] font-normal text-stone-400">${scheduleLabel}</span>
-            </td>
-            ${cells}
-            <td class="py-2.5 pl-1 text-right">
-              <span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold ${pct >= 80 ? 'bg-sage-100 text-sage-700' : pct >= 60 ? 'bg-amber-100 text-amber-700' : 'bg-stone-100 text-stone-600'}">${count}/${scheduledElapsedTotal || 0}</span>
-            </td>
-            <td class="py-2.5 text-right">
-              <button type="button" onclick="deleteHabit('${h.id}')" title="Delete habit" class="p-0.5 text-stone-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 cursor-pointer">
-                <i data-lucide="x" class="w-3 h-3"></i>
-              </button>
-            </td>
-          </tr>
-        `;
-      }).join('');
       lucide.createIcons();
     }
 
-    // =========================================================
-    // Monthly Overview
-    // =========================================================
-    let monthlyViewDate = new Date();
-
-    function getMonthKey(date = monthlyViewDate) {
-      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    function setSelfRating(rating) {
+      window.currentSelfRating = Math.max(1, Math.min(5, Number(rating) || 5));
+      renderSelfCheckIn(ensureDayRecord(currentDateStr));
     }
 
-    function ensureMonthRecord(monthKey = getMonthKey()) {
-      if (!store.months) store.months = {};
-      if (!store.months[monthKey]) {
-        store.months[monthKey] = {
-          goals: [
-            { text: '', done: false },
-            { text: '', done: false },
-            { text: '', done: false }
-          ],
-          focus: ''
-        };
-      }
-      if (!Array.isArray(store.months[monthKey].goals)) {
-        store.months[monthKey].goals = [];
-      }
-      return store.months[monthKey];
-    }
-
-    function switchDailySubTab(tab) {
-      const monthly = document.getElementById('daily-monthly-view');
-      const daily = document.getElementById('daily-detail-view');
-      const mb = document.getElementById('daily-subtab-monthly');
-      const db = document.getElementById('daily-subtab-daily');
-
-      if (tab === 'monthly') {
-        monthly.classList.remove('hidden');
-        daily.classList.add('hidden');
-        mb.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-sage-100 text-sage-700 transition-all cursor-pointer';
-        db.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-stone-600 hover:text-stone-900 transition-all cursor-pointer';
-        renderMonthlyOverview();
-      } else {
-        monthly.classList.add('hidden');
-        daily.classList.remove('hidden');
-        db.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-sage-100 text-sage-700 transition-all cursor-pointer';
-        mb.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-stone-600 hover:text-stone-900 transition-all cursor-pointer';
-      }
-      lucide.createIcons();
-    }
-
-    function formatMonthEnglish(dateObj) {
-      return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(dateObj);
-    }
-
-    function monthTabButtonHtml(dateObj, onClick, active = false, isCurrent = false) {
-      const label = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(dateObj);
-      return `<button type="button" onclick="${onClick}" class="min-w-0 rounded-xl border px-3 py-2.5 sm:py-3 text-left transition-all cursor-pointer ${active ? 'bg-sage-100 border-sage-400 shadow-xs' : 'bg-cream border-stone-200 hover:border-sage-300 hover:bg-sage-50/50'}">
-        <div class="text-[10px] sm:text-[11px] font-semibold ${active ? 'text-sage-700' : 'text-stone-400'}">${isCurrent ? 'Current' : active ? 'Selected' : ' '}</div>
-        <div class="text-xs sm:text-sm font-extrabold ${active ? 'text-sage-800' : 'text-stone-700'} truncate">${label}</div>
-      </button>`;
-    }
-
-    function renderMonthlyMonthTabs() {
-      const el = document.getElementById('monthly-month-tabs');
-      if (!el) return;
-      const prev = new Date(monthlyViewDate.getFullYear(), monthlyViewDate.getMonth() - 1, 1);
-      const curr = new Date(monthlyViewDate.getFullYear(), monthlyViewDate.getMonth(), 1);
-      const next = new Date(monthlyViewDate.getFullYear(), monthlyViewDate.getMonth() + 1, 1);
-      const todayKey = getTodayISO().slice(0, 7);
-      const selectedKey = getMonthKey();
-      el.innerHTML = [
-        monthTabButtonHtml(prev, "changeSelectedMonth(-1)", false, formatMonthKey(prev) === todayKey),
-        monthTabButtonHtml(curr, "changeSelectedMonth(0)", true, formatMonthKey(curr) === todayKey),
-        monthTabButtonHtml(next, "changeSelectedMonth(1)", false, formatMonthKey(next) === todayKey)
-      ].join('');
-    }
-
-    function formatMonthKey(dateObj) {
-      return `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
-    }
-
-    function renderMonthlyOverview() {
-      const monthKey = getMonthKey();
-      const monthData = ensureMonthRecord(monthKey);
-      const label = new Intl.DateTimeFormat('en-US', {
-        month: 'long',
-        year: 'numeric'
-      }).format(monthlyViewDate);
-
-      document.getElementById('monthly-overview-label').textContent = label;
-      renderMonthlyMonthTabs();
-      document.getElementById('monthly-focus-input').value = monthData.focus || '';
-      renderMonthlyCalendar();
-      renderMonthlyHabitInsights();
-
-      const goals = monthData.goals || [];
-      document.getElementById('monthly-goals-list').innerHTML = goals.map((g, idx) => `
-        <div class="flex items-center gap-2.5 bg-white rounded-xl border ${g.done ? 'border-sage-200' : 'border-stone-200'} px-3 py-2.5">
-          <button type="button" onclick="toggleMonthlyGoal(${idx})"
-            class="w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 ${g.done ? 'bg-sage-500 border-sage-500 text-white' : 'bg-white border-stone-300 hover:border-sage-500'} cursor-pointer">
-            ${g.done ? '<i data-lucide="check" class="w-3.5 h-3.5 stroke-[3]"></i>' : ''}
-          </button>
-          <input type="text" value="${escapeHtml(g.text || '')}" oninput="updateMonthlyGoal(${idx}, this.value)"
-            placeholder="Goal ${idx + 1}..."
-            class="w-full bg-transparent text-xs sm:text-sm focus:outline-none ${g.done ? 'line-through text-stone-400' : 'text-stone-800'}">
-          <button type="button" onclick="deleteMonthlyGoal(${idx})" class="p-1 text-stone-300 hover:text-rose-500 cursor-pointer">
-            <i data-lucide="x" class="w-3.5 h-3.5"></i>
-          </button>
-        </div>
-      `).join('');
-
-      lucide.createIcons();
-    }
-
-    function renderMonthlyCalendar() {
-      const calendar = document.getElementById('monthly-calendar');
-      const labelEl = document.getElementById('monthly-calendar-month');
-      if (!calendar) return;
-
-      const year = monthlyViewDate.getFullYear();
-      const month = monthlyViewDate.getMonth();
-      const monthLabel = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(monthlyViewDate);
-      if (labelEl) labelEl.textContent = monthLabel;
-
-      const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-      const pastel = [
-        'monthly-day-pink', 'monthly-day-peach', 'monthly-day-yellow',
-        'monthly-day-mint', 'monthly-day-blue', 'monthly-day-lilac', 'monthly-day-rose'
-      ];
-      const firstDay = new Date(year, month, 1);
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-      const startOffset = (firstDay.getDay() + 6) % 7; // Monday = 0
-      const today = new Date();
-      const todayKey = formatISO(today);
-
-      let html = weekdays.map((d, idx) => `
-        <div class="text-center text-[10px] sm:text-[11px] font-bold py-1 ${idx === 5 ? 'text-blue-400' : idx === 6 ? 'text-rose-400' : 'text-stone-400'}">${d}</div>
-      `).join('');
-
-      for (let i = 0; i < startOffset; i++) {
-        html += '<div class="min-h-[58px] sm:min-h-[72px] rounded-xl bg-stone-50/50 border border-transparent"></div>';
-      }
-
-      for (let day = 1; day <= daysInMonth; day++) {
-        const date = new Date(year, month, day);
-        const key = formatISO(date);
-        const isToday = key === todayKey;
-        const isSelected = key === currentDateStr;
-        const daily = store.days?.[key] || {};
-        const todos = Array.isArray(daily.todos) ? daily.todos : [];
-        const done = todos.filter(t => t.done).length;
-        const total = todos.length;
-        const hasPlan = Boolean((daily.priorities && daily.priorities.some(p => p && p.text)) || total || (daily.mood && daily.mood !== ''));
-        const pastelClass = pastel[(day - 1) % pastel.length];
-
-        let stateClass = `${pastelClass} border-white/80 hover:scale-[1.01] hover:shadow-sm`;
-        if (isSelected) stateClass = 'monthly-day-selected border-sage-400 bg-sage-100 ring-2 ring-sage-200';
-        else if (isToday) stateClass = 'monthly-day-today border-sage-300 bg-white ring-1 ring-sage-200';
-
-        html += `
-          <button type="button" onclick="selectCalendarDate('${key}')"
-            class="min-h-[58px] sm:min-h-[72px] rounded-xl border text-left p-2 transition-all cursor-pointer ${stateClass}">
-            <div class="flex items-start justify-between gap-1">
-              <span class="text-xs sm:text-sm font-extrabold ${isToday || isSelected ? 'text-sage-700' : 'text-stone-700'}">${day}</span>
-              ${isToday ? '<span class="text-[8px] sm:text-[9px] font-bold text-sage-600">Today</span>' : ''}
-            </div>
-            <div class="mt-2 flex items-center gap-1">
-              ${hasPlan ? '<span class="w-1.5 h-1.5 rounded-full bg-sage-500"></span>' : ''}
-              ${total ? `<span class="text-[9px] text-stone-500 font-semibold">${done}/${total}</span>` : '<span class="text-[9px] text-stone-400">Free</span>'}
-            </div>
-          </button>`;
-      }
-
-      calendar.innerHTML = html;
-    }
-
-    function getMonthDaysForAnalysis(monthKey) {
-      const [year, month] = monthKey.split('-').map(Number);
-      const daysInMonth = new Date(year, month, 0).getDate();
-      const todayKey = getTodayISO();
-      const isCurrentMonth = monthKey === todayKey.slice(0, 7);
-      const elapsedDays = isCurrentMonth ? new Date().getDate() : daysInMonth;
-      return { daysInMonth, elapsedDays: Math.max(1, elapsedDays) };
-    }
-
-    function renderMonthlyHabitInsights() {
-      const monthKey = getMonthKey();
-      const { daysInMonth, elapsedDays } = getMonthDaysForAnalysis(monthKey);
-      const [year, month] = monthKey.split('-').map(Number);
-      const overviewEl = document.getElementById('monthly-habit-overview');
-      const summaryEl = document.getElementById('monthly-summary');
-      const daysLabel = document.getElementById('monthly-habit-days-label');
-      const nextFocusEl = document.getElementById('monthly-next-focus');
-      if (!overviewEl || !summaryEl) return;
-
-      const habits = Array.isArray(store.habits) ? store.habits : [];
-      const monthDates = Array.from({ length: daysInMonth }, (_, i) => {
-        const d = new Date(year, month - 1, i + 1);
-        return formatISO(d);
-      });
-      const elapsedDates = monthDates.filter(date => date <= `${monthKey}-${String(elapsedDays).padStart(2, '0')}`);
-      const totalHabitChecks = habits.reduce((sum, h) => {
-        return sum + elapsedDates.filter(date => isHabitScheduled(h, date) && h.logs?.[date]).length;
-      }, 0);
-      const possibleChecks = habits.reduce((sum, h) => {
-        return sum + elapsedDates.filter(date => isHabitScheduled(h, date)).length;
-      }, 0);
-      const overallPct = possibleChecks ? Math.round((totalHabitChecks / possibleChecks) * 100) : 0;
-      if (daysLabel) daysLabel.textContent = `${elapsedDays}/${daysInMonth} days`;
-
-      if (!habits.length) {
-        overviewEl.innerHTML = `<div class="py-5 text-center rounded-xl border border-dashed border-stone-200 bg-white/60 text-xs text-stone-400">Add a Habit in Today to see your monthly progress 🌱</div>`;
-        summaryEl.innerHTML = `<div class="rounded-xl bg-white/70 border border-stone-200/70 p-3 text-stone-500">ยังไม่มีข้อมูล Habit สำหรับเดือนนี้ ลองเริ่มจาก Habit เล็ก ๆ สัก 1 อย่างก่อนนะ 🌱</div>`;
-        if (nextFocusEl) nextFocusEl.textContent = 'เริ่มจาก Habit ที่สำคัญที่สุด 1 อย่าง แล้วค่อยเพิ่มเมื่อทำได้สม่ำเสมอ 💚';
-        return;
-      }
-
-      const stats = habits.map(h => {
-        const scheduledDates = elapsedDates.filter(date => isHabitScheduled(h, date));
-        const count = scheduledDates.filter(date => h.logs?.[date]).length;
-        const pct = scheduledDates.length ? Math.round((count / scheduledDates.length) * 100) : 0;
-        return { ...h, count, pct, scheduledCount: scheduledDates.length };
-      });
-
-      overviewEl.innerHTML = stats.map(h => `
-        <div class="bg-white/75 rounded-xl border border-stone-200/70 p-3">
-          <div class="flex items-center justify-between gap-2 mb-1.5">
-            <span class="text-xs font-bold text-stone-700 truncate">${escapeHtml(h.emoji)} ${escapeHtml(h.name)}</span>
-            <span class="text-[10px] font-bold text-stone-500 shrink-0">${h.count}/${h.scheduledCount} • ${h.pct}%</span>
-          </div>
-          <div class="w-full h-2 bg-stone-100 rounded-full overflow-hidden">
-            <div class="h-full bg-sage-500 rounded-full transition-all" style="width:${Math.min(h.pct, 100)}%"></div>
-          </div>
-        </div>
-      `).join('');
-
-      const best = [...stats].sort((a, b) => b.pct - a.pct)[0];
-      const needs = [...stats].sort((a, b) => a.pct - b.pct)[0];
-      const monthTx = (store.transactions || []).filter(t => t.date && t.date.startsWith(monthKey));
-      const income = monthTx.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount || 0), 0);
-      const expense = monthTx.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount || 0), 0);
-      const categoryTotals = {};
-      monthTx.filter(t => t.type === 'expense').forEach(t => {
-        categoryTotals[t.categoryId] = (categoryTotals[t.categoryId] || 0) + Number(t.amount || 0);
-      });
-      const topCat = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])[0];
-      const catMeta = topCat ? (FINANCE_CATEGORIES.expense.find(c => c.id === topCat[0]) || { emoji: '💸', label: 'Other' }) : null;
-
-      const messages = [];
-      messages.push(`<div class="rounded-xl bg-white/70 border border-stone-200/70 p-3">🌱 เดือนนี้ Habit โดยรวมทำได้ประมาณ <b>${overallPct}%</b> จากวันที่ผ่านมา ${elapsedDays} วัน</div>`);
-      if (best && best.pct >= 80) messages.push(`<div class="rounded-xl bg-sage-50 border border-sage-200/70 p-3">🏆 <b>${escapeHtml(best.name)}</b> เป็น Habit ที่ทำได้ดีที่สุดเดือนนี้ — ทำได้ ${best.count} วัน เก่งมาก!</div>`);
-      if (needs && needs.pct < 60) messages.push(`<div class="rounded-xl bg-amber-50 border border-amber-200/70 p-3">💡 <b>${escapeHtml(needs.name)}</b> ยังทำได้ไม่สม่ำเสมอ (${needs.count}/${needs.scheduledCount} วันที่ตั้งใจทำ) เดือนหน้าอาจลองตั้งเป้าให้เล็กลงและทำให้ต่อเนื่องขึ้น</div>`);
-      if (expense > 0 && income > 0 && expense > income) messages.push(`<div class="rounded-xl bg-rose-50 border border-rose-200/70 p-3">💰 เดือนนี้รายจ่ายสูงกว่ารายรับ ลองทบทวนหมวดที่ใช้จ่ายมากที่สุดก่อนวางแผนเดือนหน้านะ</div>`);
-      else if (topCat) messages.push(`<div class="rounded-xl bg-white/70 border border-stone-200/70 p-3">💸 หมวดที่ใช้จ่ายมากที่สุดเดือนนี้คือ <b>${escapeHtml(catMeta.label)}</b> รวม ฿${formatTHB(topCat[1])}</div>`);
-      if (expense === 0) messages.push(`<div class="rounded-xl bg-white/70 border border-stone-200/70 p-3">💰 ยังไม่มีรายจ่ายที่บันทึกไว้ในเดือนนี้</div>`);
-
-      summaryEl.innerHTML = messages.join('');
-      if (nextFocusEl) {
-        const focusParts = [];
-        if (needs && needs.pct < 60) focusParts.push(`ลองทำ ${needs.name} ให้สม่ำเสมอขึ้น`);
-        if (expense > income && income > 0) focusParts.push('ทบทวนรายจ่ายก่อนเริ่มเดือนใหม่');
-        if (!focusParts.length) focusParts.push('รักษา Habit ที่ทำได้ดี และค่อย ๆ พัฒนาทีละนิด');
-        nextFocusEl.textContent = focusParts.join(' • ') + ' 🌷';
-      }
-    }
-
-    function selectCalendarDate(dateKey) {
-      currentDateStr = dateKey;
-      switchDailySubTab('daily');
-      renderDailyPlanner();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function changeSelectedMonth(delta) {
-      monthlyViewDate.setMonth(monthlyViewDate.getMonth() + delta);
-      renderMonthlyOverview();
-    }
-
-    function goToCurrentMonth() {
-      monthlyViewDate = new Date();
-      renderMonthlyOverview();
-    }
-
-    function updateMonthlyGoal(idx, text) {
-      const monthData = ensureMonthRecord();
-      monthData.goals[idx].text = text;
-      saveStore();
-    }
-
-    function toggleMonthlyGoal(idx) {
-      const monthData = ensureMonthRecord();
-      monthData.goals[idx].done = !monthData.goals[idx].done;
-      saveStore();
-      renderMonthlyOverview();
-    }
-
-    function addMonthlyGoal() {
-      const monthData = ensureMonthRecord();
-      monthData.goals.push({ text: '', done: false });
-      saveStore();
-
-      // Re-render only the Goals list so the input stays stable while typing.
-      const list = document.getElementById('monthly-goals-list');
-      if (!list) return;
-      list.innerHTML = monthData.goals.map((g, idx) => `
-        <div class="flex items-center gap-2.5 bg-white rounded-xl border ${g.done ? 'border-sage-200' : 'border-stone-200'} px-3 py-2.5">
-          <button type="button" onclick="toggleMonthlyGoal(${idx})"
-            class="w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 ${g.done ? 'bg-sage-500 border-sage-500 text-white' : 'bg-white border-stone-300 hover:border-sage-500'} cursor-pointer">
-            ${g.done ? '<i data-lucide="check" class="w-3.5 h-3.5 stroke-[3]"></i>' : ''}
-          </button>
-          <input type="text" value="${escapeHtml(g.text || '')}" oninput="updateMonthlyGoal(${idx}, this.value)"
-            placeholder="Goal ${idx + 1}..."
-            class="w-full bg-transparent text-xs sm:text-sm focus:outline-none ${g.done ? 'line-through text-stone-400' : 'text-stone-800'}">
-          <button type="button" onclick="deleteMonthlyGoal(${idx})" class="p-1 text-stone-300 hover:text-rose-500 cursor-pointer">
-            <i data-lucide="x" class="w-3.5 h-3.5"></i>
-          </button>
-        </div>
-      `).join('');
-      lucide.createIcons();
-      const inputs = list.querySelectorAll('input');
-      if (inputs.length) {
-        const input = inputs[inputs.length - 1];
-        requestAnimationFrame(() => {
-          input.focus();
-          input.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-        });
-      }
-    }
-
-    function deleteMonthlyGoal(idx) {
-      const monthData = ensureMonthRecord();
-      monthData.goals.splice(idx, 1);
-      saveStore();
-      renderMonthlyOverview();
-    }
-
-    function updateMonthlyFocus(value) {
-      ensureMonthRecord().focus = value;
-      saveStore();
-    }
-
-        // Daily Planner Interactions
-    function changeSelectedDate(delta) {
-      const d = parseISO(currentDateStr);
-      d.setDate(d.getDate() + delta);
-      currentDateStr = formatISO(d);
-      renderDailyPlanner();
-      lucide.createIcons();
-    }
-
-    function goToToday() {
-      currentDateStr = getTodayISO();
-      renderDailyPlanner();
-      lucide.createIcons();
-      showToast('Returned to today');
-    }
-
-    function onDatePickerChange(val) {
-      if (!val) return;
-      currentDateStr = val;
-      renderDailyPlanner();
-      lucide.createIcons();
-    }
-
-    function selectDayMood(moodId) {
-      const dayData = ensureDayRecord(currentDateStr);
-      dayData.mood = moodId;
-      saveStore();
-      renderDailyPlanner();
-      lucide.createIcons();
-    }
-
-    function updatePriorityText(idx, text) {
-      const dayData = ensureDayRecord(currentDateStr);
-      dayData.priorities[idx].text = text;
-      saveStore();
-    }
-
-    function togglePriorityDone(idx) {
-      const dayData = ensureDayRecord(currentDateStr);
-      dayData.priorities[idx].done = !dayData.priorities[idx].done;
-      saveStore();
-      renderDailyPlanner();
-      lucide.createIcons();
-    }
-
-    function normalizeTimeBlocks(dayData) {
-      if (Array.isArray(dayData.timeBlocks)) return;
-
-      const legacy = dayData.timeBlocks || {};
-      dayData.timeBlocks = Object.entries(legacy).map(([start, block], idx) => {
-        const [h, m] = start.split(':').map(Number);
-        const endDate = new Date(2000, 0, 1, h, m || 0);
-        endDate.setHours(endDate.getHours() + 1);
-        const end = `${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}`;
-        return {
-          id: `tb-legacy-${start}-${idx}`,
-          start,
-          end,
-          title: block.title || '',
-          category: block.category || 'work',
-          done: !!block.done
-        };
-      });
-    }
-
-    function getDefaultTimeBlockTimes() {
-      const now = new Date();
-      const minutes = now.getHours() * 60 + now.getMinutes();
-      const rounded = Math.ceil(minutes / 30) * 30;
-      const startM = Math.min(rounded, 23 * 60);
-      const endM = Math.min(startM + 60, 23 * 60 + 30);
-      const fmt = m => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
-      return { start: fmt(startM), end: fmt(endM) };
-    }
-
-    function openTimeBlockModal(blockId = '') {
-      const dayData = ensureDayRecord(currentDateStr);
-      normalizeTimeBlocks(dayData);
-      const existing = blockId ? dayData.timeBlocks.find(b => b.id === blockId) : null;
-      const defaults = getDefaultTimeBlockTimes();
-
-      document.getElementById('tb-id-value').value = existing ? existing.id : '';
-      document.getElementById('tb-modal-heading').textContent = existing ? '⏰ Edit Time Block' : '⏰ Add Time Block';
-      document.getElementById('tb-start-input').value = existing?.start || defaults.start;
-      document.getElementById('tb-end-input').value = existing?.end || defaults.end;
-      document.getElementById('tb-title-input').value = existing?.title || '';
-      document.querySelectorAll('input[name="tb-cat"]').forEach(r => {
-        r.checked = r.value === (existing?.category || 'work');
-      });
-
-      document.getElementById('timeblock-modal').classList.remove('hidden');
-      setTimeout(() => document.getElementById('tb-title-input').focus(), 50);
-    }
-
-    function saveTimeBlock(e) {
+    function addSelfRating(e) {
       e.preventDefault();
-      const id = document.getElementById('tb-id-value').value;
-      const start = document.getElementById('tb-start-input').value;
-      const end = document.getElementById('tb-end-input').value;
-      const title = document.getElementById('tb-title-input').value.trim();
-      const category = document.querySelector('input[name="tb-cat"]:checked').value;
-      if (!title || !start || !end) return;
-
-      if (end <= start) {
-        showToast('End time must be later than start time');
-        return;
-      }
+      const input = document.getElementById('self-rating-title');
+      const title = input.value.trim();
+      if (!title) return;
 
       const dayData = ensureDayRecord(currentDateStr);
-      normalizeTimeBlocks(dayData);
-
-      if (id) {
-        const block = dayData.timeBlocks.find(b => b.id === id);
-        if (block) {
-          block.start = start;
-          block.end = end;
-          block.title = title;
-          block.category = category;
-        }
-      } else {
-        dayData.timeBlocks.push({
-          id: `tb-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-          start,
-          end,
-          title,
-          category,
-          done: false
-        });
-      }
-
+      if (!Array.isArray(dayData.selfRatings)) dayData.selfRatings = [];
+      dayData.selfRatings.unshift({
+        id: 'sr-' + Date.now(),
+        title,
+        rating: window.currentSelfRating || 5
+      });
+      input.value = '';
+      window.currentSelfRating = 5;
       saveStore();
-      closeModal('timeblock-modal');
       renderDailyPlanner();
       lucide.createIcons();
-      showToast(id ? 'Time block updated' : 'Time block added');
+      showToast('Self rating added 🌱');
+      setTimeout(() => document.getElementById('self-rating-title')?.focus(), 0);
+    }
+
+    function setExistingSelfRating(id, rating) {
+      const dayData = ensureDayRecord(currentDateStr);
+      const item = (dayData.selfRatings || []).find(r => r.id === id);
+      if (!item) return;
+      item.rating = Math.max(1, Math.min(5, Number(rating) || 1));
+      saveStore();
+      renderSelfCheckIn(dayData);
+      showToast('Rating updated ⭐');
+    }
+
+    function deleteSelfRating(id) {
+      const dayData = ensureDayRecord(currentDateStr);
+      dayData.selfRatings = (dayData.selfRatings || []).filter(r => r.id !== id);
+      saveStore();
+      renderSelfCheckIn(dayData);
+      lucide.createIcons();
     }
 
     function toggleTimeBlockDone(id) {
@@ -4136,6 +3526,711 @@
       renderWorkDashboard();
       lucide.createIcons();
     });
+
+    // Restored v2.9 planner functions preserved for v3.0
+    function addMonthlyGoal() {
+      const monthData = ensureMonthRecord();
+      monthData.goals.push({ text: '', done: false });
+      saveStore();
+
+      // Re-render only the Goals list so the input stays stable while typing.
+      const list = document.getElementById('monthly-goals-list');
+      if (!list) return;
+      list.innerHTML = monthData.goals.map((g, idx) => `
+        <div class="flex items-center gap-2.5 bg-white rounded-xl border ${g.done ? 'border-sage-200' : 'border-stone-200'} px-3 py-2.5">
+          <button type="button" onclick="toggleMonthlyGoal(${idx})"
+            class="w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 ${g.done ? 'bg-sage-500 border-sage-500 text-white' : 'bg-white border-stone-300 hover:border-sage-500'} cursor-pointer">
+            ${g.done ? '<i data-lucide="check" class="w-3.5 h-3.5 stroke-[3]"></i>' : ''}
+          </button>
+          <input type="text" value="${escapeHtml(g.text || '')}" oninput="updateMonthlyGoal(${idx}, this.value)"
+            placeholder="Goal ${idx + 1}..."
+            class="w-full bg-transparent text-xs sm:text-sm focus:outline-none ${g.done ? 'line-through text-stone-400' : 'text-stone-800'}">
+          <button type="button" onclick="deleteMonthlyGoal(${idx})" class="p-1 text-stone-300 hover:text-rose-500 cursor-pointer">
+            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      `).join('');
+      lucide.createIcons();
+      const inputs = list.querySelectorAll('input');
+      if (inputs.length) {
+        const input = inputs[inputs.length - 1];
+        requestAnimationFrame(() => {
+          input.focus();
+          input.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      }
+    }
+
+    function changeSelectedDate(delta) {
+      const d = parseISO(currentDateStr);
+      d.setDate(d.getDate() + delta);
+      currentDateStr = formatISO(d);
+      renderDailyPlanner();
+      lucide.createIcons();
+    }
+
+    function changeSelectedMonth(delta) {
+      monthlyViewDate.setMonth(monthlyViewDate.getMonth() + delta);
+      renderMonthlyOverview();
+    }
+
+    function deleteMonthlyGoal(idx) {
+      const monthData = ensureMonthRecord();
+      monthData.goals.splice(idx, 1);
+      saveStore();
+      renderMonthlyOverview();
+    }
+
+    function ensureMonthRecord(monthKey = getMonthKey()) {
+      if (!store.months) store.months = {};
+      if (!store.months[monthKey]) {
+        store.months[monthKey] = {
+          goals: [
+            { text: '', done: false },
+            { text: '', done: false },
+            { text: '', done: false }
+          ],
+          focus: ''
+        };
+      }
+      if (!Array.isArray(store.months[monthKey].goals)) {
+        store.months[monthKey].goals = [];
+      }
+      return store.months[monthKey];
+    }
+
+    function formatMonthEnglish(dateObj) {
+      return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(dateObj);
+    }
+
+    function formatMonthKey(dateObj) {
+      return `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    function getDefaultTimeBlockTimes() {
+      const now = new Date();
+      const minutes = now.getHours() * 60 + now.getMinutes();
+      const rounded = Math.ceil(minutes / 30) * 30;
+      const startM = Math.min(rounded, 23 * 60);
+      const endM = Math.min(startM + 60, 23 * 60 + 30);
+      const fmt = m => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+      return { start: fmt(startM), end: fmt(endM) };
+    }
+
+    function getHabitSchedule(habit) {
+      const schedule = Array.isArray(habit.schedule) ? habit.schedule.map(Number).filter(n => n >= 1 && n <= 7) : [];
+      return schedule.length ? [...new Set(schedule)].sort((a, b) => a - b) : [1,2,3,4,5,6,7];
+    }
+
+    function getHabitScheduledDates(habit, weekDates, throughDate = null) {
+      return weekDates.filter(wd => {
+        if (!isHabitScheduled(habit, wd.iso)) return false;
+        if (!throughDate) return true;
+        return wd.iso <= throughDate;
+      });
+    }
+
+    function getMondayDayNumber(dateObj) {
+      const day = dateObj.getDay();
+      return day === 0 ? 7 : day;
+    }
+
+    function getMonthDaysForAnalysis(monthKey) {
+      const [year, month] = monthKey.split('-').map(Number);
+      const daysInMonth = new Date(year, month, 0).getDate();
+      const todayKey = getTodayISO();
+      const isCurrentMonth = monthKey === todayKey.slice(0, 7);
+      const elapsedDays = isCurrentMonth ? new Date().getDate() : daysInMonth;
+      return { daysInMonth, elapsedDays: Math.max(1, elapsedDays) };
+    }
+
+    function getMonthKey(date = monthlyViewDate) {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    function getSelectedHabitSchedule() {
+      return HABIT_WEEKDAYS.map(d => d.value).filter(value => document.querySelector(`[data-habit-schedule-day="${value}"]`)?.classList.contains('bg-sage-100'));
+    }
+
+    function goToCurrentMonth() {
+      monthlyViewDate = new Date();
+      renderMonthlyOverview();
+    }
+
+    function goToToday() {
+      currentDateStr = getTodayISO();
+      renderDailyPlanner();
+      lucide.createIcons();
+      showToast('Returned to today');
+    }
+
+    function isHabitScheduled(habit, isoDate) {
+      const d = parseISO(isoDate);
+      return getHabitSchedule(habit).includes(getMondayDayNumber(d));
+    }
+
+    function monthTabButtonHtml(dateObj, onClick, active = false, isCurrent = false) {
+      const label = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(dateObj);
+      return `<button type="button" onclick="${onClick}" class="min-w-0 rounded-xl border px-3 py-2.5 sm:py-3 text-left transition-all cursor-pointer ${active ? 'bg-sage-100 border-sage-400 shadow-xs' : 'bg-cream border-stone-200 hover:border-sage-300 hover:bg-sage-50/50'}">
+        <div class="text-[10px] sm:text-[11px] font-semibold ${active ? 'text-sage-700' : 'text-stone-400'}">${isCurrent ? 'Current' : active ? 'Selected' : ' '}</div>
+        <div class="text-xs sm:text-sm font-extrabold ${active ? 'text-sage-800' : 'text-stone-700'} truncate">${label}</div>
+      </button>`;
+    }
+
+    function normalizeTimeBlocks(dayData) {
+      if (Array.isArray(dayData.timeBlocks)) return;
+
+      const legacy = dayData.timeBlocks || {};
+      dayData.timeBlocks = Object.entries(legacy).map(([start, block], idx) => {
+        const [h, m] = start.split(':').map(Number);
+        const endDate = new Date(2000, 0, 1, h, m || 0);
+        endDate.setHours(endDate.getHours() + 1);
+        const end = `${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}`;
+        return {
+          id: `tb-legacy-${start}-${idx}`,
+          start,
+          end,
+          title: block.title || '',
+          category: block.category || 'work',
+          done: !!block.done
+        };
+      });
+    }
+
+    function onDatePickerChange(val) {
+      if (!val) return;
+      currentDateStr = val;
+      renderDailyPlanner();
+      lucide.createIcons();
+    }
+
+    function openTimeBlockModal(blockId = '') {
+      const dayData = ensureDayRecord(currentDateStr);
+      normalizeTimeBlocks(dayData);
+      const existing = blockId ? dayData.timeBlocks.find(b => b.id === blockId) : null;
+      const defaults = getDefaultTimeBlockTimes();
+
+      document.getElementById('tb-id-value').value = existing ? existing.id : '';
+      document.getElementById('tb-modal-heading').textContent = existing ? '⏰ Edit Time Block' : '⏰ Add Time Block';
+      document.getElementById('tb-start-input').value = existing?.start || defaults.start;
+      document.getElementById('tb-end-input').value = existing?.end || defaults.end;
+      document.getElementById('tb-title-input').value = existing?.title || '';
+      document.querySelectorAll('input[name="tb-cat"]').forEach(r => {
+        r.checked = r.value === (existing?.category || 'work');
+      });
+
+      document.getElementById('timeblock-modal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('tb-title-input').focus(), 50);
+    }
+
+    function renderHabitEmojiPicker() {
+      const picker = document.getElementById('habit-emoji-picker');
+      if (!picker) return;
+      const selected = document.getElementById('new-habit-emoji')?.value || '✨';
+      picker.innerHTML = HABIT_EMOJIS.map(emoji => `
+        <button type="button" onclick="selectHabitEmoji('${emoji}')"
+          class="h-8 rounded-lg border text-base transition-all cursor-pointer ${emoji === selected ? 'bg-white border-sage-500 ring-1 ring-sage-300 scale-105' : 'bg-white/70 border-stone-200 hover:bg-white hover:border-sage-300'}"
+          title="${emoji}">${emoji}</button>
+      `).join('');
+    }
+
+    function renderHabitSchedulePicker(schedule = [1,2,3,4,5,6,7]) {
+      const picker = document.getElementById('habit-schedule-picker');
+      if (!picker) return;
+      const selected = new Set(schedule.map(Number));
+      picker.innerHTML = HABIT_WEEKDAYS.map(day => `
+        <button type="button" onclick="toggleHabitScheduleDay(${day.value})"
+          class="py-1.5 rounded-lg border text-[9px] font-bold transition-all cursor-pointer ${selected.has(day.value) ? 'bg-sage-100 border-sage-400 text-sage-700' : 'bg-white border-stone-200 text-stone-400 hover:bg-stone-50'}"
+          data-habit-schedule-day="${day.value}">${day.label}</button>
+      `).join('');
+    }
+
+    function renderHabitTracker() {
+      const selDate = parseISO(currentDateStr);
+      const dayOfWeek = selDate.getDay();
+      const diffToMon = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      const monday = new Date(selDate);
+      monday.setDate(selDate.getDate() + diffToMon);
+
+      const shortEnglishDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const weekDates = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        return { iso: formatISO(d), dayName: shortEnglishDays[i], dayNum: d.getDate() };
+      });
+
+      document.getElementById('habit-week-range').textContent = `Week of ${weekDates[0].dayNum} – ${weekDates[6].dayNum} ${selDate.toLocaleDateString('en-US', { month: 'short' })}`;
+
+      document.getElementById('habit-grid-header').innerHTML = `
+        <th class="py-2 pr-2 font-bold text-stone-600">Habit</th>
+        ${weekDates.map(wd => `
+          <th class="py-1.5 px-0.5 text-center">
+            <div class="inline-flex flex-col items-center justify-center w-7 h-9 rounded-lg ${wd.iso === currentDateStr ? 'bg-sage-100 text-sage-700 font-extrabold' : 'text-stone-400'}">
+              <span class="text-[9px]">${wd.dayName}</span>
+              <span class="text-[10px]">${wd.dayNum}</span>
+            </div>
+          </th>
+        `).join('')}
+        <th class="py-2 pl-1 text-right font-bold text-stone-600">Summary</th>
+        <th class="w-5"></th>
+      `;
+
+      const tbody = document.getElementById('habit-grid-body');
+      if (store.habits.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" class="py-6 text-center text-xs text-stone-400">Click “+ Add Habit” above to start tracking habits</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = store.habits.map(h => {
+        const scheduledDates = getHabitScheduledDates(h, weekDates);
+        const scheduledElapsed = getHabitScheduledDates(h, weekDates, currentDateStr);
+        const count = scheduledElapsed.filter(wd => !!(h.logs && h.logs[wd.iso])).length;
+        const scheduledTotal = scheduledDates.length;
+        const scheduledElapsedTotal = scheduledElapsed.length;
+        const pct = scheduledElapsedTotal ? Math.round((count / scheduledElapsedTotal) * 100) : 0;
+        const scheduleLabel = scheduledTotal === 7 ? 'Every day' : `${scheduledTotal} days/week`;
+
+        const cells = weekDates.map(wd => {
+          const scheduled = isHabitScheduled(h, wd.iso);
+          const checked = !!(h.logs && h.logs[wd.iso]);
+          if (!scheduled) {
+            return `<td class="py-2 px-0.5 text-center"><span class="inline-flex items-center justify-center w-6 h-6 text-stone-300">—</span></td>`;
+          }
+          return `
+            <td class="py-2 px-0.5 text-center">
+              <button type="button" onclick="toggleHabitLog('${h.id}', '${wd.iso}')"
+                class="w-6 h-6 rounded-full border flex items-center justify-center mx-auto transition-all cursor-pointer ${checked ? 'bg-sage-500 border-sage-500 text-white animate-check' : 'bg-cream hover:bg-stone-100 border-stone-200 text-transparent'}">
+                <i data-lucide="check" class="w-3 h-3 stroke-[3]"></i>
+              </button>
+            </td>
+          `;
+        }).join('');
+
+        return `
+          <tr class="group hover:bg-stone-50/70">
+            <td class="py-2.5 pr-2 font-semibold text-stone-800 text-xs">
+              <div class="flex items-center gap-1 min-w-0">
+                <span class="shrink-0">${escapeHtml(h.emoji)}</span>
+                <span class="truncate">${escapeHtml(h.name)}</span>
+              </div>
+              <span class="block mt-0.5 text-[9px] font-normal text-stone-400">${scheduleLabel}</span>
+            </td>
+            ${cells}
+            <td class="py-2.5 pl-1 text-right">
+              <span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold ${pct >= 80 ? 'bg-sage-100 text-sage-700' : pct >= 60 ? 'bg-amber-100 text-amber-700' : 'bg-stone-100 text-stone-600'}">${count}/${scheduledElapsedTotal || 0}</span>
+            </td>
+            <td class="py-2.5 text-right">
+              <button type="button" onclick="deleteHabit('${h.id}')" title="Delete habit" class="p-0.5 text-stone-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 cursor-pointer">
+                <i data-lucide="x" class="w-3 h-3"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    // =========================================================
+    // Monthly Overview
+    // =========================================================
+    let monthlyViewDate = new Date();
+
+    function renderMonthlyCalendar() {
+      const calendar = document.getElementById('monthly-calendar');
+      const labelEl = document.getElementById('monthly-calendar-month');
+      if (!calendar) return;
+
+      const year = monthlyViewDate.getFullYear();
+      const month = monthlyViewDate.getMonth();
+      const monthLabel = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(monthlyViewDate);
+      if (labelEl) labelEl.textContent = monthLabel;
+
+      const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const pastel = [
+        'monthly-day-pink', 'monthly-day-peach', 'monthly-day-yellow',
+        'monthly-day-mint', 'monthly-day-blue', 'monthly-day-lilac', 'monthly-day-rose'
+      ];
+      const firstDay = new Date(year, month, 1);
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const startOffset = (firstDay.getDay() + 6) % 7; // Monday = 0
+      const today = new Date();
+      const todayKey = formatISO(today);
+
+      let html = weekdays.map((d, idx) => `
+        <div class="text-center text-[10px] sm:text-[11px] font-bold py-1 ${idx === 5 ? 'text-blue-400' : idx === 6 ? 'text-rose-400' : 'text-stone-400'}">${d}</div>
+      `).join('');
+
+      for (let i = 0; i < startOffset; i++) {
+        html += '<div class="min-h-[58px] sm:min-h-[72px] rounded-xl bg-stone-50/50 border border-transparent"></div>';
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, month, day);
+        const key = formatISO(date);
+        const isToday = key === todayKey;
+        const isSelected = key === currentDateStr;
+        const daily = store.days?.[key] || {};
+        const todos = Array.isArray(daily.todos) ? daily.todos : [];
+        const done = todos.filter(t => t.done).length;
+        const total = todos.length;
+        const hasPlan = Boolean((daily.priorities && daily.priorities.some(p => p && p.text)) || total || (daily.mood && daily.mood !== ''));
+        const pastelClass = pastel[(day - 1) % pastel.length];
+
+        let stateClass = `${pastelClass} border-white/80 hover:scale-[1.01] hover:shadow-sm`;
+        if (isSelected) stateClass = 'monthly-day-selected border-sage-400 bg-sage-100 ring-2 ring-sage-200';
+        else if (isToday) stateClass = 'monthly-day-today border-sage-300 bg-white ring-1 ring-sage-200';
+
+        html += `
+          <button type="button" onclick="selectCalendarDate('${key}')"
+            class="min-h-[58px] sm:min-h-[72px] rounded-xl border text-left p-2 transition-all cursor-pointer ${stateClass}">
+            <div class="flex items-start justify-between gap-1">
+              <span class="text-xs sm:text-sm font-extrabold ${isToday || isSelected ? 'text-sage-700' : 'text-stone-700'}">${day}</span>
+              ${isToday ? '<span class="text-[8px] sm:text-[9px] font-bold text-sage-600">Today</span>' : ''}
+            </div>
+            <div class="mt-2 flex items-center gap-1">
+              ${hasPlan ? '<span class="w-1.5 h-1.5 rounded-full bg-sage-500"></span>' : ''}
+              ${total ? `<span class="text-[9px] text-stone-500 font-semibold">${done}/${total}</span>` : '<span class="text-[9px] text-stone-400">Free</span>'}
+            </div>
+          </button>`;
+      }
+
+      calendar.innerHTML = html;
+    }
+
+    function renderMonthlyHabitInsights() {
+      const monthKey = getMonthKey();
+      const { daysInMonth, elapsedDays } = getMonthDaysForAnalysis(monthKey);
+      const [year, month] = monthKey.split('-').map(Number);
+      const overviewEl = document.getElementById('monthly-habit-overview');
+      const summaryEl = document.getElementById('monthly-summary');
+      const daysLabel = document.getElementById('monthly-habit-days-label');
+      const nextFocusEl = document.getElementById('monthly-next-focus');
+      if (!overviewEl || !summaryEl) return;
+
+      const habits = Array.isArray(store.habits) ? store.habits : [];
+      const monthDates = Array.from({ length: daysInMonth }, (_, i) => {
+        const d = new Date(year, month - 1, i + 1);
+        return formatISO(d);
+      });
+      const elapsedDates = monthDates.filter(date => date <= `${monthKey}-${String(elapsedDays).padStart(2, '0')}`);
+      const totalHabitChecks = habits.reduce((sum, h) => {
+        return sum + elapsedDates.filter(date => isHabitScheduled(h, date) && h.logs?.[date]).length;
+      }, 0);
+      const possibleChecks = habits.reduce((sum, h) => {
+        return sum + elapsedDates.filter(date => isHabitScheduled(h, date)).length;
+      }, 0);
+      const overallPct = possibleChecks ? Math.round((totalHabitChecks / possibleChecks) * 100) : 0;
+      if (daysLabel) daysLabel.textContent = `${elapsedDays}/${daysInMonth} days`;
+
+      if (!habits.length) {
+        overviewEl.innerHTML = `<div class="py-5 text-center rounded-xl border border-dashed border-stone-200 bg-white/60 text-xs text-stone-400">Add a Habit in Today to see your monthly progress 🌱</div>`;
+        summaryEl.innerHTML = `<div class="rounded-xl bg-white/70 border border-stone-200/70 p-3 text-stone-500">ยังไม่มีข้อมูล Habit สำหรับเดือนนี้ ลองเริ่มจาก Habit เล็ก ๆ สัก 1 อย่างก่อนนะ 🌱</div>`;
+        if (nextFocusEl) nextFocusEl.textContent = 'เริ่มจาก Habit ที่สำคัญที่สุด 1 อย่าง แล้วค่อยเพิ่มเมื่อทำได้สม่ำเสมอ 💚';
+        return;
+      }
+
+      const stats = habits.map(h => {
+        const scheduledDates = elapsedDates.filter(date => isHabitScheduled(h, date));
+        const count = scheduledDates.filter(date => h.logs?.[date]).length;
+        const pct = scheduledDates.length ? Math.round((count / scheduledDates.length) * 100) : 0;
+        return { ...h, count, pct, scheduledCount: scheduledDates.length };
+      });
+
+      overviewEl.innerHTML = stats.map(h => `
+        <div class="bg-white/75 rounded-xl border border-stone-200/70 p-3">
+          <div class="flex items-center justify-between gap-2 mb-1.5">
+            <span class="text-xs font-bold text-stone-700 truncate">${escapeHtml(h.emoji)} ${escapeHtml(h.name)}</span>
+            <span class="text-[10px] font-bold text-stone-500 shrink-0">${h.count}/${h.scheduledCount} • ${h.pct}%</span>
+          </div>
+          <div class="w-full h-2 bg-stone-100 rounded-full overflow-hidden">
+            <div class="h-full bg-sage-500 rounded-full transition-all" style="width:${Math.min(h.pct, 100)}%"></div>
+          </div>
+        </div>
+      `).join('');
+
+      const best = [...stats].sort((a, b) => b.pct - a.pct)[0];
+      const needs = [...stats].sort((a, b) => a.pct - b.pct)[0];
+      const monthTx = (store.transactions || []).filter(t => t.date && t.date.startsWith(monthKey));
+      const income = monthTx.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount || 0), 0);
+      const expense = monthTx.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount || 0), 0);
+      const categoryTotals = {};
+      monthTx.filter(t => t.type === 'expense').forEach(t => {
+        categoryTotals[t.categoryId] = (categoryTotals[t.categoryId] || 0) + Number(t.amount || 0);
+      });
+      const topCat = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])[0];
+      const catMeta = topCat ? (FINANCE_CATEGORIES.expense.find(c => c.id === topCat[0]) || { emoji: '💸', label: 'Other' }) : null;
+
+      const messages = [];
+      messages.push(`<div class="rounded-xl bg-white/70 border border-stone-200/70 p-3">🌱 เดือนนี้ Habit โดยรวมทำได้ประมาณ <b>${overallPct}%</b> จากวันที่ผ่านมา ${elapsedDays} วัน</div>`);
+      if (best && best.pct >= 80) messages.push(`<div class="rounded-xl bg-sage-50 border border-sage-200/70 p-3">🏆 <b>${escapeHtml(best.name)}</b> เป็น Habit ที่ทำได้ดีที่สุดเดือนนี้ — ทำได้ ${best.count} วัน เก่งมาก!</div>`);
+      if (needs && needs.pct < 60) messages.push(`<div class="rounded-xl bg-amber-50 border border-amber-200/70 p-3">💡 <b>${escapeHtml(needs.name)}</b> ยังทำได้ไม่สม่ำเสมอ (${needs.count}/${needs.scheduledCount} วันที่ตั้งใจทำ) เดือนหน้าอาจลองตั้งเป้าให้เล็กลงและทำให้ต่อเนื่องขึ้น</div>`);
+      if (expense > 0 && income > 0 && expense > income) messages.push(`<div class="rounded-xl bg-rose-50 border border-rose-200/70 p-3">💰 เดือนนี้รายจ่ายสูงกว่ารายรับ ลองทบทวนหมวดที่ใช้จ่ายมากที่สุดก่อนวางแผนเดือนหน้านะ</div>`);
+      else if (topCat) messages.push(`<div class="rounded-xl bg-white/70 border border-stone-200/70 p-3">💸 หมวดที่ใช้จ่ายมากที่สุดเดือนนี้คือ <b>${escapeHtml(catMeta.label)}</b> รวม ฿${formatTHB(topCat[1])}</div>`);
+      if (expense === 0) messages.push(`<div class="rounded-xl bg-white/70 border border-stone-200/70 p-3">💰 ยังไม่มีรายจ่ายที่บันทึกไว้ในเดือนนี้</div>`);
+
+      summaryEl.innerHTML = messages.join('');
+      if (nextFocusEl) {
+        const focusParts = [];
+        if (needs && needs.pct < 60) focusParts.push(`ลองทำ ${needs.name} ให้สม่ำเสมอขึ้น`);
+        if (expense > income && income > 0) focusParts.push('ทบทวนรายจ่ายก่อนเริ่มเดือนใหม่');
+        if (!focusParts.length) focusParts.push('รักษา Habit ที่ทำได้ดี และค่อย ๆ พัฒนาทีละนิด');
+        nextFocusEl.textContent = focusParts.join(' • ') + ' 🌷';
+      }
+    }
+
+    function renderMonthlyMonthTabs() {
+      const el = document.getElementById('monthly-month-tabs');
+      if (!el) return;
+      const prev = new Date(monthlyViewDate.getFullYear(), monthlyViewDate.getMonth() - 1, 1);
+      const curr = new Date(monthlyViewDate.getFullYear(), monthlyViewDate.getMonth(), 1);
+      const next = new Date(monthlyViewDate.getFullYear(), monthlyViewDate.getMonth() + 1, 1);
+      const todayKey = getTodayISO().slice(0, 7);
+      const selectedKey = getMonthKey();
+      el.innerHTML = [
+        monthTabButtonHtml(prev, "changeSelectedMonth(-1)", false, formatMonthKey(prev) === todayKey),
+        monthTabButtonHtml(curr, "changeSelectedMonth(0)", true, formatMonthKey(curr) === todayKey),
+        monthTabButtonHtml(next, "changeSelectedMonth(1)", false, formatMonthKey(next) === todayKey)
+      ].join('');
+    }
+
+    function renderMonthlyOverview() {
+      const monthKey = getMonthKey();
+      const monthData = ensureMonthRecord(monthKey);
+      const label = new Intl.DateTimeFormat('en-US', {
+        month: 'long',
+        year: 'numeric'
+      }).format(monthlyViewDate);
+
+      document.getElementById('monthly-overview-label').textContent = label;
+      renderMonthlyMonthTabs();
+      document.getElementById('monthly-focus-input').value = monthData.focus || '';
+      renderMonthlyCalendar();
+      renderMonthlyHabitInsights();
+
+      const goals = monthData.goals || [];
+      document.getElementById('monthly-goals-list').innerHTML = goals.map((g, idx) => `
+        <div class="flex items-center gap-2.5 bg-white rounded-xl border ${g.done ? 'border-sage-200' : 'border-stone-200'} px-3 py-2.5">
+          <button type="button" onclick="toggleMonthlyGoal(${idx})"
+            class="w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 ${g.done ? 'bg-sage-500 border-sage-500 text-white' : 'bg-white border-stone-300 hover:border-sage-500'} cursor-pointer">
+            ${g.done ? '<i data-lucide="check" class="w-3.5 h-3.5 stroke-[3]"></i>' : ''}
+          </button>
+          <input type="text" value="${escapeHtml(g.text || '')}" oninput="updateMonthlyGoal(${idx}, this.value)"
+            placeholder="Goal ${idx + 1}..."
+            class="w-full bg-transparent text-xs sm:text-sm focus:outline-none ${g.done ? 'line-through text-stone-400' : 'text-stone-800'}">
+          <button type="button" onclick="deleteMonthlyGoal(${idx})" class="p-1 text-stone-300 hover:text-rose-500 cursor-pointer">
+            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    function renderTodoList(dayData) {
+      const total = dayData.todos.length;
+      const doneCount = dayData.todos.filter(t => t.done).length;
+      const pct = total === 0 ? 0 : Math.round((doneCount / total) * 100);
+
+      document.getElementById('todo-progress-label').textContent = `${pct}% (${doneCount}/${total})`;
+      document.getElementById('todo-progress-fill').style.width = `${pct}%`;
+
+      // Update Filter Buttons
+      ['all', 'active', 'done'].forEach(key => {
+        const btn = document.getElementById(`todo-filter-${key}`);
+        if (todoFilter === key) {
+          btn.className = 'px-3 py-1 rounded-full bg-stone-800 text-white cursor-pointer';
+        } else {
+          btn.className = 'px-3 py-1 rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200/70 cursor-pointer';
+        }
+      });
+
+      const filtered = dayData.todos.filter(t => {
+        if (todoFilter === 'active') return !t.done;
+        if (todoFilter === 'done') return t.done;
+        return true;
+      });
+
+      const container = document.getElementById('todo-items-container');
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 px-3 rounded-xl border border-dashed border-stone-200 bg-cream/60 text-xs text-stone-400">
+            No tasks in this category 🍃
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(todo => {
+        const pStyle = TODO_PRIORITIES[todo.priority] || TODO_PRIORITIES.normal;
+        return `
+          <div class="group flex items-center justify-between gap-2 p-2.5 rounded-xl border transition-all ${
+            todo.done ? 'bg-stone-50 border-stone-200/60' : 'bg-cream/80 hover:bg-white border-stone-200/90'
+          }">
+            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+              <button
+                type="button"
+                onclick="toggleTodoDone('${todo.id}')"
+                class="w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 cursor-pointer ${
+                  todo.done ? 'bg-sage-500 border-sage-500 text-white animate-check' : 'bg-white border-stone-300 hover:border-sage-500'
+                }"
+              >
+                ${todo.done ? '<i data-lucide="check" class="w-3.5 h-3.5 stroke-[3]"></i>' : ''}
+              </button>
+              <span
+                onclick="toggleTodoDone('${todo.id}')"
+                class="text-xs sm:text-sm font-medium cursor-pointer truncate ${
+                  todo.done ? 'line-through text-stone-400' : 'text-stone-800'
+                }"
+              >
+                ${escapeHtml(todo.text)}
+              </span>
+            </div>
+
+            <div class="flex items-center gap-1.5 shrink-0">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${pStyle.badge}">${pStyle.label}</span>
+              <button
+                type="button"
+                onclick="deleteTodoItem('${todo.id}')"
+                class="p-1 rounded-lg text-stone-300 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              >
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function saveTimeBlock(e) {
+      e.preventDefault();
+      const id = document.getElementById('tb-id-value').value;
+      const start = document.getElementById('tb-start-input').value;
+      const end = document.getElementById('tb-end-input').value;
+      const title = document.getElementById('tb-title-input').value.trim();
+      const category = document.querySelector('input[name="tb-cat"]:checked').value;
+      if (!title || !start || !end) return;
+
+      if (end <= start) {
+        showToast('End time must be later than start time');
+        return;
+      }
+
+      const dayData = ensureDayRecord(currentDateStr);
+      normalizeTimeBlocks(dayData);
+
+      if (id) {
+        const block = dayData.timeBlocks.find(b => b.id === id);
+        if (block) {
+          block.start = start;
+          block.end = end;
+          block.title = title;
+          block.category = category;
+        }
+      } else {
+        dayData.timeBlocks.push({
+          id: `tb-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          start,
+          end,
+          title,
+          category,
+          done: false
+        });
+      }
+
+      saveStore();
+      closeModal('timeblock-modal');
+      renderDailyPlanner();
+      lucide.createIcons();
+      showToast(id ? 'Time block updated' : 'Time block added');
+    }
+
+    function selectCalendarDate(dateKey) {
+      currentDateStr = dateKey;
+      switchDailySubTab('daily');
+      renderDailyPlanner();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function selectDayMood(moodId) {
+      const dayData = ensureDayRecord(currentDateStr);
+      dayData.mood = moodId;
+      saveStore();
+      renderDailyPlanner();
+      lucide.createIcons();
+    }
+
+    function selectHabitEmoji(emoji) {
+      document.getElementById('new-habit-emoji').value = emoji;
+      renderHabitEmojiPicker();
+    }
+
+    function setHabitSchedule(type) {
+      const schedule = type === 'weekdays' ? [1,2,3,4,5] : type === 'weekends' ? [6,7] : [1,2,3,4,5,6,7];
+      renderHabitSchedulePicker(schedule);
+    }
+
+    function switchDailySubTab(tab) {
+      const monthly = document.getElementById('daily-monthly-view');
+      const daily = document.getElementById('daily-detail-view');
+      const mb = document.getElementById('daily-subtab-monthly');
+      const db = document.getElementById('daily-subtab-daily');
+
+      if (tab === 'monthly') {
+        monthly.classList.remove('hidden');
+        daily.classList.add('hidden');
+        mb.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-sage-100 text-sage-700 transition-all cursor-pointer';
+        db.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-stone-600 hover:text-stone-900 transition-all cursor-pointer';
+        renderMonthlyOverview();
+      } else {
+        monthly.classList.add('hidden');
+        daily.classList.remove('hidden');
+        db.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-sage-100 text-sage-700 transition-all cursor-pointer';
+        mb.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-stone-600 hover:text-stone-900 transition-all cursor-pointer';
+      }
+      lucide.createIcons();
+    }
+
+    function toggleHabitScheduleDay(dayValue) {
+      const selected = new Set(getSelectedHabitSchedule());
+      if (selected.has(dayValue)) selected.delete(dayValue);
+      else selected.add(dayValue);
+      renderHabitSchedulePicker([...selected]);
+    }
+
+    function toggleMonthlyGoal(idx) {
+      const monthData = ensureMonthRecord();
+      monthData.goals[idx].done = !monthData.goals[idx].done;
+      saveStore();
+      renderMonthlyOverview();
+    }
+
+    function togglePriorityDone(idx) {
+      const dayData = ensureDayRecord(currentDateStr);
+      dayData.priorities[idx].done = !dayData.priorities[idx].done;
+      saveStore();
+      renderDailyPlanner();
+      lucide.createIcons();
+    }
+
+    function updateMonthlyFocus(value) {
+      ensureMonthRecord().focus = value;
+      saveStore();
+    }
+
+        // Daily Planner Interactions
+
+    function updateMonthlyGoal(idx, text) {
+      const monthData = ensureMonthRecord();
+      monthData.goals[idx].text = text;
+      saveStore();
+    }
+
+    function updatePriorityText(idx, text) {
+      const dayData = ensureDayRecord(currentDateStr);
+      dayData.priorities[idx].text = text;
+      saveStore();
+    }
+
   </script>
 </body>
 </html>
