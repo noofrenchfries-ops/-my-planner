@@ -147,13 +147,6 @@
           <span>💰 Money</span>
         </button>
         <button
-          id="tab-btn-debt"
-          onclick="switchMainTab('debt')"
-          class="flex-1 lg:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer text-stone-600 hover:text-stone-900 whitespace-nowrap"
-        >
-          <span>💳 Debt</span>
-        </button>
-        <button
           id="tab-btn-work"
           onclick="switchMainTab('work')"
           class="flex-1 lg:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer text-stone-600 hover:text-stone-900 whitespace-nowrap"
@@ -1093,144 +1086,6 @@
     </div>
   </div>
 
-  <!-- ========================================================= -->
-  <!-- TAB 4: DEBT / LOAN MANAGER                               -->
-  <!-- ========================================================= -->
-  <main id="view-tab-debt" class="hidden flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
-    <section class="bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5 sm:p-6">
-      <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-        <div>
-          <p class="text-xs font-semibold text-stone-400 mb-1">Debt Manager</p>
-          <h2 class="text-2xl sm:text-3xl font-extrabold text-stone-800">💳 Debt / Loan</h2>
-          <p class="text-xs text-stone-500 mt-1">Keep the detailed debt plan here. Money only records the payment.</p>
-        </div>
-        <button type="button" onclick="openDebtModal()" class="px-4 py-2.5 rounded-xl bg-sage-600 hover:bg-sage-700 text-white text-xs font-bold cursor-pointer">＋ Add Debt</button>
-      </div>
-    </section>
-
-    <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-      <div class="bg-violet-50 rounded-2xl border border-violet-200/80 p-4 shadow-card">
-        <p class="text-[11px] font-bold text-violet-700">Total Debt</p>
-        <p id="debt-stat-total" class="text-xl sm:text-2xl font-extrabold text-violet-800 mt-1">฿0</p>
-      </div>
-      <div class="bg-amber-50 rounded-2xl border border-amber-200/80 p-4 shadow-card">
-        <p class="text-[11px] font-bold text-amber-700">Planned / Month</p>
-        <p id="debt-stat-monthly" class="text-xl sm:text-2xl font-extrabold text-amber-800 mt-1">฿0</p>
-      </div>
-      <div class="bg-emerald-50 rounded-2xl border border-emerald-200/80 p-4 shadow-card">
-        <p class="text-[11px] font-bold text-emerald-700">Active Debts</p>
-        <p id="debt-stat-active" class="text-xl sm:text-2xl font-extrabold text-emerald-700 mt-1">0</p>
-      </div>
-      <div class="bg-sky-50 rounded-2xl border border-sky-200/80 p-4 shadow-card">
-        <p class="text-[11px] font-bold text-sky-700">Paid Off</p>
-        <p id="debt-stat-paid" class="text-xl sm:text-2xl font-extrabold text-sky-700 mt-1">0</p>
-      </div>
-    </section>
-
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-      <section class="lg:col-span-7 bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5">
-        <div class="flex items-center justify-between gap-3 mb-4">
-          <div>
-            <h2 class="text-base font-bold text-stone-800">📋 My Debts</h2>
-            <p class="text-[11px] text-stone-400 mt-1">Current balance, monthly payment and due date.</p>
-          </div>
-        </div>
-        <div id="debt-list" class="space-y-3"></div>
-      </section>
-
-      <div class="lg:col-span-5 space-y-5">
-        <section class="bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5">
-          <div class="flex items-center justify-between mb-3">
-            <div>
-              <h2 class="text-base font-bold text-stone-800">💸 Record Debt Payment</h2>
-              <p class="text-[11px] text-stone-400 mt-1">This also adds a 💳 Debt / Loan transaction in Money.</p>
-            </div>
-          </div>
-          <form onsubmit="recordDebtPayment(event)" class="space-y-3">
-            <div>
-              <label class="block text-xs font-bold text-stone-700 mb-1">Debt</label>
-              <select id="debt-payment-select" required class="w-full px-3.5 py-2.5 text-xs sm:text-sm font-semibold bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500"></select>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs font-bold text-stone-700 mb-1">Amount (THB)</label>
-                <input id="debt-payment-amount" type="number" min="0.01" step="any" required placeholder="0.00" class="w-full px-3 py-2.5 text-sm font-bold bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" />
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-stone-700 mb-1">Payment Date</label>
-                <input id="debt-payment-date" type="date" required class="w-full px-3 py-2.5 text-xs sm:text-sm font-semibold bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" />
-              </div>
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-stone-700 mb-1">Note</label>
-              <input id="debt-payment-note" type="text" placeholder="e.g. December installment" class="w-full px-3 py-2.5 text-xs sm:text-sm bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" />
-            </div>
-            <button type="submit" class="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-sage-600 hover:bg-sage-700 cursor-pointer">＋ Record Payment</button>
-          </form>
-        </section>
-
-        <section class="bg-stone-50/80 rounded-2xl border border-stone-200/80 shadow-soft p-5">
-          <div class="mb-3">
-            <h2 class="text-base font-bold text-stone-800">📉 Debt Progress</h2>
-            <p class="text-[11px] text-stone-400 mt-1">Simple estimate based on the current balance and planned monthly payment.</p>
-          </div>
-          <div id="debt-projection" class="space-y-2"></div>
-        </section>
-      </div>
-    </div>
-  </main>
-
-  <!-- DEBT MODAL -->
-  <div id="debt-modal" class="hidden fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-float border border-stone-100 animate-modal">
-      <div class="flex items-center justify-between pb-3 border-b border-stone-100">
-        <h3 id="debt-modal-heading" class="text-base font-bold text-stone-800">💳 Add Debt</h3>
-        <button onclick="closeModal('debt-modal')" class="p-1.5 rounded-full text-stone-400 hover:bg-stone-100 cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
-      </div>
-      <form onsubmit="saveDebt(event)" class="mt-4 space-y-3.5">
-        <input type="hidden" id="debt-id-value" />
-        <div class="grid grid-cols-[84px_1fr] gap-3">
-          <div>
-            <label class="block text-xs font-bold text-stone-700 mb-1">Emoji</label>
-            <input id="debt-emoji-input" maxlength="4" value="💳" class="w-full px-3 py-2.5 text-lg text-center bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" />
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-stone-700 mb-1">Debt Name *</label>
-            <input id="debt-name-input" required placeholder="e.g. SPayLater" class="w-full px-3 py-2.5 text-sm font-semibold bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" />
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-bold text-stone-700 mb-1">Original Balance</label>
-            <input id="debt-original-input" type="number" min="0" step="any" placeholder="0.00" class="w-full px-3 py-2.5 text-sm bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" />
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-stone-700 mb-1">Current Balance *</label>
-            <input id="debt-balance-input" type="number" min="0" step="any" required placeholder="0.00" class="w-full px-3 py-2.5 text-sm font-bold bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" />
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-bold text-stone-700 mb-1">Monthly Payment</label>
-            <input id="debt-monthly-input" type="number" min="0" step="any" placeholder="0.00" class="w-full px-3 py-2.5 text-sm bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" />
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-stone-700 mb-1">Due Day</label>
-            <input id="debt-due-input" type="number" min="1" max="31" step="1" placeholder="e.g. 25" class="w-full px-3 py-2.5 text-sm bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" />
-          </div>
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-stone-700 mb-1">Notes</label>
-          <textarea id="debt-notes-input" rows="3" placeholder="Optional notes about this debt..." class="w-full px-3 py-2.5 text-xs sm:text-sm bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500"></textarea>
-        </div>
-        <div class="flex justify-end gap-2 pt-2">
-          <button type="button" onclick="closeModal('debt-modal')" class="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100 cursor-pointer">Cancel</button>
-          <button type="submit" class="px-5 py-2 rounded-xl text-xs font-bold text-white bg-sage-600 hover:bg-sage-700 cursor-pointer">Save Debt</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <!-- Subtle Footer -->
   <footer class="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 mt-4 border-t border-stone-200/60 flex flex-wrap items-center justify-between gap-2 text-xs text-stone-400">
     <div>My Planner ✨ • Auto-saves in your browser (LocalStorage) • 100% free</div>
@@ -2009,12 +1864,10 @@
       const dailyView = document.getElementById('view-tab-daily');
       const contentView = document.getElementById('view-tab-content');
       const financeView = document.getElementById('view-tab-finance');
-      const debtView = document.getElementById('view-tab-debt');
       const workView = document.getElementById('view-tab-work');
       const btnDaily = document.getElementById('tab-btn-daily');
       const btnContent = document.getElementById('tab-btn-content');
       const btnFinance = document.getElementById('tab-btn-finance');
-      const btnDebt = document.getElementById('tab-btn-debt');
       const btnWork = document.getElementById('tab-btn-work');
 
       const activeClass = 'flex-1 lg:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer bg-white text-sage-700 shadow-xs whitespace-nowrap';
@@ -2023,12 +1876,10 @@
       dailyView.classList.add('hidden');
       contentView.classList.add('hidden');
       financeView.classList.add('hidden');
-      debtView.classList.add('hidden');
       workView.classList.add('hidden');
       btnDaily.className = inactiveClass;
       btnContent.className = inactiveClass;
       btnFinance.className = inactiveClass;
-      btnDebt.className = inactiveClass;
       btnWork.className = inactiveClass;
 
       if (tab === 'daily') {
@@ -2043,10 +1894,6 @@
         financeView.classList.remove('hidden');
         btnFinance.className = activeClass;
         renderFinanceTracker();
-      } else if (tab === 'debt') {
-        debtView.classList.remove('hidden');
-        btnDebt.className = activeClass;
-        renderDebtDashboard();
       } else if (tab === 'work') {
         workView.classList.remove('hidden');
         btnWork.className = activeClass;
@@ -3632,7 +3479,6 @@
       }
 
       saveStore();
-      renderDebtDashboard();
       closeModal('debt-modal');
       lucide.createIcons();
       showToast(id ? 'Debt updated 💳' : 'Debt added 💳');
@@ -3644,7 +3490,6 @@
       if (!confirm(`Delete ${debt.name}? This removes the debt record and its payment history, but does not delete Money transactions.`)) return;
       store.debts = store.debts.filter(d => d.id !== id);
       saveStore();
-      renderDebtDashboard();
       lucide.createIcons();
       showToast('Debt deleted');
     }
@@ -3682,7 +3527,6 @@
       document.getElementById('debt-payment-amount').value = '';
       document.getElementById('debt-payment-note').value = '';
       saveStore();
-      renderDebtDashboard();
       renderFinanceTracker();
       lucide.createIcons();
       showToast(debt.balance <= 0 ? `🎉 ${debt.name} paid off!` : '💳 Debt payment recorded');
@@ -4247,7 +4091,6 @@
       renderMonthlyOverview();
       renderContentStudio();
       renderFinanceTracker();
-      renderDebtDashboard();
       renderWorkDashboard();
       lucide.createIcons();
       closeModal('reset-confirm-modal');
@@ -4278,7 +4121,7 @@
     }
 
     window.addEventListener('click', (e) => {
-      ['timeblock-modal', 'surprise-modal', 'content-edit-modal', 'reset-confirm-modal', 'auth-modal', 'work-task-modal', 'work-routine-modal', 'debt-modal'].forEach(id => {
+      ['timeblock-modal', 'surprise-modal', 'content-edit-modal', 'reset-confirm-modal', 'auth-modal', 'work-task-modal', 'work-routine-modal'].forEach(id => {
         if (e.target === document.getElementById(id)) closeModal(id);
       });
     });
@@ -4290,7 +4133,6 @@
       renderDailyPlanner();
       renderContentStudio();
       renderFinanceTracker();
-      renderDebtDashboard();
       renderWorkDashboard();
       lucide.createIcons();
     });
