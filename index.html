@@ -329,12 +329,12 @@
     <!-- Main 3-Column Responsive Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
 
-      <!-- Column 1 (4 cols): ⏰ Time Blocks (07:00 – 22:00) -->
+      <!-- Column 1 (4 cols): ⏰ Time Blocks -->
       <section class="lg:col-span-4 bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5 flex flex-col">
         <div class="flex items-center justify-between pb-3 border-b border-stone-100">
           <div>
             <h2 class="text-base font-bold text-stone-800">⏰ Time Blocks</h2>
-            <p class="text-[11px] text-stone-500">07:00 AM – 10:00 PM • Click to add an activity</p>
+            <p class="text-[11px] text-stone-500">Choose your own start & end time • Add as many blocks as you need</p>
           </div>
         </div>
 
@@ -346,10 +346,17 @@
           <span class="px-2 py-0.5 rounded-full bg-purple-100/80 text-purple-800">☕ Rest</span>
         </div>
 
-        <!-- Hourly Rows -->
+        <!-- Custom Time Blocks -->
         <div id="time-blocks-list" class="mt-3 space-y-1.5 max-h-[640px] overflow-y-auto pr-1">
           <!-- Rendered by JS -->
         </div>
+        <button
+          type="button"
+          onclick="openTimeBlockModal()"
+          class="mt-3 w-full py-2.5 rounded-xl border border-dashed border-sage-200 bg-sage-50/40 hover:bg-sage-50 hover:border-sage-400 text-xs font-bold text-sage-700 transition-colors cursor-pointer"
+        >
+          ＋ Add Time Block
+        </button>
       </section>
 
       <!-- Column 2 (4 cols): ✅ To-Do Checklist -->
@@ -786,14 +793,35 @@
   <div id="timeblock-modal" class="hidden fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-float border border-stone-100 animate-modal">
       <div class="flex items-center justify-between pb-3 border-b border-stone-100">
-        <h3 id="tb-modal-heading" class="text-base font-bold text-stone-800">⏰ Add activity at 09:00</h3>
+        <h3 id="tb-modal-heading" class="text-base font-bold text-stone-800">⏰ Add Time Block</h3>
         <button onclick="closeModal('timeblock-modal')" class="p-1.5 rounded-full text-stone-400 hover:bg-stone-100 cursor-pointer">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
 
       <form onsubmit="saveTimeBlock(event)" class="mt-4 space-y-4">
-        <input type="hidden" id="tb-hour-value" />
+        <input type="hidden" id="tb-id-value" />
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Start Time *</label>
+            <input
+              type="time"
+              id="tb-start-input"
+              required
+              class="w-full px-3 py-2.5 text-sm bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">End Time *</label>
+            <input
+              type="time"
+              id="tb-end-input"
+              required
+              class="w-full px-3 py-2.5 text-sm bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500"
+            />
+          </div>
+        </div>
 
         <div>
           <label class="block text-xs font-bold text-stone-700 mb-1">Activity / Task Name *</label>
@@ -801,7 +829,7 @@
             type="text"
             id="tb-title-input"
             required
-            placeholder="e.g. Plan weekly content, team meeting..."
+            placeholder="e.g. Product Catalog, meeting, lunch..."
             class="w-full px-3.5 py-2.5 text-sm bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500"
           />
         </div>
@@ -1048,7 +1076,6 @@
     let cloudSaveTimer = null;
     let isCloudHydrating = false;
 
-    const HOURS = Array.from({ length: 16 }, (_, i) => `${String(i + 7).padStart(2, '0')}:00`);
 
     const MOOD_OPTIONS = [
       { id: 'great',    emoji: '🤩', label: 'Great' },
@@ -1162,13 +1189,13 @@
               { text: 'Reply to customer chats and check inventory', done: false },
               { text: 'Drink 2L of water and sleep before 10 PM', done: false }
             ],
-            timeBlocks: {
-              '08:00': { title: 'Coffee + check today’s plan', category: 'personal', done: true },
-              '09:00': { title: 'Plan and write scripts for 3 videos', category: 'work', done: false },
-              '12:00': { title: 'Lunch break & relaxing walk', category: 'rest', done: false },
-              '15:00': { title: 'Weekly update meeting and summary', category: 'work', done: false },
-              '18:00': { title: 'Exercise / stretch for 30 minutes', category: 'health', done: false }
-            },
+            timeBlocks: [
+              { id: 'tb-demo-1', start: '08:00', end: '09:00', title: 'Coffee + check today’s plan', category: 'personal', done: true },
+              { id: 'tb-demo-2', start: '09:00', end: '11:00', title: 'Plan and write scripts for 3 videos', category: 'work', done: false },
+              { id: 'tb-demo-3', start: '12:00', end: '13:00', title: 'Lunch break & relaxing walk', category: 'rest', done: false },
+              { id: 'tb-demo-4', start: '15:00', end: '16:00', title: 'Weekly update meeting and summary', category: 'work', done: false },
+              { id: 'tb-demo-5', start: '18:00', end: '18:30', title: 'Exercise / stretch for 30 minutes', category: 'health', done: false }
+            ],
             todos: [
               { id: 'td-1', text: 'Send weekly summary file', priority: 'urgent', done: true },
               { id: 'td-2', text: 'Organize desk and clear documents', priority: 'normal', done: false },
@@ -1449,7 +1476,7 @@
             { text: '', done: false },
             { text: '', done: false }
           ],
-          timeBlocks: {},
+          timeBlocks: [],
           todos: [],
           reflection: ''
         };
@@ -1498,6 +1525,8 @@
     // 4. TAB 1: DAILY PLANNER RENDER & ACTIONS
     // =========================================================
     function renderDailyPlanner() {
+      const dayData = ensureDayRecord(currentDateStr);
+      normalizeTimeBlocks(dayData);
       const dayData = ensureDayRecord(currentDateStr);
 
       // 1. Date Header
@@ -1574,58 +1603,59 @@
 
     function renderTimeBlocks(dayData) {
       const container = document.getElementById('time-blocks-list');
-      container.innerHTML = HOURS.map(hour => {
-        const block = dayData.timeBlocks[hour];
-        if (block) {
-          const cat = TB_CATEGORIES[block.category] || TB_CATEGORIES.work;
-          return `
-            <div class="flex items-center gap-2">
-              <span class="w-11 text-right text-xs font-bold text-stone-500 shrink-0">${hour}</span>
-              <div class="flex-1 flex items-center justify-between gap-2 px-3 py-2 rounded-xl border ${cat.border} ${cat.bg} transition-all">
-                <div class="flex items-center gap-2 min-w-0">
-                  <button
-                    type="button"
-                    onclick="toggleTimeBlockDone('${hour}')"
-                    class="w-4 h-4 rounded border flex items-center justify-center shrink-0 cursor-pointer ${
-                      block.done ? 'bg-sage-600 border-sage-600 text-white' : 'bg-white border-stone-300'
-                    }"
-                  >
-                    ${block.done ? '<i data-lucide="check" class="w-3 h-3 stroke-[3]"></i>' : ''}
-                  </button>
-                  <span class="text-xs font-semibold text-stone-800 truncate ${block.done ? 'line-through opacity-50' : ''}">
+      normalizeTimeBlocks(dayData);
+      const blocks = [...dayData.timeBlocks].sort((a, b) => a.start.localeCompare(b.start));
+
+      if (blocks.length === 0) {
+        container.innerHTML = `
+          <div class="py-8 text-center text-stone-400">
+            <div class="text-2xl mb-1">⏰</div>
+            <p class="text-xs font-semibold">No time blocks yet</p>
+            <p class="text-[10px] mt-1">Add your own start & end time</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = blocks.map(block => {
+        const cat = TB_CATEGORIES[block.category] || TB_CATEGORIES.work;
+        return `
+          <div class="flex items-start gap-2">
+            <div class="w-[76px] shrink-0 text-right pt-2">
+              <div class="text-[11px] font-bold text-stone-600">${escapeHtml(block.start)}</div>
+              <div class="text-[10px] text-stone-400">${escapeHtml(block.end)}</div>
+            </div>
+            <div class="flex-1 flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border ${cat.border} ${cat.bg} transition-all">
+              <div class="flex items-center gap-2 min-w-0">
+                <button
+                  type="button"
+                  onclick="toggleTimeBlockDone('${block.id}')"
+                  class="w-4 h-4 rounded border flex items-center justify-center shrink-0 cursor-pointer ${
+                    block.done ? 'bg-sage-600 border-sage-600 text-white' : 'bg-white border-stone-300'
+                  }"
+                >
+                  ${block.done ? '<i data-lucide="check" class="w-3 h-3 stroke-[3]"></i>' : ''}
+                </button>
+                <div class="min-w-0">
+                  <div class="text-xs font-semibold text-stone-800 truncate ${block.done ? 'line-through opacity-50' : ''}">
                     ${escapeHtml(block.title)}
-                  </span>
-                </div>
-                <div class="flex items-center gap-1.5 shrink-0">
-                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${cat.badge}">${cat.label.split(' ')[0]}</span>
-                  <button
-                    type="button"
-                    onclick="deleteTimeBlock('${hour}')"
-                    title="Delete activity"
-                    class="p-1 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-white/70 cursor-pointer"
-                  >
-                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
-                  </button>
+                  </div>
+                  <span class="inline-flex mt-1 px-2 py-0.5 rounded-full text-[9px] font-bold ${cat.badge}">${cat.label}</span>
                 </div>
               </div>
+              <button
+                type="button"
+                onclick="deleteTimeBlock('${block.id}')"
+                title="Delete activity"
+                class="p-1 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-white/70 cursor-pointer shrink-0"
+              >
+                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+              </button>
             </div>
-          `;
-        }
-
-        return `
-          <div class="flex items-center gap-2">
-            <span class="w-11 text-right text-xs font-medium text-stone-400 shrink-0">${hour}</span>
-            <button
-              type="button"
-              onclick="openTimeBlockModal('${hour}')"
-              class="flex-1 h-8 px-3 rounded-xl border border-dashed border-stone-200 hover:border-sage-500 hover:bg-sage-50/50 flex items-center justify-between text-[11px] text-stone-400 hover:text-sage-700 transition-colors cursor-pointer"
-            >
-              <span>+ Add Activity</span>
-              <i data-lucide="plus" class="w-3 h-3"></i>
-            </button>
           </div>
         `;
       }).join('');
+      lucide.createIcons();
     }
 
     function renderTodoList(dayData) {
@@ -2063,43 +2093,114 @@
       lucide.createIcons();
     }
 
-    function openTimeBlockModal(hour) {
-      document.getElementById('tb-hour-value').value = hour;
-      document.getElementById('tb-modal-heading').textContent = `⏰ Add activity at ${hour} `;
-      document.getElementById('tb-title-input').value = '';
+    function normalizeTimeBlocks(dayData) {
+      if (Array.isArray(dayData.timeBlocks)) return;
+
+      const legacy = dayData.timeBlocks || {};
+      dayData.timeBlocks = Object.entries(legacy).map(([start, block], idx) => {
+        const [h, m] = start.split(':').map(Number);
+        const endDate = new Date(2000, 0, 1, h, m || 0);
+        endDate.setHours(endDate.getHours() + 1);
+        const end = `${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}`;
+        return {
+          id: `tb-legacy-${start}-${idx}`,
+          start,
+          end,
+          title: block.title || '',
+          category: block.category || 'work',
+          done: !!block.done
+        };
+      });
+    }
+
+    function getDefaultTimeBlockTimes() {
+      const now = new Date();
+      const minutes = now.getHours() * 60 + now.getMinutes();
+      const rounded = Math.ceil(minutes / 30) * 30;
+      const startM = Math.min(rounded, 23 * 60);
+      const endM = Math.min(startM + 60, 23 * 60 + 30);
+      const fmt = m => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+      return { start: fmt(startM), end: fmt(endM) };
+    }
+
+    function openTimeBlockModal(blockId = '') {
+      const dayData = ensureDayRecord(currentDateStr);
+      normalizeTimeBlocks(dayData);
+      const existing = blockId ? dayData.timeBlocks.find(b => b.id === blockId) : null;
+      const defaults = getDefaultTimeBlockTimes();
+
+      document.getElementById('tb-id-value').value = existing ? existing.id : '';
+      document.getElementById('tb-modal-heading').textContent = existing ? '⏰ Edit Time Block' : '⏰ Add Time Block';
+      document.getElementById('tb-start-input').value = existing?.start || defaults.start;
+      document.getElementById('tb-end-input').value = existing?.end || defaults.end;
+      document.getElementById('tb-title-input').value = existing?.title || '';
+      document.querySelectorAll('input[name="tb-cat"]').forEach(r => {
+        r.checked = r.value === (existing?.category || 'work');
+      });
+
       document.getElementById('timeblock-modal').classList.remove('hidden');
       setTimeout(() => document.getElementById('tb-title-input').focus(), 50);
     }
 
     function saveTimeBlock(e) {
       e.preventDefault();
-      const hour = document.getElementById('tb-hour-value').value;
+      const id = document.getElementById('tb-id-value').value;
+      const start = document.getElementById('tb-start-input').value;
+      const end = document.getElementById('tb-end-input').value;
       const title = document.getElementById('tb-title-input').value.trim();
       const category = document.querySelector('input[name="tb-cat"]:checked').value;
-      if (!title) return;
+      if (!title || !start || !end) return;
+
+      if (end <= start) {
+        showToast('End time must be later than start time');
+        return;
+      }
 
       const dayData = ensureDayRecord(currentDateStr);
-      dayData.timeBlocks[hour] = { title, category, done: false };
+      normalizeTimeBlocks(dayData);
+
+      if (id) {
+        const block = dayData.timeBlocks.find(b => b.id === id);
+        if (block) {
+          block.start = start;
+          block.end = end;
+          block.title = title;
+          block.category = category;
+        }
+      } else {
+        dayData.timeBlocks.push({
+          id: `tb-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          start,
+          end,
+          title,
+          category,
+          done: false
+        });
+      }
+
       saveStore();
       closeModal('timeblock-modal');
       renderDailyPlanner();
       lucide.createIcons();
-      showToast('Activity added to schedule');
+      showToast(id ? 'Time block updated' : 'Time block added');
     }
 
-    function toggleTimeBlockDone(hour) {
+    function toggleTimeBlockDone(id) {
       const dayData = ensureDayRecord(currentDateStr);
-      if (dayData.timeBlocks[hour]) {
-        dayData.timeBlocks[hour].done = !dayData.timeBlocks[hour].done;
+      normalizeTimeBlocks(dayData);
+      const block = dayData.timeBlocks.find(b => b.id === id);
+      if (block) {
+        block.done = !block.done;
         saveStore();
         renderDailyPlanner();
         lucide.createIcons();
       }
     }
 
-    function deleteTimeBlock(hour) {
+    function deleteTimeBlock(id) {
       const dayData = ensureDayRecord(currentDateStr);
-      delete dayData.timeBlocks[hour];
+      normalizeTimeBlocks(dayData);
+      dayData.timeBlocks = dayData.timeBlocks.filter(b => b.id !== id);
       saveStore();
       renderDailyPlanner();
       lucide.createIcons();
