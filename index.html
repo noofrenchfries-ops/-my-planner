@@ -558,27 +558,46 @@
     </section>
 
     <!-- Work Profile / JD -->
-    <section class="bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-        <div>
+    <section class="bg-white rounded-2xl border border-stone-200/80 shadow-soft overflow-hidden">
+      <div class="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <button type="button" onclick="toggleWorkProfile()" class="flex-1 text-left cursor-pointer group">
           <p class="text-[11px] font-bold text-stone-400">Work Profile</p>
-          <h2 class="text-base font-bold text-stone-800">📝 My Role & JD</h2>
-          <p class="text-[11px] text-stone-400 mt-1">Keep your official JD and the work you actually do in one place.</p>
-        </div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-base font-bold text-stone-800">📝 My Role & JD</h2>
+            <span id="work-profile-toggle-icon" class="text-stone-400 text-xs transition-transform">▼</span>
+          </div>
+          <p class="text-[11px] text-stone-400 mt-1">เก็บตำแหน่ง, JD และงานที่ทำจริงไว้ดูเป็นข้อ ๆ — กดเพื่อเปิด/พับเก็บ</p>
+        </button>
         <button type="button" onclick="saveWorkProfile()" class="px-3 py-2 rounded-xl bg-sage-100 hover:bg-sage-200 text-sage-800 text-xs font-bold cursor-pointer">Save Profile</button>
       </div>
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-xs font-bold text-stone-700 mb-1">Position</label>
-          <input id="work-profile-position" class="w-full px-3 py-2.5 text-sm bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" placeholder="e.g. Product Marketing (BD)" />
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-stone-700 mb-1">Job Description (JD)</label>
-          <textarea id="work-profile-jd" rows="5" class="w-full px-3 py-2.5 text-xs bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" placeholder="Add one responsibility per line...&#10;• Market & competitor analysis&#10;• Product content / catalog&#10;• Sales support&#10;• BOQ / proposal support"></textarea>
-        </div>
-        <div class="lg:col-span-2">
-          <label class="block text-xs font-bold text-stone-700 mb-1">What I Actually Do</label>
-          <textarea id="work-profile-actual" rows="5" class="w-full px-3 py-2.5 text-xs bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" placeholder="Add the work you actually handle, one item per line..."></textarea>
+      <div id="work-profile-body" class="hidden border-t border-stone-100 px-5 pb-5 pt-4">
+        <div class="space-y-5">
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Position</label>
+            <input id="work-profile-position" class="w-full px-3 py-2.5 text-sm bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" placeholder="e.g. Product Marketing (BD)" />
+          </div>
+
+          <div>
+            <div class="flex items-end justify-between gap-3 mb-2">
+              <div>
+                <label class="block text-xs font-bold text-stone-700">Job Description (JD)</label>
+                <p class="text-[10px] text-stone-400 mt-0.5">ใส่ 1 หน้าที่ต่อ 1 ข้อ</p>
+              </div>
+            </div>
+            <div id="work-profile-jd-list" class="space-y-2"></div>
+            <button type="button" onclick="addWorkProfileItem('jd')" class="mt-2 inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-sage-50 hover:bg-sage-100 text-sage-700 text-xs font-bold cursor-pointer">＋ Add JD</button>
+          </div>
+
+          <div>
+            <div class="flex items-end justify-between gap-3 mb-2">
+              <div>
+                <label class="block text-xs font-bold text-stone-700">What I Actually Do</label>
+                <p class="text-[10px] text-stone-400 mt-0.5">ใส่สิ่งที่ทำจริง 1 งานต่อ 1 ข้อ</p>
+              </div>
+            </div>
+            <div id="work-profile-actual-list" class="space-y-2"></div>
+            <button type="button" onclick="addWorkProfileItem('actual')" class="mt-2 inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-sage-50 hover:bg-sage-100 text-sage-700 text-xs font-bold cursor-pointer">＋ Add Item</button>
+          </div>
         </div>
       </div>
     </section>
@@ -3293,28 +3312,94 @@
     function ensureWorkStore() {
       if (!Array.isArray(store.workTasks)) store.workTasks = [];
       if (!Array.isArray(store.workRoutines)) store.workRoutines = [];
-      if (!store.workProfile || typeof store.workProfile !== 'object') store.workProfile = { position: 'Product Marketing (BD)', jd: '', actual: '' };
+      if (!store.workProfile || typeof store.workProfile !== 'object') {
+        store.workProfile = { position: 'Product Marketing (BD)', jdItems: [], actualItems: [] };
+      }
       if (typeof store.workProfile.position !== 'string') store.workProfile.position = 'Product Marketing (BD)';
-      if (typeof store.workProfile.jd !== 'string') store.workProfile.jd = '';
-      if (typeof store.workProfile.actual !== 'string') store.workProfile.actual = '';
+
+      // Migrate the old v2.0 textarea format into editable item lists.
+      if (!Array.isArray(store.workProfile.jdItems)) {
+        const old = typeof store.workProfile.jd === 'string' ? store.workProfile.jd : '';
+        store.workProfile.jdItems = old.split('\n').map(x => x.trim()).filter(Boolean);
+      }
+      if (!Array.isArray(store.workProfile.actualItems)) {
+        const old = typeof store.workProfile.actual === 'string' ? store.workProfile.actual : '';
+        store.workProfile.actualItems = old.split('\n').map(x => x.trim()).filter(Boolean);
+      }
+      if (!Array.isArray(store.workProfile.jdItems)) store.workProfile.jdItems = [];
+      if (!Array.isArray(store.workProfile.actualItems)) store.workProfile.actualItems = [];
+    }
+
+    function renderWorkProfileItems(type) {
+      ensureWorkStore();
+      const key = type === 'jd' ? 'jdItems' : 'actualItems';
+      const container = document.getElementById(type === 'jd' ? 'work-profile-jd-list' : 'work-profile-actual-list');
+      if (!container) return;
+      const items = store.workProfile[key] || [];
+      container.innerHTML = items.length ? items.map((item, idx) => `
+        <div class="flex items-center gap-2 p-2 rounded-xl border border-stone-200 bg-white shadow-sm">
+          <span class="w-7 h-7 shrink-0 rounded-lg bg-sage-50 text-sage-700 flex items-center justify-center text-xs font-extrabold">${idx + 1}</span>
+          <input value="${escapeHtml(item)}" oninput="updateWorkProfileItem('${type}', ${idx}, this.value)" class="flex-1 min-w-0 bg-transparent px-1 py-1 text-sm text-stone-700 focus:outline-none" placeholder="${type === 'jd' ? 'Enter a job responsibility...' : 'Enter what you actually do...'}" />
+          <button type="button" onclick="deleteWorkProfileItem('${type}', ${idx})" class="w-7 h-7 shrink-0 rounded-lg text-stone-300 hover:text-rose-500 hover:bg-rose-50 cursor-pointer" title="Delete">🗑️</button>
+        </div>
+      `).join('') : `
+        <div class="py-4 px-3 text-center rounded-xl border border-dashed border-stone-200 bg-stone-50/60 text-xs text-stone-400">
+          ยังไม่มีรายการ — กด <b>${type === 'jd' ? '＋ Add JD' : '＋ Add Item'}</b> เพื่อเพิ่ม
+        </div>`;
     }
 
     function renderWorkProfile() {
       ensureWorkStore();
       const position = document.getElementById('work-profile-position');
-      const jd = document.getElementById('work-profile-jd');
-      const actual = document.getElementById('work-profile-actual');
       if (position && document.activeElement !== position) position.value = store.workProfile.position || '';
-      if (jd && document.activeElement !== jd) jd.value = store.workProfile.jd || '';
-      if (actual && document.activeElement !== actual) actual.value = store.workProfile.actual || '';
+      renderWorkProfileItems('jd');
+      renderWorkProfileItems('actual');
+    }
+
+    function updateWorkProfileItem(type, index, value) {
+      ensureWorkStore();
+      const key = type === 'jd' ? 'jdItems' : 'actualItems';
+      if (store.workProfile[key] && store.workProfile[key][index] !== undefined) {
+        store.workProfile[key][index] = value;
+        saveStore();
+      }
+    }
+
+    function addWorkProfileItem(type) {
+      ensureWorkStore();
+      const key = type === 'jd' ? 'jdItems' : 'actualItems';
+      store.workProfile[key].push('');
+      saveStore();
+      renderWorkProfileItems(type);
+      const container = document.getElementById(type === 'jd' ? 'work-profile-jd-list' : 'work-profile-actual-list');
+      const inputs = container ? container.querySelectorAll('input') : [];
+      if (inputs.length) inputs[inputs.length - 1].focus();
+    }
+
+    function deleteWorkProfileItem(type, index) {
+      ensureWorkStore();
+      const key = type === 'jd' ? 'jdItems' : 'actualItems';
+      store.workProfile[key].splice(index, 1);
+      saveStore();
+      renderWorkProfileItems(type);
+    }
+
+    function toggleWorkProfile() {
+      const body = document.getElementById('work-profile-body');
+      const icon = document.getElementById('work-profile-toggle-icon');
+      if (!body) return;
+      body.classList.toggle('hidden');
+      if (icon) icon.style.transform = body.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
     }
 
     function saveWorkProfile() {
       ensureWorkStore();
+      const jdItems = Array.from(document.querySelectorAll('#work-profile-jd-list input')).map(i => i.value.trim()).filter(Boolean);
+      const actualItems = Array.from(document.querySelectorAll('#work-profile-actual-list input')).map(i => i.value.trim()).filter(Boolean);
       store.workProfile = {
         position: document.getElementById('work-profile-position').value.trim(),
-        jd: document.getElementById('work-profile-jd').value.trim(),
-        actual: document.getElementById('work-profile-actual').value.trim()
+        jdItems,
+        actualItems
       };
       saveStore();
       renderWorkProfile();
