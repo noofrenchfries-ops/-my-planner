@@ -147,6 +147,13 @@
           <span>💰 Money</span>
         </button>
         <button
+          id="tab-btn-debt"
+          onclick="switchMainTab('debt')"
+          class="flex-1 lg:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer text-stone-600 hover:text-stone-900 whitespace-nowrap"
+        >
+          <span>💳 Debt</span>
+        </button>
+        <button
           id="tab-btn-work"
           onclick="switchMainTab('work')"
           class="flex-1 lg:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer text-stone-600 hover:text-stone-900 whitespace-nowrap"
@@ -1086,6 +1093,144 @@
     </div>
   </div>
 
+  <!-- ========================================================= -->
+  <!-- TAB 4: DEBT / LOAN MANAGER                               -->
+  <!-- ========================================================= -->
+  <main id="view-tab-debt" class="hidden flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
+    <section class="bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5 sm:p-6">
+      <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+        <div>
+          <p class="text-xs font-semibold text-stone-400 mb-1">Debt Manager</p>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-stone-800">💳 Debt / Loan</h2>
+          <p class="text-xs text-stone-500 mt-1">Keep the detailed debt plan here. Money only records the payment.</p>
+        </div>
+        <button type="button" onclick="openDebtModal()" class="px-4 py-2.5 rounded-xl bg-sage-600 hover:bg-sage-700 text-white text-xs font-bold cursor-pointer">＋ Add Debt</button>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div class="bg-violet-50 rounded-2xl border border-violet-200/80 p-4 shadow-card">
+        <p class="text-[11px] font-bold text-violet-700">Total Debt</p>
+        <p id="debt-stat-total" class="text-xl sm:text-2xl font-extrabold text-violet-800 mt-1">฿0</p>
+      </div>
+      <div class="bg-amber-50 rounded-2xl border border-amber-200/80 p-4 shadow-card">
+        <p class="text-[11px] font-bold text-amber-700">Planned / Month</p>
+        <p id="debt-stat-monthly" class="text-xl sm:text-2xl font-extrabold text-amber-800 mt-1">฿0</p>
+      </div>
+      <div class="bg-emerald-50 rounded-2xl border border-emerald-200/80 p-4 shadow-card">
+        <p class="text-[11px] font-bold text-emerald-700">Active Debts</p>
+        <p id="debt-stat-active" class="text-xl sm:text-2xl font-extrabold text-emerald-700 mt-1">0</p>
+      </div>
+      <div class="bg-sky-50 rounded-2xl border border-sky-200/80 p-4 shadow-card">
+        <p class="text-[11px] font-bold text-sky-700">Paid Off</p>
+        <p id="debt-stat-paid" class="text-xl sm:text-2xl font-extrabold text-sky-700 mt-1">0</p>
+      </div>
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+      <section class="lg:col-span-7 bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5">
+        <div class="flex items-center justify-between gap-3 mb-4">
+          <div>
+            <h2 class="text-base font-bold text-stone-800">📋 My Debts</h2>
+            <p class="text-[11px] text-stone-400 mt-1">Current balance, monthly payment and due date.</p>
+          </div>
+        </div>
+        <div id="debt-list" class="space-y-3"></div>
+      </section>
+
+      <div class="lg:col-span-5 space-y-5">
+        <section class="bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h2 class="text-base font-bold text-stone-800">💸 Record Debt Payment</h2>
+              <p class="text-[11px] text-stone-400 mt-1">This also adds a 💳 Debt / Loan transaction in Money.</p>
+            </div>
+          </div>
+          <form onsubmit="recordDebtPayment(event)" class="space-y-3">
+            <div>
+              <label class="block text-xs font-bold text-stone-700 mb-1">Debt</label>
+              <select id="debt-payment-select" required class="w-full px-3.5 py-2.5 text-xs sm:text-sm font-semibold bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500"></select>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-bold text-stone-700 mb-1">Amount (THB)</label>
+                <input id="debt-payment-amount" type="number" min="0.01" step="any" required placeholder="0.00" class="w-full px-3 py-2.5 text-sm font-bold bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-stone-700 mb-1">Payment Date</label>
+                <input id="debt-payment-date" type="date" required class="w-full px-3 py-2.5 text-xs sm:text-sm font-semibold bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-stone-700 mb-1">Note</label>
+              <input id="debt-payment-note" type="text" placeholder="e.g. December installment" class="w-full px-3 py-2.5 text-xs sm:text-sm bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" />
+            </div>
+            <button type="submit" class="w-full py-2.5 rounded-xl text-xs font-bold text-white bg-sage-600 hover:bg-sage-700 cursor-pointer">＋ Record Payment</button>
+          </form>
+        </section>
+
+        <section class="bg-stone-50/80 rounded-2xl border border-stone-200/80 shadow-soft p-5">
+          <div class="mb-3">
+            <h2 class="text-base font-bold text-stone-800">📉 Debt Progress</h2>
+            <p class="text-[11px] text-stone-400 mt-1">Simple estimate based on the current balance and planned monthly payment.</p>
+          </div>
+          <div id="debt-projection" class="space-y-2"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- DEBT MODAL -->
+  <div id="debt-modal" class="hidden fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-float border border-stone-100 animate-modal">
+      <div class="flex items-center justify-between pb-3 border-b border-stone-100">
+        <h3 id="debt-modal-heading" class="text-base font-bold text-stone-800">💳 Add Debt</h3>
+        <button onclick="closeModal('debt-modal')" class="p-1.5 rounded-full text-stone-400 hover:bg-stone-100 cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form onsubmit="saveDebt(event)" class="mt-4 space-y-3.5">
+        <input type="hidden" id="debt-id-value" />
+        <div class="grid grid-cols-[84px_1fr] gap-3">
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Emoji</label>
+            <input id="debt-emoji-input" maxlength="4" value="💳" class="w-full px-3 py-2.5 text-lg text-center bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Debt Name *</label>
+            <input id="debt-name-input" required placeholder="e.g. SPayLater" class="w-full px-3 py-2.5 text-sm font-semibold bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Original Balance</label>
+            <input id="debt-original-input" type="number" min="0" step="any" placeholder="0.00" class="w-full px-3 py-2.5 text-sm bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Current Balance *</label>
+            <input id="debt-balance-input" type="number" min="0" step="any" required placeholder="0.00" class="w-full px-3 py-2.5 text-sm font-bold bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Monthly Payment</label>
+            <input id="debt-monthly-input" type="number" min="0" step="any" placeholder="0.00" class="w-full px-3 py-2.5 text-sm bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Due Day</label>
+            <input id="debt-due-input" type="number" min="1" max="31" step="1" placeholder="e.g. 25" class="w-full px-3 py-2.5 text-sm bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-stone-700 mb-1">Notes</label>
+          <textarea id="debt-notes-input" rows="3" placeholder="Optional notes about this debt..." class="w-full px-3 py-2.5 text-xs sm:text-sm bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500"></textarea>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('debt-modal')" class="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100 cursor-pointer">Cancel</button>
+          <button type="submit" class="px-5 py-2 rounded-xl text-xs font-bold text-white bg-sage-600 hover:bg-sage-700 cursor-pointer">Save Debt</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Subtle Footer -->
   <footer class="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 mt-4 border-t border-stone-200/60 flex flex-wrap items-center justify-between gap-2 text-xs text-stone-400">
     <div>My Planner ✨ • Auto-saves in your browser (LocalStorage) • 100% free</div>
@@ -1450,6 +1595,7 @@
         { id: 'shopping', emoji: '🛍️', label: 'Shopping',           barColor: 'bg-pink-400' },
         { id: 'bills',    emoji: '🏠', label: 'Bills / Lodging',      barColor: 'bg-purple-400' },
         { id: 'health',   emoji: '💊', label: 'Health',             barColor: 'bg-emerald-400' },
+        { id: 'debt',     emoji: '💳', label: 'Debt / Loan',           barColor: 'bg-violet-400' },
         { id: 'other',    emoji: '🎁', label: 'Other',              barColor: 'bg-stone-400' }
       ],
       income: [
@@ -1477,6 +1623,7 @@
       habits: [],
       contents: [],
       transactions: [],
+      debts: [],
       workTasks: [],
       workRoutines: [],
       workProfile: { position: 'Product Marketing (BD)', jd: '', actual: '' }
@@ -1619,7 +1766,8 @@
             note: 'Planner notebook and desk accessories',
             date: todayStr
           }
-        ]
+        ],
+        debts: []
       };
     }
 
@@ -1631,6 +1779,27 @@
         if (!h.schedule.length) h.schedule = [1,2,3,4,5,6,7];
         if (!h.logs || typeof h.logs !== 'object') h.logs = {};
         if (!h.emoji) h.emoji = '✨';
+      });
+    }
+
+    function normalizeDebts() {
+      if (!Array.isArray(store.debts)) store.debts = [];
+      store.debts.forEach(d => {
+        if (!d.id) d.id = 'debt-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+        if (!d.name) d.name = 'Debt';
+        if (!d.emoji) d.emoji = '💳';
+        d.originalBalance = Math.max(0, Number(d.originalBalance ?? d.balance ?? 0));
+        d.balance = Math.max(0, Number(d.balance ?? d.originalBalance ?? 0));
+        d.monthlyPayment = Math.max(0, Number(d.monthlyPayment ?? 0));
+        d.dueDay = Math.min(31, Math.max(1, Number(d.dueDay || 1)));
+        d.status = d.balance <= 0 ? 'Paid Off' : (d.status || 'Active');
+        if (!Array.isArray(d.paymentHistory)) d.paymentHistory = [];
+        d.paymentHistory = d.paymentHistory.map(p => ({
+          date: p.date || getTodayISO(),
+          amount: Math.max(0, Number(p.amount || 0)),
+          note: p.note || ''
+        }));
+        if (typeof d.notes !== 'string') d.notes = '';
       });
     }
 
@@ -1649,6 +1818,7 @@
           if (typeof store.workProfile.jd !== 'string') store.workProfile.jd = '';
           if (typeof store.workProfile.actual !== 'string') store.workProfile.actual = '';
           normalizeHabits();
+          normalizeDebts();
         } else {
           store = getSeedData();
           saveStore();
@@ -1764,6 +1934,7 @@
         if (data?.data) {
           store = data.data;
           normalizeHabits();
+          normalizeDebts();
           ensureWorkStore();
           localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
           renderDailyPlanner(); renderMonthlyOverview(); renderContentStudio(); renderFinanceTracker(); renderWorkDashboard();
@@ -1838,10 +2009,12 @@
       const dailyView = document.getElementById('view-tab-daily');
       const contentView = document.getElementById('view-tab-content');
       const financeView = document.getElementById('view-tab-finance');
+      const debtView = document.getElementById('view-tab-debt');
       const workView = document.getElementById('view-tab-work');
       const btnDaily = document.getElementById('tab-btn-daily');
       const btnContent = document.getElementById('tab-btn-content');
       const btnFinance = document.getElementById('tab-btn-finance');
+      const btnDebt = document.getElementById('tab-btn-debt');
       const btnWork = document.getElementById('tab-btn-work');
 
       const activeClass = 'flex-1 lg:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer bg-white text-sage-700 shadow-xs whitespace-nowrap';
@@ -1850,10 +2023,12 @@
       dailyView.classList.add('hidden');
       contentView.classList.add('hidden');
       financeView.classList.add('hidden');
+      debtView.classList.add('hidden');
       workView.classList.add('hidden');
       btnDaily.className = inactiveClass;
       btnContent.className = inactiveClass;
       btnFinance.className = inactiveClass;
+      btnDebt.className = inactiveClass;
       btnWork.className = inactiveClass;
 
       if (tab === 'daily') {
@@ -1868,6 +2043,10 @@
         financeView.classList.remove('hidden');
         btnFinance.className = activeClass;
         renderFinanceTracker();
+      } else if (tab === 'debt') {
+        debtView.classList.remove('hidden');
+        btnDebt.className = activeClass;
+        renderDebtDashboard();
       } else if (tab === 'work') {
         workView.classList.remove('hidden');
         btnWork.className = activeClass;
@@ -3390,6 +3569,212 @@
     }
 
     // =========================================================
+    // 5.6 DEBT / LOAN MANAGER
+    // =========================================================
+    function getDebtById(id) {
+      return (store.debts || []).find(d => d.id === id);
+    }
+
+    function openDebtModal(id = '') {
+      normalizeDebts();
+      const debt = id ? getDebtById(id) : null;
+      document.getElementById('debt-modal-heading').textContent = debt ? '✏️ Edit Debt' : '💳 Add Debt';
+      document.getElementById('debt-id-value').value = debt?.id || '';
+      document.getElementById('debt-emoji-input').value = debt?.emoji || '💳';
+      document.getElementById('debt-name-input').value = debt?.name || '';
+      document.getElementById('debt-original-input').value = debt ? (debt.originalBalance || '') : '';
+      document.getElementById('debt-balance-input').value = debt ? (debt.balance || 0) : '';
+      document.getElementById('debt-monthly-input').value = debt ? (debt.monthlyPayment || '') : '';
+      document.getElementById('debt-due-input').value = debt ? (debt.dueDay || '') : '';
+      document.getElementById('debt-notes-input').value = debt?.notes || '';
+      document.getElementById('debt-modal').classList.remove('hidden');
+      lucide.createIcons();
+      setTimeout(() => document.getElementById('debt-name-input')?.focus(), 50);
+    }
+
+    function saveDebt(e) {
+      e.preventDefault();
+      normalizeDebts();
+      const id = document.getElementById('debt-id-value').value.trim();
+      const name = document.getElementById('debt-name-input').value.trim();
+      const emoji = document.getElementById('debt-emoji-input').value.trim() || '💳';
+      const originalBalance = Math.max(0, parseFloat(document.getElementById('debt-original-input').value) || 0);
+      const balance = Math.max(0, parseFloat(document.getElementById('debt-balance-input').value) || 0);
+      const monthlyPayment = Math.max(0, parseFloat(document.getElementById('debt-monthly-input').value) || 0);
+      const dueDay = Math.min(31, Math.max(1, parseInt(document.getElementById('debt-due-input').value, 10) || 1));
+      const notes = document.getElementById('debt-notes-input').value.trim();
+      if (!name) return;
+
+      if (id) {
+        const debt = getDebtById(id);
+        if (!debt) return;
+        debt.name = name;
+        debt.emoji = emoji;
+        debt.originalBalance = originalBalance || debt.originalBalance || balance;
+        debt.balance = balance;
+        debt.monthlyPayment = monthlyPayment;
+        debt.dueDay = dueDay;
+        debt.notes = notes;
+        debt.status = balance <= 0 ? 'Paid Off' : 'Active';
+      } else {
+        store.debts.unshift({
+          id: 'debt-' + Date.now(),
+          name,
+          emoji,
+          originalBalance: originalBalance || balance,
+          balance,
+          monthlyPayment,
+          dueDay,
+          status: balance <= 0 ? 'Paid Off' : 'Active',
+          notes,
+          paymentHistory: []
+        });
+      }
+
+      saveStore();
+      renderDebtDashboard();
+      closeModal('debt-modal');
+      lucide.createIcons();
+      showToast(id ? 'Debt updated 💳' : 'Debt added 💳');
+    }
+
+    function deleteDebt(id) {
+      const debt = getDebtById(id);
+      if (!debt) return;
+      if (!confirm(`Delete ${debt.name}? This removes the debt record and its payment history, but does not delete Money transactions.`)) return;
+      store.debts = store.debts.filter(d => d.id !== id);
+      saveStore();
+      renderDebtDashboard();
+      lucide.createIcons();
+      showToast('Debt deleted');
+    }
+
+    function recordDebtPayment(e) {
+      e.preventDefault();
+      normalizeDebts();
+      const debtId = document.getElementById('debt-payment-select').value;
+      const debt = getDebtById(debtId);
+      const amount = Math.max(0, parseFloat(document.getElementById('debt-payment-amount').value) || 0);
+      const date = document.getElementById('debt-payment-date').value || getTodayISO();
+      const note = document.getElementById('debt-payment-note').value.trim();
+      if (!debt || amount <= 0) return;
+      if (amount > debt.balance && debt.balance > 0) {
+        showToast(`Payment cannot be more than the current balance (฿${formatTHB(debt.balance)})`);
+        return;
+      }
+
+      const paymentNote = note || `${debt.name} payment`;
+      debt.balance = Math.max(0, Number(debt.balance) - amount);
+      debt.status = debt.balance <= 0 ? 'Paid Off' : 'Active';
+      debt.paymentHistory = Array.isArray(debt.paymentHistory) ? debt.paymentHistory : [];
+      debt.paymentHistory.unshift({ date, amount, note: paymentNote });
+
+      store.transactions.unshift({
+        id: 'tx-' + Date.now(),
+        type: 'expense',
+        amount,
+        categoryId: 'debt',
+        note: paymentNote,
+        date
+      });
+
+      financeMonthStr = date.slice(0, 7);
+      document.getElementById('debt-payment-amount').value = '';
+      document.getElementById('debt-payment-note').value = '';
+      saveStore();
+      renderDebtDashboard();
+      renderFinanceTracker();
+      lucide.createIcons();
+      showToast(debt.balance <= 0 ? `🎉 ${debt.name} paid off!` : '💳 Debt payment recorded');
+    }
+
+    function estimateDebtPayoff(debt) {
+      const balance = Number(debt.balance || 0);
+      const monthly = Number(debt.monthlyPayment || 0);
+      if (balance <= 0) return 'Paid off';
+      if (monthly <= 0) return 'Set monthly payment';
+      const months = Math.ceil(balance / monthly);
+      const d = new Date();
+      d.setMonth(d.getMonth() + months);
+      return `${months} mo · ~${d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`;
+    }
+
+    function renderDebtDashboard() {
+      normalizeDebts();
+      const debts = store.debts || [];
+      const active = debts.filter(d => Number(d.balance) > 0);
+      const paid = debts.filter(d => Number(d.balance) <= 0);
+      const total = active.reduce((sum, d) => sum + Number(d.balance || 0), 0);
+      const monthly = active.reduce((sum, d) => sum + Math.min(Number(d.monthlyPayment || 0), Number(d.balance || 0)), 0);
+
+      const statTotal = document.getElementById('debt-stat-total');
+      if (!statTotal) return;
+      statTotal.textContent = `฿${formatTHB(total)}`;
+      document.getElementById('debt-stat-monthly').textContent = `฿${formatTHB(monthly)}`;
+      document.getElementById('debt-stat-active').textContent = active.length;
+      document.getElementById('debt-stat-paid').textContent = paid.length;
+
+      const listEl = document.getElementById('debt-list');
+      if (!debts.length) {
+        listEl.innerHTML = `<div class="text-center py-12 px-4 rounded-2xl border border-dashed border-stone-200 bg-cream/60"><p class="text-3xl mb-2">💳</p><p class="text-xs font-bold text-stone-600">No debts added yet</p><p class="text-[11px] text-stone-400 mt-1">Add your first debt to start tracking the balance and payment plan.</p></div>`;
+      } else {
+        listEl.innerHTML = debts.map(debt => {
+          const balance = Number(debt.balance || 0);
+          const original = Number(debt.originalBalance || balance || 0);
+          const pct = original > 0 ? Math.min(100, Math.max(0, Math.round(((original - balance) / original) * 100))) : 0;
+          const statusPaid = balance <= 0;
+          const recent = Array.isArray(debt.paymentHistory) ? debt.paymentHistory.slice(0, 3) : [];
+          return `
+            <div class="rounded-2xl border border-stone-200/80 bg-cream/50 p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-11 h-11 rounded-xl bg-violet-100 flex items-center justify-center text-xl shrink-0">${escapeHtml(debt.emoji)}</div>
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <h3 class="text-sm font-extrabold text-stone-800 truncate">${escapeHtml(debt.name)}</h3>
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${statusPaid ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-800'}">${statusPaid ? 'Paid Off' : 'Active'}</span>
+                    </div>
+                    <p class="text-[11px] text-stone-400 mt-0.5">Due day ${debt.dueDay} · ${estimateDebtPayoff(debt)}</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1">
+                  <button type="button" onclick="openDebtModal('${debt.id}')" class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-stone-600 hover:bg-white cursor-pointer">Edit</button>
+                  <button type="button" onclick="deleteDebt('${debt.id}')" class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-rose-600 hover:bg-rose-50 cursor-pointer">Delete</button>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4">
+                <div><p class="text-[10px] text-stone-400 font-semibold">Current Balance</p><p class="text-sm font-extrabold text-violet-800 mt-0.5">฿${formatTHB(balance)}</p></div>
+                <div><p class="text-[10px] text-stone-400 font-semibold">Monthly Payment</p><p class="text-sm font-extrabold text-stone-800 mt-0.5">฿${formatTHB(debt.monthlyPayment)}</p></div>
+                <div><p class="text-[10px] text-stone-400 font-semibold">Paid Progress</p><p class="text-sm font-extrabold text-emerald-700 mt-0.5">${pct}%</p></div>
+              </div>
+              <div class="mt-3 w-full h-2 bg-stone-200 rounded-full overflow-hidden"><div class="h-full bg-sage-500 rounded-full" style="width:${pct}%"></div></div>
+              ${debt.notes ? `<p class="text-[11px] text-stone-500 mt-3">📝 ${escapeHtml(debt.notes)}</p>` : ''}
+              ${recent.length ? `<div class="mt-3 pt-3 border-t border-stone-200/70"><p class="text-[10px] font-bold text-stone-400 mb-1.5">Recent payments</p>${recent.map(p => `<div class="flex justify-between gap-3 text-[11px] text-stone-600"><span>${escapeHtml(p.date)}${p.note ? ` · ${escapeHtml(p.note)}` : ''}</span><b class="text-emerald-700">-฿${formatTHB(p.amount)}</b></div>`).join('')}</div>` : ''}
+            </div>`;
+        }).join('');
+      }
+
+      const select = document.getElementById('debt-payment-select');
+      const previous = select.value;
+      select.innerHTML = active.length ? active.map(d => `<option value="${escapeHtml(d.id)}">${escapeHtml(d.emoji)} ${escapeHtml(d.name)} · ฿${formatTHB(d.balance)}</option>`).join('') : '<option value="">No active debt</option>';
+      if (active.some(d => d.id === previous)) select.value = previous;
+      select.disabled = !active.length;
+      document.getElementById('debt-payment-amount').disabled = !active.length;
+      document.getElementById('debt-payment-date').disabled = !active.length;
+      document.getElementById('debt-payment-note').disabled = !active.length;
+
+      const proj = document.getElementById('debt-projection');
+      if (!active.length) {
+        proj.innerHTML = `<div class="text-xs text-stone-500 rounded-xl bg-white/70 border border-stone-200/70 p-3">No active debt to project. Add a debt or pay off the ones you have. 🌱</div>`;
+      } else {
+        proj.innerHTML = active.map(d => `<div class="flex items-center justify-between gap-3 rounded-xl bg-white/75 border border-stone-200/70 px-3.5 py-3"><div class="min-w-0"><p class="text-xs font-bold text-stone-700 truncate">${escapeHtml(d.emoji)} ${escapeHtml(d.name)}</p><p class="text-[10px] text-stone-400 mt-0.5">฿${formatTHB(d.balance)} remaining</p></div><span class="text-[11px] font-bold text-violet-700 shrink-0">${estimateDebtPayoff(d)}</span></div>`).join('');
+      }
+      const paymentDate = document.getElementById('debt-payment-date');
+      if (paymentDate && !paymentDate.value) paymentDate.value = getTodayISO();
+      lucide.createIcons();
+    }
+
+    // =========================================================
     // 6. WORK DASHBOARD
     // =========================================================
     const WORK_STATUS_STYLES = {
@@ -3830,6 +4215,7 @@
             if (!Array.isArray(parsed.workRoutines)) parsed.workRoutines = [];
             store = parsed;
             normalizeHabits();
+            normalizeDebts();
             saveStore();
             renderDailyPlanner();
             renderContentStudio();
@@ -3861,6 +4247,7 @@
       renderMonthlyOverview();
       renderContentStudio();
       renderFinanceTracker();
+      renderDebtDashboard();
       renderWorkDashboard();
       lucide.createIcons();
       closeModal('reset-confirm-modal');
@@ -3891,7 +4278,7 @@
     }
 
     window.addEventListener('click', (e) => {
-      ['timeblock-modal', 'surprise-modal', 'content-edit-modal', 'reset-confirm-modal', 'auth-modal', 'work-task-modal', 'work-routine-modal'].forEach(id => {
+      ['timeblock-modal', 'surprise-modal', 'content-edit-modal', 'reset-confirm-modal', 'auth-modal', 'work-task-modal', 'work-routine-modal', 'debt-modal'].forEach(id => {
         if (e.target === document.getElementById(id)) closeModal(id);
       });
     });
@@ -3903,6 +4290,7 @@
       renderDailyPlanner();
       renderContentStudio();
       renderFinanceTracker();
+      renderDebtDashboard();
       renderWorkDashboard();
       lucide.createIcons();
     });
