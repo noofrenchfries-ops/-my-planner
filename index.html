@@ -331,10 +331,9 @@
       </div>
     </div>
 
-    <!-- Top Strip: 2 Cards Side-by-Side (Mood + Top 3 Focus Priorities) -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-      <!-- Card 1: Daily Mood & Energy Selector -->
-      <section class="lg:col-span-5 bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5 flex flex-col justify-between">
+    <!-- Daily Mood & Energy -->
+    <div class="grid grid-cols-1 gap-5">
+      <section class="bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5 flex flex-col justify-between">
         <div class="flex items-center justify-between mb-3">
           <h2 class="text-sm font-bold text-stone-800 flex items-center gap-2">
             <span>🌤️</span>
@@ -346,21 +345,6 @@
         </div>
 
         <div id="mood-buttons-grid" class="grid grid-cols-5 gap-2">
-          <!-- Rendered by JS -->
-        </div>
-      </section>
-
-      <!-- Card 2: Top 3 Focus Priorities -->
-      <section class="lg:col-span-7 bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5">
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="text-sm font-bold text-stone-800 flex items-center gap-2">
-            <span>🎯</span>
-            <span>Top 3 Priorities</span>
-          </h2>
-          <span class="text-[11px] text-stone-400">Check when completed</span>
-        </div>
-
-        <div id="top-priorities-list" class="grid grid-cols-1 md:grid-cols-3 gap-2.5">
           <!-- Rendered by JS -->
         </div>
       </section>
@@ -473,27 +457,43 @@
           </div>
 
           <!-- Inline Add Habit Form (Hidden by default) -->
-          <form id="inline-habit-form" onsubmit="createNewHabit(event)" class="hidden mb-3 p-3 rounded-xl bg-sage-50 border border-sage-200/80 space-y-2">
-            <div class="flex items-center gap-2">
-              <input
-                type="text"
-                id="new-habit-emoji"
-                value="✨"
-                maxlength="4"
-                required
-                class="w-12 px-2 py-1.5 text-center text-sm bg-white rounded-lg border border-stone-200"
-              />
+          <form id="inline-habit-form" onsubmit="createNewHabit(event)" class="hidden mb-3 p-3 rounded-xl bg-sage-50 border border-sage-200/80 space-y-3">
+            <div>
+              <label class="block text-[10px] font-bold text-stone-500 mb-1">Habit name</label>
               <input
                 type="text"
                 id="new-habit-name"
                 required
-                placeholder="Habit name, e.g. Meditate for 10 minutes"
-                class="flex-1 px-3 py-1.5 text-xs bg-white rounded-lg border border-stone-200 focus:outline-none focus:border-sage-500"
+                placeholder="e.g. Practice Duolingo"
+                class="w-full px-3 py-2 text-xs bg-white rounded-lg border border-stone-200 focus:outline-none focus:border-sage-500"
               />
             </div>
-            <div class="flex justify-end gap-1.5">
-              <button type="button" onclick="toggleAddHabitForm()" class="px-2.5 py-1 rounded-lg text-xs font-semibold text-stone-500 hover:bg-white cursor-pointer">Cancel</button>
-              <button type="submit" class="px-3 py-1 rounded-lg text-xs font-bold text-white bg-sage-600 hover:bg-sage-700 cursor-pointer">Save</button>
+
+            <div>
+              <label class="block text-[10px] font-bold text-stone-500 mb-1.5">Choose an emoji</label>
+              <div id="habit-emoji-picker" class="grid grid-cols-8 sm:grid-cols-12 gap-1.5">
+                <!-- Rendered by JS -->
+              </div>
+              <input type="hidden" id="new-habit-emoji" value="✨" />
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-1.5">
+                <label class="text-[10px] font-bold text-stone-500">Schedule</label>
+                <div class="flex gap-1">
+                  <button type="button" onclick="setHabitSchedule('everyday')" class="px-2 py-1 rounded-full bg-white border border-stone-200 text-[9px] font-bold text-stone-600 hover:bg-stone-50 cursor-pointer">Every day</button>
+                  <button type="button" onclick="setHabitSchedule('weekdays')" class="px-2 py-1 rounded-full bg-white border border-stone-200 text-[9px] font-bold text-stone-600 hover:bg-stone-50 cursor-pointer">Weekdays</button>
+                  <button type="button" onclick="setHabitSchedule('weekends')" class="px-2 py-1 rounded-full bg-white border border-stone-200 text-[9px] font-bold text-stone-600 hover:bg-stone-50 cursor-pointer">Weekends</button>
+                </div>
+              </div>
+              <div id="habit-schedule-picker" class="grid grid-cols-7 gap-1">
+                <!-- Rendered by JS -->
+              </div>
+            </div>
+
+            <div class="flex justify-end gap-1.5 pt-1">
+              <button type="button" onclick="toggleAddHabitForm()" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-stone-500 hover:bg-white cursor-pointer">Cancel</button>
+              <button type="submit" class="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-sage-600 hover:bg-sage-700 cursor-pointer">Save Habit</button>
             </div>
           </form>
 
@@ -1393,6 +1393,22 @@
       { id: 'stressed', emoji: '😫', label: 'Stressed' }
     ];
 
+    const HABIT_EMOJIS = [
+      '✨','🌱','💧','🏃','🚶','🧘','💪','🥗','😴','🛁','🌸','❤️',
+      '📖','📚','🎓','✍️','🧠','💻','🗣️','🎧','🎨','🎵','💰','🏦',
+      '🧹','🧺','🧼','🧽','🏠','☀️','🌙','🍎','☕','🍵','🧴','💆‍♀️'
+    ];
+
+    const HABIT_WEEKDAYS = [
+      { value: 1, label: 'Mon' },
+      { value: 2, label: 'Tue' },
+      { value: 3, label: 'Wed' },
+      { value: 4, label: 'Thu' },
+      { value: 5, label: 'Fri' },
+      { value: 6, label: 'Sat' },
+      { value: 7, label: 'Sun' }
+    ];
+
     const TB_CATEGORIES = {
       work:     { label: 'Work',       bg: 'bg-sky-50',     border: 'border-sky-200',     badge: 'bg-sky-100 text-sky-800' },
       personal: { label: 'Personal', bg: 'bg-amber-50',   border: 'border-amber-200',   badge: 'bg-amber-100 text-amber-800' },
@@ -1516,9 +1532,9 @@
           }
         },
         habits: [
-          { id: 'hb-1', emoji: '💧', name: 'Drink 2L of water', logs: { [monStr]: true, [todayStr]: true } },
-          { id: 'hb-2', emoji: '🏃', name: 'Exercise for 30 minutes', logs: { [monStr]: true } },
-          { id: 'hb-3', emoji: '📖', name: 'Read 15 pages', logs: { [todayStr]: true } }
+          { id: 'hb-1', emoji: '💧', name: 'Drink 2L of water', schedule: [1,2,3,4,5,6,7], logs: { [monStr]: true, [todayStr]: true } },
+          { id: 'hb-2', emoji: '🏃', name: 'Exercise for 30 minutes', schedule: [1,2,3,4,5,6,7], logs: { [monStr]: true } },
+          { id: 'hb-3', emoji: '📖', name: 'Read 15 pages', schedule: [1,2,3,4,5,6,7], logs: { [todayStr]: true } }
         ],
         contents: [
           {
@@ -1607,6 +1623,17 @@
       };
     }
 
+    function normalizeHabits() {
+      if (!Array.isArray(store.habits)) store.habits = [];
+      store.habits.forEach(h => {
+        if (!Array.isArray(h.schedule) || !h.schedule.length) h.schedule = [1,2,3,4,5,6,7];
+        h.schedule = [...new Set(h.schedule.map(Number).filter(n => n >= 1 && n <= 7))].sort((a, b) => a - b);
+        if (!h.schedule.length) h.schedule = [1,2,3,4,5,6,7];
+        if (!h.logs || typeof h.logs !== 'object') h.logs = {};
+        if (!h.emoji) h.emoji = '✨';
+      });
+    }
+
     function loadStore() {
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
@@ -1621,6 +1648,7 @@
           if (typeof store.workProfile.position !== 'string') store.workProfile.position = 'Product Marketing (BD)';
           if (typeof store.workProfile.jd !== 'string') store.workProfile.jd = '';
           if (typeof store.workProfile.actual !== 'string') store.workProfile.actual = '';
+          normalizeHabits();
         } else {
           store = getSeedData();
           saveStore();
@@ -1735,6 +1763,7 @@
         if (error) throw error;
         if (data?.data) {
           store = data.data;
+          normalizeHabits();
           ensureWorkStore();
           localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
           renderDailyPlanner(); renderMonthlyOverview(); renderContentStudio(); renderFinanceTracker(); renderWorkDashboard();
@@ -1887,42 +1916,16 @@
         `;
       }).join('');
 
-      // 3. Top 3 Focus Priorities
-      document.getElementById('top-priorities-list').innerHTML = dayData.priorities.map((p, idx) => `
-        <div class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border transition-all ${
-          p.done ? 'bg-stone-50 border-stone-200/70' : 'bg-cream border-stone-200/90 focus-within:bg-white focus-within:border-sage-500'
-        }">
-          <button
-            type="button"
-            onclick="togglePriorityDone(${idx})"
-            class="w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors cursor-pointer ${
-              p.done ? 'bg-sage-500 border-sage-500 text-white animate-check' : 'bg-white border-stone-300 hover:border-sage-500'
-            }"
-          >
-            ${p.done ? '<i data-lucide="check" class="w-3.5 h-3.5 stroke-[3]"></i>' : ''}
-          </button>
-          <input
-            type="text"
-            value="${escapeHtml(p.text)}"
-            oninput="updatePriorityText(${idx}, this.value)"
-            placeholder="Goal ${idx + 1}..."
-            class="w-full bg-transparent text-xs sm:text-sm font-medium focus:outline-none ${
-              p.done ? 'line-through text-stone-400' : 'text-stone-800'
-            }"
-          />
-        </div>
-      `).join('');
-
-      // 4. Time Blocks (07:00 - 22:00)
+      // 3. Time Blocks
       renderTimeBlocks(dayData);
 
-      // 5. To-Do List
+      // 4. To-Do List
       renderTodoList(dayData);
 
-      // 6. Weekly Habit Tracker
+      // 5. Weekly Habit Tracker
       renderHabitTracker();
 
-      // 7. Reflection
+      // 6. Reflection
       document.getElementById('daily-reflection-input').value = dayData.reflection || '';
     }
 
@@ -2058,6 +2061,72 @@
       }).join('');
     }
 
+    function getHabitSchedule(habit) {
+      const schedule = Array.isArray(habit.schedule) ? habit.schedule.map(Number).filter(n => n >= 1 && n <= 7) : [];
+      return schedule.length ? [...new Set(schedule)].sort((a, b) => a - b) : [1,2,3,4,5,6,7];
+    }
+
+    function getMondayDayNumber(dateObj) {
+      const day = dateObj.getDay();
+      return day === 0 ? 7 : day;
+    }
+
+    function isHabitScheduled(habit, isoDate) {
+      const d = parseISO(isoDate);
+      return getHabitSchedule(habit).includes(getMondayDayNumber(d));
+    }
+
+    function getHabitScheduledDates(habit, weekDates, throughDate = null) {
+      return weekDates.filter(wd => {
+        if (!isHabitScheduled(habit, wd.iso)) return false;
+        if (!throughDate) return true;
+        return wd.iso <= throughDate;
+      });
+    }
+
+    function renderHabitEmojiPicker() {
+      const picker = document.getElementById('habit-emoji-picker');
+      if (!picker) return;
+      const selected = document.getElementById('new-habit-emoji')?.value || '✨';
+      picker.innerHTML = HABIT_EMOJIS.map(emoji => `
+        <button type="button" onclick="selectHabitEmoji('${emoji}')"
+          class="h-8 rounded-lg border text-base transition-all cursor-pointer ${emoji === selected ? 'bg-white border-sage-500 ring-1 ring-sage-300 scale-105' : 'bg-white/70 border-stone-200 hover:bg-white hover:border-sage-300'}"
+          title="${emoji}">${emoji}</button>
+      `).join('');
+    }
+
+    function renderHabitSchedulePicker(schedule = [1,2,3,4,5,6,7]) {
+      const picker = document.getElementById('habit-schedule-picker');
+      if (!picker) return;
+      const selected = new Set(schedule.map(Number));
+      picker.innerHTML = HABIT_WEEKDAYS.map(day => `
+        <button type="button" onclick="toggleHabitScheduleDay(${day.value})"
+          class="py-1.5 rounded-lg border text-[9px] font-bold transition-all cursor-pointer ${selected.has(day.value) ? 'bg-sage-100 border-sage-400 text-sage-700' : 'bg-white border-stone-200 text-stone-400 hover:bg-stone-50'}"
+          data-habit-schedule-day="${day.value}">${day.label}</button>
+      `).join('');
+    }
+
+    function getSelectedHabitSchedule() {
+      return HABIT_WEEKDAYS.map(d => d.value).filter(value => document.querySelector(`[data-habit-schedule-day="${value}"]`)?.classList.contains('bg-sage-100'));
+    }
+
+    function selectHabitEmoji(emoji) {
+      document.getElementById('new-habit-emoji').value = emoji;
+      renderHabitEmojiPicker();
+    }
+
+    function setHabitSchedule(type) {
+      const schedule = type === 'weekdays' ? [1,2,3,4,5] : type === 'weekends' ? [6,7] : [1,2,3,4,5,6,7];
+      renderHabitSchedulePicker(schedule);
+    }
+
+    function toggleHabitScheduleDay(dayValue) {
+      const selected = new Set(getSelectedHabitSchedule());
+      if (selected.has(dayValue)) selected.delete(dayValue);
+      else selected.add(dayValue);
+      renderHabitSchedulePicker([...selected]);
+    }
+
     function renderHabitTracker() {
       const selDate = parseISO(currentDateStr);
       const dayOfWeek = selDate.getDay();
@@ -2069,23 +2138,16 @@
       const weekDates = Array.from({ length: 7 }, (_, i) => {
         const d = new Date(monday);
         d.setDate(monday.getDate() + i);
-        return {
-          iso: formatISO(d),
-          dayName: shortEnglishDays[i],
-          dayNum: d.getDate()
-        };
+        return { iso: formatISO(d), dayName: shortEnglishDays[i], dayNum: d.getDate() };
       });
 
       document.getElementById('habit-week-range').textContent = `Week of ${weekDates[0].dayNum} – ${weekDates[6].dayNum} ${selDate.toLocaleDateString('en-US', { month: 'short' })}`;
 
-      // Header
       document.getElementById('habit-grid-header').innerHTML = `
         <th class="py-2 pr-2 font-bold text-stone-600">Habit</th>
         ${weekDates.map(wd => `
           <th class="py-1.5 px-0.5 text-center">
-            <div class="inline-flex flex-col items-center justify-center w-7 h-9 rounded-lg ${
-              wd.iso === currentDateStr ? 'bg-sage-100 text-sage-700 font-extrabold' : 'text-stone-400'
-            }">
+            <div class="inline-flex flex-col items-center justify-center w-7 h-9 rounded-lg ${wd.iso === currentDateStr ? 'bg-sage-100 text-sage-700 font-extrabold' : 'text-stone-400'}">
               <span class="text-[9px]">${wd.dayName}</span>
               <span class="text-[10px]">${wd.dayNum}</span>
             </div>
@@ -2095,7 +2157,6 @@
         <th class="w-5"></th>
       `;
 
-      // Body
       const tbody = document.getElementById('habit-grid-body');
       if (store.habits.length === 0) {
         tbody.innerHTML = `<tr><td colspan="10" class="py-6 text-center text-xs text-stone-400">Click “+ Add Habit” above to start tracking habits</td></tr>`;
@@ -2103,21 +2164,24 @@
       }
 
       tbody.innerHTML = store.habits.map(h => {
-        let count = 0;
+        const scheduledDates = getHabitScheduledDates(h, weekDates);
+        const scheduledElapsed = getHabitScheduledDates(h, weekDates, currentDateStr);
+        const count = scheduledElapsed.filter(wd => !!(h.logs && h.logs[wd.iso])).length;
+        const scheduledTotal = scheduledDates.length;
+        const scheduledElapsedTotal = scheduledElapsed.length;
+        const pct = scheduledElapsedTotal ? Math.round((count / scheduledElapsedTotal) * 100) : 0;
+        const scheduleLabel = scheduledTotal === 7 ? 'Every day' : `${scheduledTotal} days/week`;
+
         const cells = weekDates.map(wd => {
+          const scheduled = isHabitScheduled(h, wd.iso);
           const checked = !!(h.logs && h.logs[wd.iso]);
-          if (checked) count++;
+          if (!scheduled) {
+            return `<td class="py-2 px-0.5 text-center"><span class="inline-flex items-center justify-center w-6 h-6 text-stone-300">—</span></td>`;
+          }
           return `
             <td class="py-2 px-0.5 text-center">
-              <button
-                type="button"
-                onclick="toggleHabitLog('${h.id}', '${wd.iso}')"
-                class="w-6 h-6 rounded-full border flex items-center justify-center mx-auto transition-all cursor-pointer ${
-                  checked
-                    ? 'bg-sage-500 border-sage-500 text-white animate-check'
-                    : 'bg-cream hover:bg-stone-100 border-stone-200 text-transparent'
-                }"
-              >
+              <button type="button" onclick="toggleHabitLog('${h.id}', '${wd.iso}')"
+                class="w-6 h-6 rounded-full border flex items-center justify-center mx-auto transition-all cursor-pointer ${checked ? 'bg-sage-500 border-sage-500 text-white animate-check' : 'bg-cream hover:bg-stone-100 border-stone-200 text-transparent'}">
                 <i data-lucide="check" class="w-3 h-3 stroke-[3]"></i>
               </button>
             </td>
@@ -2127,26 +2191,25 @@
         return `
           <tr class="group hover:bg-stone-50/70">
             <td class="py-2.5 pr-2 font-semibold text-stone-800 text-xs">
-              <span class="mr-1">${escapeHtml(h.emoji)}</span>${escapeHtml(h.name)}
+              <div class="flex items-center gap-1 min-w-0">
+                <span class="shrink-0">${escapeHtml(h.emoji)}</span>
+                <span class="truncate">${escapeHtml(h.name)}</span>
+              </div>
+              <span class="block mt-0.5 text-[9px] font-normal text-stone-400">${scheduleLabel}</span>
             </td>
             ${cells}
             <td class="py-2.5 pl-1 text-right">
-              <span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                count >= 5 ? 'bg-sage-100 text-sage-700' : 'bg-stone-100 text-stone-600'
-              }">${count}/7 days</span>
+              <span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold ${pct >= 80 ? 'bg-sage-100 text-sage-700' : pct >= 60 ? 'bg-amber-100 text-amber-700' : 'bg-stone-100 text-stone-600'}">${count}/${scheduledElapsedTotal || 0}</span>
             </td>
             <td class="py-2.5 text-right">
-              <button
-                type="button"
-                onclick="deleteHabit('${h.id}')"
-                class="p-0.5 text-stone-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 cursor-pointer"
-              >
+              <button type="button" onclick="deleteHabit('${h.id}')" title="Delete habit" class="p-0.5 text-stone-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 cursor-pointer">
                 <i data-lucide="x" class="w-3 h-3"></i>
               </button>
             </td>
           </tr>
         `;
       }).join('');
+      lucide.createIcons();
     }
 
     // =========================================================
@@ -2342,10 +2405,17 @@
       if (!overviewEl || !summaryEl) return;
 
       const habits = Array.isArray(store.habits) ? store.habits : [];
+      const monthDates = Array.from({ length: daysInMonth }, (_, i) => {
+        const d = new Date(year, month - 1, i + 1);
+        return formatISO(d);
+      });
+      const elapsedDates = monthDates.filter(date => date <= `${monthKey}-${String(elapsedDays).padStart(2, '0')}`);
       const totalHabitChecks = habits.reduce((sum, h) => {
-        return sum + Object.keys(h.logs || {}).filter(date => date.startsWith(monthKey) && h.logs[date]).length;
+        return sum + elapsedDates.filter(date => isHabitScheduled(h, date) && h.logs?.[date]).length;
       }, 0);
-      const possibleChecks = habits.length * elapsedDays;
+      const possibleChecks = habits.reduce((sum, h) => {
+        return sum + elapsedDates.filter(date => isHabitScheduled(h, date)).length;
+      }, 0);
       const overallPct = possibleChecks ? Math.round((totalHabitChecks / possibleChecks) * 100) : 0;
       if (daysLabel) daysLabel.textContent = `${elapsedDays}/${daysInMonth} days`;
 
@@ -2357,16 +2427,17 @@
       }
 
       const stats = habits.map(h => {
-        const count = Object.keys(h.logs || {}).filter(date => date.startsWith(monthKey) && h.logs[date]).length;
-        const pct = Math.round((count / elapsedDays) * 100);
-        return { ...h, count, pct };
+        const scheduledDates = elapsedDates.filter(date => isHabitScheduled(h, date));
+        const count = scheduledDates.filter(date => h.logs?.[date]).length;
+        const pct = scheduledDates.length ? Math.round((count / scheduledDates.length) * 100) : 0;
+        return { ...h, count, pct, scheduledCount: scheduledDates.length };
       });
 
       overviewEl.innerHTML = stats.map(h => `
         <div class="bg-white/75 rounded-xl border border-stone-200/70 p-3">
           <div class="flex items-center justify-between gap-2 mb-1.5">
             <span class="text-xs font-bold text-stone-700 truncate">${escapeHtml(h.emoji)} ${escapeHtml(h.name)}</span>
-            <span class="text-[10px] font-bold text-stone-500 shrink-0">${h.count}/${elapsedDays} • ${h.pct}%</span>
+            <span class="text-[10px] font-bold text-stone-500 shrink-0">${h.count}/${h.scheduledCount} • ${h.pct}%</span>
           </div>
           <div class="w-full h-2 bg-stone-100 rounded-full overflow-hidden">
             <div class="h-full bg-sage-500 rounded-full transition-all" style="width:${Math.min(h.pct, 100)}%"></div>
@@ -2389,7 +2460,7 @@
       const messages = [];
       messages.push(`<div class="rounded-xl bg-white/70 border border-stone-200/70 p-3">🌱 เดือนนี้ Habit โดยรวมทำได้ประมาณ <b>${overallPct}%</b> จากวันที่ผ่านมา ${elapsedDays} วัน</div>`);
       if (best && best.pct >= 80) messages.push(`<div class="rounded-xl bg-sage-50 border border-sage-200/70 p-3">🏆 <b>${escapeHtml(best.name)}</b> เป็น Habit ที่ทำได้ดีที่สุดเดือนนี้ — ทำได้ ${best.count} วัน เก่งมาก!</div>`);
-      if (needs && needs.pct < 60) messages.push(`<div class="rounded-xl bg-amber-50 border border-amber-200/70 p-3">💡 <b>${escapeHtml(needs.name)}</b> ยังทำได้ไม่สม่ำเสมอ (${needs.count}/${elapsedDays} วัน) เดือนหน้าอาจลองตั้งเป้าให้เล็กลงและทำให้ต่อเนื่องขึ้น</div>`);
+      if (needs && needs.pct < 60) messages.push(`<div class="rounded-xl bg-amber-50 border border-amber-200/70 p-3">💡 <b>${escapeHtml(needs.name)}</b> ยังทำได้ไม่สม่ำเสมอ (${needs.count}/${needs.scheduledCount} วันที่ตั้งใจทำ) เดือนหน้าอาจลองตั้งเป้าให้เล็กลงและทำให้ต่อเนื่องขึ้น</div>`);
       if (expense > 0 && income > 0 && expense > income) messages.push(`<div class="rounded-xl bg-rose-50 border border-rose-200/70 p-3">💰 เดือนนี้รายจ่ายสูงกว่ารายรับ ลองทบทวนหมวดที่ใช้จ่ายมากที่สุดก่อนวางแผนเดือนหน้านะ</div>`);
       else if (topCat) messages.push(`<div class="rounded-xl bg-white/70 border border-stone-200/70 p-3">💸 หมวดที่ใช้จ่ายมากที่สุดเดือนนี้คือ <b>${escapeHtml(catMeta.label)}</b> รวม ฿${formatTHB(topCat[1])}</div>`);
       if (expense === 0) messages.push(`<div class="rounded-xl bg-white/70 border border-stone-200/70 p-3">💰 ยังไม่มีรายจ่ายที่บันทึกไว้ในเดือนนี้</div>`);
@@ -2664,31 +2735,41 @@
     function toggleAddHabitForm() {
       const form = document.getElementById('inline-habit-form');
       form.classList.toggle('hidden');
+      if (!form.classList.contains('hidden')) {
+        document.getElementById('new-habit-name').focus();
+        document.getElementById('new-habit-emoji').value = '✨';
+        renderHabitEmojiPicker();
+        renderHabitSchedulePicker([1,2,3,4,5,6,7]);
+      }
     }
 
     function createNewHabit(e) {
       e.preventDefault();
       const emoji = document.getElementById('new-habit-emoji').value.trim() || '✨';
       const name = document.getElementById('new-habit-name').value.trim();
+      const schedule = getSelectedHabitSchedule();
       if (!name) return;
+      if (!schedule.length) return showToast('Choose at least 1 day');
 
       store.habits.push({
         id: 'hb-' + Date.now(),
         emoji,
         name,
+        schedule,
         logs: {}
       });
       document.getElementById('new-habit-name').value = '';
+      document.getElementById('new-habit-emoji').value = '✨';
       toggleAddHabitForm();
       saveStore();
       renderDailyPlanner();
       lucide.createIcons();
-      showToast('Habit added');
+      showToast('Habit added 🌱');
     }
 
     function toggleHabitLog(habitId, dateIso) {
       const habit = store.habits.find(h => h.id === habitId);
-      if (!habit) return;
+      if (!habit || !isHabitScheduled(habit, dateIso)) return;
       if (!habit.logs) habit.logs = {};
       habit.logs[dateIso] = !habit.logs[dateIso];
       saveStore();
@@ -3723,6 +3804,7 @@
             if (!Array.isArray(parsed.workTasks)) parsed.workTasks = [];
             if (!Array.isArray(parsed.workRoutines)) parsed.workRoutines = [];
             store = parsed;
+            normalizeHabits();
             saveStore();
             renderDailyPlanner();
             renderContentStudio();
