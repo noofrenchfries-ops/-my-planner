@@ -126,7 +126,7 @@
               Cloud Sync Ready
             </span>
           </div>
-          <p class="text-[11px] text-stone-500 hidden sm:block">Plan your days, track habits, manage money & ideas</p>
+          <p class="text-[11px] text-stone-500 hidden sm:block">Plan your days, track work, manage money & ideas</p>
         </div>
       </div>
 
@@ -145,6 +145,13 @@
           class="flex-1 lg:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer text-stone-600 hover:text-stone-900 whitespace-nowrap"
         >
           <span>💰 Money</span>
+        </button>
+        <button
+          id="tab-btn-work"
+          onclick="switchMainTab('work')"
+          class="flex-1 lg:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer text-stone-600 hover:text-stone-900 whitespace-nowrap"
+        >
+          <span>💼 Work</span>
         </button>
         <button
           id="tab-btn-content"
@@ -530,7 +537,131 @@
   </main>
 
   <!-- ========================================================= -->
-  <!-- TAB 2: CONTENT STUDIO (IDEA BANK + SURPRISE ME + KANBAN)  -->
+  <!-- TAB 2: WORK DASHBOARD                                      -->
+  <!-- ========================================================= -->
+  <main id="view-tab-work" class="hidden flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
+
+    <!-- Work Header -->
+    <section class="bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5 sm:p-6">
+      <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+        <div>
+          <p class="text-xs font-semibold text-stone-400 mb-1">Work Dashboard</p>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-stone-800">💼 My Work</h2>
+          <p class="text-xs text-stone-500 mt-1">Manage your main tasks, routine work, and what needs attention today.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" onclick="openWorkTaskModal()" class="px-4 py-2.5 rounded-xl bg-sage-600 hover:bg-sage-700 text-white text-xs font-bold cursor-pointer">＋ Add Task</button>
+          <button type="button" onclick="openWorkRoutineModal()" class="px-4 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-white text-xs font-bold cursor-pointer">＋ Add Routine</button>
+          <button type="button" onclick="toggleMasterTaskList()" class="px-4 py-2.5 rounded-xl bg-white border border-stone-200 hover:border-sage-400 text-stone-700 text-xs font-bold cursor-pointer">📋 Master Tasks</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Work Profile / JD -->
+    <section class="bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <div>
+          <p class="text-[11px] font-bold text-stone-400">Work Profile</p>
+          <h2 class="text-base font-bold text-stone-800">📝 My Role & JD</h2>
+          <p class="text-[11px] text-stone-400 mt-1">Keep your official JD and the work you actually do in one place.</p>
+        </div>
+        <button type="button" onclick="saveWorkProfile()" class="px-3 py-2 rounded-xl bg-sage-100 hover:bg-sage-200 text-sage-800 text-xs font-bold cursor-pointer">Save Profile</button>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-bold text-stone-700 mb-1">Position</label>
+          <input id="work-profile-position" class="w-full px-3 py-2.5 text-sm bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" placeholder="e.g. Product Marketing (BD)" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-stone-700 mb-1">Job Description (JD)</label>
+          <textarea id="work-profile-jd" rows="5" class="w-full px-3 py-2.5 text-xs bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" placeholder="Add one responsibility per line...&#10;• Market & competitor analysis&#10;• Product content / catalog&#10;• Sales support&#10;• BOQ / proposal support"></textarea>
+        </div>
+        <div class="lg:col-span-2">
+          <label class="block text-xs font-bold text-stone-700 mb-1">What I Actually Do</label>
+          <textarea id="work-profile-actual" rows="5" class="w-full px-3 py-2.5 text-xs bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" placeholder="Add the work you actually handle, one item per line..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- Work Summary -->
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div class="bg-white rounded-2xl border border-stone-200/80 p-4 shadow-card">
+        <p class="text-[11px] font-bold text-stone-400">Total Tasks</p>
+        <p id="work-stat-total" class="text-2xl font-extrabold text-stone-800 mt-1">0</p>
+      </div>
+      <div class="bg-amber-50 rounded-2xl border border-amber-200/80 p-4 shadow-card">
+        <p class="text-[11px] font-bold text-amber-700">In Progress</p>
+        <p id="work-stat-progress" class="text-2xl font-extrabold text-amber-700 mt-1">0</p>
+      </div>
+      <div class="bg-emerald-50 rounded-2xl border border-emerald-200/80 p-4 shadow-card">
+        <p class="text-[11px] font-bold text-emerald-700">Completed</p>
+        <p id="work-stat-completed" class="text-2xl font-extrabold text-emerald-700 mt-1">0</p>
+      </div>
+      <div class="bg-rose-50 rounded-2xl border border-rose-200/80 p-4 shadow-card">
+        <p class="text-[11px] font-bold text-rose-700">Overdue</p>
+        <p id="work-stat-overdue" class="text-2xl font-extrabold text-rose-600 mt-1">0</p>
+      </div>
+    </section>
+
+    <!-- Master Task List -->
+
+    <section id="master-task-section" class="bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
+        <div>
+          <p class="text-[11px] font-bold text-stone-400">All Work Tasks</p>
+          <h2 class="text-base font-bold text-stone-800">📋 Master Task List</h2>
+          <p class="text-[11px] text-stone-400 mt-1">Your complete work task library — keep everything here, then plan only what matters today.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <input id="work-search" oninput="renderWorkDashboard()" placeholder="Search tasks..." class="px-3 py-2 rounded-xl bg-cream border border-stone-200 text-xs focus:bg-white focus:outline-none focus:border-sage-500" />
+          <select id="work-status-filter" onchange="renderWorkDashboard()" class="px-3 py-2 rounded-xl bg-cream border border-stone-200 text-xs font-semibold focus:outline-none">
+            <option value="all">All Status</option>
+            <option value="Not Started">Not Started</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Following Up">Following Up</option>
+            <option value="Completed">Completed</option>
+          </select>
+          <button type="button" onclick="toggleMasterTaskList()" class="px-3 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-xs font-bold text-stone-700 cursor-pointer">Close</button>
+        </div>
+      </div>
+      <div id="work-task-list" class="space-y-2"></div>
+    </section>
+
+    <!-- Today + Routine -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+    <!-- Today at Work -->
+    <section class="bg-cream rounded-2xl border border-stone-200/80 shadow-soft p-5">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div>
+          <h2 class="text-base font-bold text-stone-800">☀️ Today at Work</h2>
+          <p class="text-[11px] text-stone-400 mt-1">Only the work you need to focus on today.</p>
+        </div>
+        <button type="button" onclick="switchMainTab('daily')" class="px-3 py-1.5 rounded-xl bg-white border border-stone-200 text-xs font-bold text-stone-700 hover:border-sage-400 cursor-pointer">Open Today Planner →</button>
+      </div>
+      <div id="work-today-list" class="space-y-2"></div>
+    </section>
+
+    <!-- Routine Tasks -->
+    <section class="bg-white rounded-2xl border border-stone-200/80 shadow-soft p-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+        <div>
+          <h2 class="text-base font-bold text-stone-800">🔁 Routine Tasks</h2>
+          <p class="text-[11px] text-stone-400 mt-1">Recurring work that comes back on a schedule.</p>
+        </div>
+        <button type="button" onclick="openWorkRoutineModal()" class="px-3 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-xs font-bold text-stone-700 cursor-pointer">＋ Add Routine</button>
+      </div>
+      <div id="work-routine-list" class="space-y-2"></div>
+    </section>
+
+
+    </div>
+
+
+
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- TAB 3: CONTENT STUDIO (IDEA BANK + SURPRISE ME + KANBAN)  -->
   <!-- ========================================================= -->
   <main id="view-tab-content" class="hidden flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
 
@@ -821,6 +952,136 @@
 
     </div>
   </main>
+
+  <!-- WORK TASK MODAL -->
+  <div id="work-task-modal" class="hidden fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-float border border-stone-100 animate-modal">
+      <div class="flex items-center justify-between pb-3 border-b border-stone-100">
+        <h3 id="work-task-modal-heading" class="text-base font-bold text-stone-800">💼 Add Work Task</h3>
+        <button type="button" onclick="closeModal('work-task-modal')" class="p-1.5 rounded-full text-stone-400 hover:bg-stone-100 cursor-pointer">✕</button>
+      </div>
+      <input type="hidden" id="work-task-id" />
+      <div class="space-y-3.5 mt-4">
+        <div>
+          <label class="block text-xs font-bold text-stone-700 mb-1">Task Name *</label>
+          <input id="work-task-name" class="w-full px-3.5 py-2.5 text-sm bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" placeholder="e.g. Update Product Catalog" />
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Category</label>
+            <select id="work-task-category" class="w-full px-3 py-2.5 text-xs font-semibold bg-cream rounded-xl border border-stone-200 focus:outline-none">
+              <option>🎉 Event</option>
+              <option>💻 Digital / Online</option>
+              <option>🎨 Content</option>
+              <option>📊 Strategy / Research</option>
+              <option>🗂️ Admin / Routine</option>
+              <option>📁 Report</option>
+              <option>🤝 Sales Support</option>
+              <option>📄 Sales Materials</option>
+              <option>📞 Supplier Contact</option>
+              <option>☂️ Sourcing & Costing</option>
+              <option>📋 BOQ</option>
+              <option>🔎 In Progress / Check</option>
+              <option>💠 Daily Tasks</option>
+              <option>📌 Other</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Priority</label>
+            <select id="work-task-priority" class="w-full px-3 py-2.5 text-xs font-semibold bg-cream rounded-xl border border-stone-200 focus:outline-none">
+              <option>Low</option>
+              <option selected>Medium</option>
+              <option>High</option>
+              <option>Urgent</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Deadline</label>
+            <input type="date" id="work-task-deadline" class="w-full px-3 py-2.5 text-xs font-semibold bg-cream rounded-xl border border-stone-200 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Status</label>
+            <select id="work-task-status" class="w-full px-3 py-2.5 text-xs font-semibold bg-cream rounded-xl border border-stone-200 focus:outline-none">
+              <option>Not Started</option>
+              <option>In Progress</option>
+              <option>Following Up</option>
+              <option>Completed</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-stone-700 mb-1">Remark</label>
+          <textarea id="work-task-remark" rows="2" class="w-full px-3 py-2.5 text-xs bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" placeholder="Notes, follow-up, next step..."></textarea>
+        </div>
+        <label class="flex items-center gap-2 text-xs font-semibold text-stone-700">
+          <input type="checkbox" id="work-task-plan-today" class="w-4 h-4 accent-emerald-600" />
+          Plan this task for Today
+        </label>
+      </div>
+      <div class="flex justify-end gap-2 mt-5 pt-4 border-t border-stone-100">
+        <button type="button" onclick="closeModal('work-task-modal')" class="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100 cursor-pointer">Cancel</button>
+        <button type="button" onclick="saveWorkTask()" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-sage-600 hover:bg-sage-700 cursor-pointer">Save Task</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORK ROUTINE MODAL -->
+  <div id="work-routine-modal" class="hidden fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-float border border-stone-100 animate-modal">
+      <div class="flex items-center justify-between pb-3 border-b border-stone-100">
+        <h3 id="work-routine-modal-heading" class="text-base font-bold text-stone-800">🔁 Add Routine Task</h3>
+        <button type="button" onclick="closeModal('work-routine-modal')" class="p-1.5 rounded-full text-stone-400 hover:bg-stone-100 cursor-pointer">✕</button>
+      </div>
+      <input type="hidden" id="work-routine-id" />
+      <div class="space-y-3.5 mt-4">
+        <div>
+          <label class="block text-xs font-bold text-stone-700 mb-1">Task Name *</label>
+          <input id="work-routine-name" class="w-full px-3.5 py-2.5 text-sm bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" placeholder="e.g. Summarize Sales Forecast" />
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Category</label>
+            <select id="work-routine-category" class="w-full px-3 py-2.5 text-xs font-semibold bg-cream rounded-xl border border-stone-200 focus:outline-none">
+              <option>🎉 Event</option>
+              <option>💻 Digital / Online</option>
+              <option>🎨 Content</option>
+              <option>📊 Strategy / Research</option>
+              <option>🗂️ Admin / Routine</option>
+              <option selected>📁 Report</option>
+              <option>🤝 Sales Support</option>
+              <option>📄 Sales Materials</option>
+              <option>📞 Supplier Contact</option>
+              <option>☂️ Sourcing & Costing</option>
+              <option>📋 BOQ</option>
+              <option>🔎 In Progress / Check</option>
+              <option>💠 Daily Tasks</option>
+              <option>📌 Other</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">Frequency</label>
+            <select id="work-routine-frequency" class="w-full px-3 py-2.5 text-xs font-semibold bg-cream rounded-xl border border-stone-200 focus:outline-none">
+              <option>Daily</option>
+              <option>Weekly</option>
+              <option selected>Monthly</option>
+              <option>Quarterly</option>
+              <option>As Needed</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-stone-700 mb-1">Schedule</label>
+          <input id="work-routine-schedule" class="w-full px-3 py-2.5 text-xs bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500" placeholder="e.g. Every last working day" />
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 mt-5 pt-4 border-t border-stone-100">
+        <button type="button" onclick="closeModal('work-routine-modal')" class="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100 cursor-pointer">Cancel</button>
+        <button type="button" onclick="saveWorkRoutine()" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-stone-800 hover:bg-stone-700 cursor-pointer">Save Routine</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Subtle Footer -->
   <footer class="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 mt-4 border-t border-stone-200/60 flex flex-wrap items-center justify-between gap-2 text-xs text-stone-400">
@@ -1196,7 +1457,10 @@
       days: {},
       habits: [],
       contents: [],
-      transactions: []
+      transactions: [],
+      workTasks: [],
+      workRoutines: [],
+      workProfile: { position: 'Product Marketing (BD)', jd: '', actual: '' }
     };
 
     function getTodayISO() {
@@ -1348,6 +1612,12 @@
           if (!Array.isArray(store.transactions)) {
             store.transactions = getSeedData().transactions;
           }
+          if (!Array.isArray(store.workTasks)) store.workTasks = [];
+          if (!Array.isArray(store.workRoutines)) store.workRoutines = [];
+          if (!store.workProfile || typeof store.workProfile !== 'object') store.workProfile = { position: 'Product Marketing (BD)', jd: '', actual: '' };
+          if (typeof store.workProfile.position !== 'string') store.workProfile.position = 'Product Marketing (BD)';
+          if (typeof store.workProfile.jd !== 'string') store.workProfile.jd = '';
+          if (typeof store.workProfile.actual !== 'string') store.workProfile.actual = '';
         } else {
           store = getSeedData();
           saveStore();
@@ -1462,8 +1732,9 @@
         if (error) throw error;
         if (data?.data) {
           store = data.data;
+          ensureWorkStore();
           localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
-          renderDailyPlanner(); renderMonthlyOverview(); renderContentStudio(); renderFinanceTracker();
+          renderDailyPlanner(); renderMonthlyOverview(); renderContentStudio(); renderFinanceTracker(); renderWorkDashboard();
           showToast('Cloud data loaded ☁️');
         } else {
           await pushStoreToCloud();
@@ -1535,9 +1806,11 @@
       const dailyView = document.getElementById('view-tab-daily');
       const contentView = document.getElementById('view-tab-content');
       const financeView = document.getElementById('view-tab-finance');
+      const workView = document.getElementById('view-tab-work');
       const btnDaily = document.getElementById('tab-btn-daily');
       const btnContent = document.getElementById('tab-btn-content');
       const btnFinance = document.getElementById('tab-btn-finance');
+      const btnWork = document.getElementById('tab-btn-work');
 
       const activeClass = 'flex-1 lg:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer bg-white text-sage-700 shadow-xs whitespace-nowrap';
       const inactiveClass = 'flex-1 lg:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer text-stone-600 hover:text-stone-900 whitespace-nowrap';
@@ -1545,9 +1818,11 @@
       dailyView.classList.add('hidden');
       contentView.classList.add('hidden');
       financeView.classList.add('hidden');
+      workView.classList.add('hidden');
       btnDaily.className = inactiveClass;
       btnContent.className = inactiveClass;
       btnFinance.className = inactiveClass;
+      btnWork.className = inactiveClass;
 
       if (tab === 'daily') {
         dailyView.classList.remove('hidden');
@@ -1561,6 +1836,10 @@
         financeView.classList.remove('hidden');
         btnFinance.className = activeClass;
         renderFinanceTracker();
+      } else if (tab === 'work') {
+        workView.classList.remove('hidden');
+        btnWork.className = activeClass;
+        renderWorkDashboard();
       }
       lucide.createIcons();
     }
@@ -2357,8 +2636,10 @@
       const item = dayData.todos.find(t => t.id === id);
       if (item) {
         item.done = !item.done;
+        updateWorkTaskFromTodo(item);
         saveStore();
         renderDailyPlanner();
+        renderWorkDashboard();
         lucide.createIcons();
       }
     }
@@ -3000,7 +3281,330 @@
     }
 
     // =========================================================
-    // 6. EXPORT / IMPORT JSON & UTILITIES
+    // 6. WORK DASHBOARD
+    // =========================================================
+    const WORK_STATUS_STYLES = {
+      'Not Started': 'bg-stone-100 text-stone-600',
+      'In Progress': 'bg-amber-100 text-amber-800',
+      'Following Up': 'bg-sky-100 text-sky-800',
+      'Completed': 'bg-emerald-100 text-emerald-800'
+    };
+
+    function ensureWorkStore() {
+      if (!Array.isArray(store.workTasks)) store.workTasks = [];
+      if (!Array.isArray(store.workRoutines)) store.workRoutines = [];
+      if (!store.workProfile || typeof store.workProfile !== 'object') store.workProfile = { position: 'Product Marketing (BD)', jd: '', actual: '' };
+      if (typeof store.workProfile.position !== 'string') store.workProfile.position = 'Product Marketing (BD)';
+      if (typeof store.workProfile.jd !== 'string') store.workProfile.jd = '';
+      if (typeof store.workProfile.actual !== 'string') store.workProfile.actual = '';
+    }
+
+    function renderWorkProfile() {
+      ensureWorkStore();
+      const position = document.getElementById('work-profile-position');
+      const jd = document.getElementById('work-profile-jd');
+      const actual = document.getElementById('work-profile-actual');
+      if (position && document.activeElement !== position) position.value = store.workProfile.position || '';
+      if (jd && document.activeElement !== jd) jd.value = store.workProfile.jd || '';
+      if (actual && document.activeElement !== actual) actual.value = store.workProfile.actual || '';
+    }
+
+    function saveWorkProfile() {
+      ensureWorkStore();
+      store.workProfile = {
+        position: document.getElementById('work-profile-position').value.trim(),
+        jd: document.getElementById('work-profile-jd').value.trim(),
+        actual: document.getElementById('work-profile-actual').value.trim()
+      };
+      saveStore();
+      renderWorkProfile();
+      showToast('Work profile saved ✨');
+    }
+
+    function isWorkTaskOverdue(task) {
+      return task.deadline && task.status !== 'Completed' && task.deadline < getTodayISO();
+    }
+
+    function toggleMasterTaskList() {
+      const section = document.getElementById('master-task-section');
+      if (!section) return;
+      section.classList.toggle('hidden');
+      if (!section.classList.contains('hidden')) {
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function renderWorkDashboard() {
+      ensureWorkStore();
+      renderWorkProfile();
+
+      const total = store.workTasks.length;
+      const progress = store.workTasks.filter(t => t.status === 'In Progress' || t.status === 'Following Up').length;
+      const completed = store.workTasks.filter(t => t.status === 'Completed').length;
+      const overdue = store.workTasks.filter(isWorkTaskOverdue).length;
+
+      document.getElementById('work-stat-total').textContent = total;
+      document.getElementById('work-stat-progress').textContent = progress;
+      document.getElementById('work-stat-completed').textContent = completed;
+      document.getElementById('work-stat-overdue').textContent = overdue;
+
+      renderWorkToday();
+      renderWorkTaskList();
+      renderWorkRoutineList();
+    }
+
+    function renderWorkToday() {
+      const container = document.getElementById('work-today-list');
+      const today = getTodayISO();
+      const tasks = store.workTasks.filter(t => t.todayDate === today || (t.deadline === today && t.status !== 'Completed'));
+
+      if (!tasks.length) {
+        container.innerHTML = `
+          <div class="py-6 text-center rounded-xl border border-dashed border-stone-200 bg-white/60 text-xs text-stone-400">
+            No work tasks planned for today 🌿<br>
+            <span class="text-[10px]">Use “Plan for Today” on a task to add it here.</span>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = tasks.map(task => {
+        const statusClass = WORK_STATUS_STYLES[task.status] || WORK_STATUS_STYLES['Not Started'];
+        return `
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl bg-white border border-stone-200/80">
+            <div class="min-w-0">
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="toggleWorkTaskComplete('${task.id}')" class="w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 cursor-pointer ${task.status === 'Completed' ? 'bg-sage-500 border-sage-500 text-white' : 'bg-white border-stone-300 hover:border-sage-500'}">
+                  ${task.status === 'Completed' ? '<i data-lucide="check" class="w-3 h-3 stroke-[3]"></i>' : ''}
+                </button>
+                <span class="text-xs sm:text-sm font-bold text-stone-800 ${task.status === 'Completed' ? 'line-through text-stone-400' : ''}">${escapeHtml(task.name)}</span>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5 mt-1.5 ml-7">
+                <span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${statusClass}">${escapeHtml(task.status)}</span>
+                ${task.deadline ? `<span class="text-[10px] text-stone-400">Deadline ${escapeHtml(task.deadline)}</span>` : ''}
+              </div>
+            </div>
+            <div class="flex gap-1.5 ml-7 sm:ml-0">
+              <button type="button" onclick="addWorkTaskToToday('${task.id}')" class="px-2.5 py-1.5 rounded-lg bg-sage-100 text-sage-700 text-[10px] font-bold cursor-pointer">Sync to Today</button>
+              <button type="button" onclick="openWorkTaskModal('${task.id}')" class="px-2.5 py-1.5 rounded-lg bg-stone-100 text-stone-600 text-[10px] font-bold cursor-pointer">Edit</button>
+            </div>
+          </div>`;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function renderWorkTaskList() {
+      const container = document.getElementById('work-task-list');
+      const search = (document.getElementById('work-search')?.value || '').trim().toLowerCase();
+      const filter = document.getElementById('work-status-filter')?.value || 'all';
+
+      const filtered = store.workTasks.filter(task => {
+        const matchesSearch = !search || [task.name, task.category, task.remark].join(' ').toLowerCase().includes(search);
+        const matchesStatus = filter === 'all' || task.status === filter;
+        return matchesSearch && matchesStatus;
+      });
+
+      if (!filtered.length) {
+        container.innerHTML = `
+          <div class="py-8 text-center rounded-xl border border-dashed border-stone-200 bg-cream/60 text-xs text-stone-400">
+            No work tasks yet 🌱<br><span class="text-[10px]">Start by adding your first task.</span>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map((task, idx) => {
+        const statusClass = WORK_STATUS_STYLES[task.status] || WORK_STATUS_STYLES['Not Started'];
+        const overdue = isWorkTaskOverdue(task);
+        const priorityClass = task.priority === 'Urgent' ? 'text-rose-600' : task.priority === 'High' ? 'text-orange-600' : 'text-stone-500';
+        return `
+          <div class="p-3 rounded-xl border ${overdue ? 'border-rose-200 bg-rose-50/50' : 'border-stone-200/80 bg-white'}">
+            <div class="grid grid-cols-1 lg:grid-cols-[32px_minmax(0,2fr)_1.1fr_1fr_1.1fr_auto] gap-2 items-center">
+              <div class="text-[10px] font-bold text-stone-400">${idx + 1}</div>
+              <div class="min-w-0">
+                <div class="text-xs sm:text-sm font-bold text-stone-800 truncate">${escapeHtml(task.name)}</div>
+                <div class="text-[10px] text-stone-400 mt-1">${escapeHtml(task.category || 'Other')}</div>
+                ${task.remark ? `<div class="text-[10px] text-stone-500 mt-1 truncate">${escapeHtml(task.remark)}</div>` : ''}
+              </div>
+              <div class="text-[10px]"><span class="font-bold ${priorityClass}">${escapeHtml(task.priority || 'Medium')}</span></div>
+              <div class="text-[10px] ${overdue ? 'text-rose-600 font-bold' : 'text-stone-500'}">${task.deadline ? escapeHtml(task.deadline) : '—'}${overdue ? ' • Overdue' : ''}</div>
+              <div><span class="inline-flex px-2 py-1 rounded-full text-[9px] font-bold ${statusClass}">${escapeHtml(task.status)}</span></div>
+              <div class="flex items-center justify-end gap-1">
+                <button type="button" onclick="addWorkTaskToToday('${task.id}')" title="Plan for today" class="p-1.5 rounded-lg text-sage-700 hover:bg-sage-100 cursor-pointer">☀️</button>
+                <button type="button" onclick="openWorkTaskModal('${task.id}')" title="Edit" class="p-1.5 rounded-lg text-stone-500 hover:bg-stone-100 cursor-pointer">✏️</button>
+                <button type="button" onclick="deleteWorkTask('${task.id}')" title="Delete" class="p-1.5 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer">🗑️</button>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function renderWorkRoutineList() {
+      const container = document.getElementById('work-routine-list');
+      if (!store.workRoutines.length) {
+        container.innerHTML = `<div class="py-6 text-center rounded-xl border border-dashed border-stone-200 bg-cream/60 text-xs text-stone-400">No routine tasks yet 🔁</div>`;
+        return;
+      }
+
+      container.innerHTML = store.workRoutines.map((routine, idx) => `
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl border border-stone-200/80 bg-cream/60">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-bold text-stone-400">${idx + 1}</span>
+              <span class="text-xs sm:text-sm font-bold text-stone-800">${escapeHtml(routine.name)}</span>
+            </div>
+            <div class="flex flex-wrap gap-1.5 mt-1.5 ml-5">
+              <span class="px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 text-[9px] font-bold">${escapeHtml(routine.frequency)}</span>
+              <span class="text-[10px] text-stone-500">${escapeHtml(routine.category || 'Other')}</span>
+              ${routine.schedule ? `<span class="text-[10px] text-stone-400">• ${escapeHtml(routine.schedule)}</span>` : ''}
+            </div>
+          </div>
+          <div class="flex gap-1.5">
+            <button type="button" onclick="openWorkRoutineModal('${routine.id}')" class="px-2.5 py-1.5 rounded-lg bg-white border border-stone-200 text-[10px] font-bold text-stone-600 cursor-pointer">Edit</button>
+            <button type="button" onclick="deleteWorkRoutine('${routine.id}')" class="px-2.5 py-1.5 rounded-lg bg-white border border-stone-200 text-[10px] font-bold text-rose-500 cursor-pointer">Delete</button>
+          </div>
+        </div>`).join('');
+    }
+
+    function openWorkTaskModal(id = '') {
+      ensureWorkStore();
+      const task = id ? store.workTasks.find(t => t.id === id) : null;
+      document.getElementById('work-task-id').value = task?.id || '';
+      document.getElementById('work-task-modal-heading').textContent = task ? '💼 Edit Work Task' : '💼 Add Work Task';
+      document.getElementById('work-task-name').value = task?.name || '';
+      document.getElementById('work-task-category').value = task?.category || '💻 Digital / Online';
+      document.getElementById('work-task-priority').value = task?.priority || 'Medium';
+      document.getElementById('work-task-deadline').value = task?.deadline || '';
+      document.getElementById('work-task-status').value = task?.status || 'Not Started';
+      document.getElementById('work-task-remark').value = task?.remark || '';
+      document.getElementById('work-task-plan-today').checked = task?.todayDate === getTodayISO();
+      document.getElementById('work-task-modal').classList.remove('hidden');
+    }
+
+    function saveWorkTask() {
+      ensureWorkStore();
+      const id = document.getElementById('work-task-id').value;
+      const name = document.getElementById('work-task-name').value.trim();
+      if (!name) return showToast('Please enter a task name');
+
+      const data = {
+        id: id || 'work-' + Date.now(),
+        name,
+        category: document.getElementById('work-task-category').value,
+        priority: document.getElementById('work-task-priority').value,
+        deadline: document.getElementById('work-task-deadline').value,
+        status: document.getElementById('work-task-status').value,
+        remark: document.getElementById('work-task-remark').value.trim(),
+        todayDate: document.getElementById('work-task-plan-today').checked ? getTodayISO() : ''
+      };
+
+      const index = store.workTasks.findIndex(t => t.id === data.id);
+      if (index >= 0) store.workTasks[index] = { ...store.workTasks[index], ...data };
+      else store.workTasks.unshift(data);
+
+      if (data.todayDate) addWorkTaskToToday(data.id, false);
+      saveStore();
+      closeModal('work-task-modal');
+      renderWorkDashboard();
+      showToast(id ? 'Work task updated' : 'Work task added');
+    }
+
+    function addWorkTaskToToday(id, notify = true) {
+      ensureWorkStore();
+      const task = store.workTasks.find(t => t.id === id);
+      if (!task) return;
+      task.todayDate = getTodayISO();
+      const dayData = ensureDayRecord(getTodayISO());
+      const exists = dayData.todos.some(t => t.workTaskId === task.id);
+      if (!exists) {
+        dayData.todos.unshift({
+          id: 'td-work-' + task.id,
+          text: task.name,
+          priority: task.priority === 'Urgent' || task.priority === 'High' ? 'high' : 'normal',
+          done: task.status === 'Completed',
+          workTaskId: task.id
+        });
+      }
+      saveStore();
+      renderWorkDashboard();
+      if (currentDateStr === getTodayISO()) renderDailyPlanner();
+      if (notify) showToast('Added to Today ☀️');
+    }
+
+    function toggleWorkTaskComplete(id) {
+      const task = store.workTasks.find(t => t.id === id);
+      if (!task) return;
+      task.status = task.status === 'Completed' ? 'In Progress' : 'Completed';
+      const dayData = ensureDayRecord(getTodayISO());
+      const todo = dayData.todos.find(t => t.workTaskId === id);
+      if (todo) todo.done = task.status === 'Completed';
+      saveStore();
+      renderWorkDashboard();
+      if (currentDateStr === getTodayISO()) renderDailyPlanner();
+    }
+
+    function updateWorkTaskFromTodo(todo) {
+      if (!todo?.workTaskId) return;
+      const task = store.workTasks.find(t => t.id === todo.workTaskId);
+      if (task) task.status = todo.done ? 'Completed' : (task.status === 'Completed' ? 'In Progress' : task.status);
+    }
+
+    function deleteWorkTask(id) {
+      if (!confirm('Delete this work task?')) return;
+      store.workTasks = store.workTasks.filter(t => t.id !== id);
+      Object.values(store.days || {}).forEach(day => {
+        day.todos = (day.todos || []).filter(todo => todo.workTaskId !== id);
+      });
+      saveStore();
+      renderWorkDashboard();
+      renderDailyPlanner();
+      showToast('Work task deleted');
+    }
+
+    function openWorkRoutineModal(id = '') {
+      ensureWorkStore();
+      const routine = id ? store.workRoutines.find(r => r.id === id) : null;
+      document.getElementById('work-routine-id').value = routine?.id || '';
+      document.getElementById('work-routine-modal-heading').textContent = routine ? '🔁 Edit Routine Task' : '🔁 Add Routine Task';
+      document.getElementById('work-routine-name').value = routine?.name || '';
+      document.getElementById('work-routine-category').value = routine?.category || '📁 Report';
+      document.getElementById('work-routine-frequency').value = routine?.frequency || 'Monthly';
+      document.getElementById('work-routine-schedule').value = routine?.schedule || '';
+      document.getElementById('work-routine-modal').classList.remove('hidden');
+    }
+
+    function saveWorkRoutine() {
+      ensureWorkStore();
+      const id = document.getElementById('work-routine-id').value;
+      const name = document.getElementById('work-routine-name').value.trim();
+      if (!name) return showToast('Please enter a routine name');
+
+      const data = {
+        id: id || 'routine-' + Date.now(),
+        name,
+        category: document.getElementById('work-routine-category').value.trim(),
+        frequency: document.getElementById('work-routine-frequency').value,
+        schedule: document.getElementById('work-routine-schedule').value.trim()
+      };
+
+      const index = store.workRoutines.findIndex(r => r.id === data.id);
+      if (index >= 0) store.workRoutines[index] = data;
+      else store.workRoutines.unshift(data);
+
+      saveStore();
+      closeModal('work-routine-modal');
+      renderWorkDashboard();
+      showToast(id ? 'Routine updated' : 'Routine added');
+    }
+
+    function deleteWorkRoutine(id) {
+      if (!confirm('Delete this routine task?')) return;
+      store.workRoutines = store.workRoutines.filter(r => r.id !== id);
+      saveStore();
+      renderWorkDashboard();
+      showToast('Routine deleted');
+    }
+
+    // =========================================================
+    // 7. EXPORT / IMPORT JSON & UTILITIES
     // =========================================================
     function exportAllData() {
       const jsonStr = JSON.stringify(store, null, 2);
@@ -3026,11 +3630,14 @@
           if (parsed && parsed.days && Array.isArray(parsed.habits) && Array.isArray(parsed.contents)) {
             if (!Array.isArray(parsed.transactions)) parsed.transactions = [];
             if (!parsed.months) parsed.months = {};
+            if (!Array.isArray(parsed.workTasks)) parsed.workTasks = [];
+            if (!Array.isArray(parsed.workRoutines)) parsed.workRoutines = [];
             store = parsed;
             saveStore();
             renderDailyPlanner();
             renderContentStudio();
             renderFinanceTracker();
+            renderWorkDashboard();
             lucide.createIcons();
             showToast('Data imported successfully!');
           } else {
@@ -3057,6 +3664,7 @@
       renderMonthlyOverview();
       renderContentStudio();
       renderFinanceTracker();
+      renderWorkDashboard();
       lucide.createIcons();
       closeModal('reset-confirm-modal');
       showToast('Demo data has been reset');
@@ -3086,7 +3694,7 @@
     }
 
     window.addEventListener('click', (e) => {
-      ['timeblock-modal', 'surprise-modal', 'content-edit-modal', 'reset-confirm-modal', 'auth-modal'].forEach(id => {
+      ['timeblock-modal', 'surprise-modal', 'content-edit-modal', 'reset-confirm-modal', 'auth-modal', 'work-task-modal', 'work-routine-modal'].forEach(id => {
         if (e.target === document.getElementById(id)) closeModal(id);
       });
     });
@@ -3098,6 +3706,7 @@
       renderDailyPlanner();
       renderContentStudio();
       renderFinanceTracker();
+      renderWorkDashboard();
       lucide.createIcons();
     });
   </script>
