@@ -22,15 +22,15 @@
             sans: ['"Mali"', 'cursive', 'sans-serif'],
           },
           colors: {
-            cream: '#FAF9F6',
-            sand: '#F3F1EC',
+            cream: '#FFFDF9',
+            sand: '#F7F1EB',
             sage: {
-              50: '#F4F7F4',
-              100: '#E3EBE3',
-              200: '#C7D8C7',
-              500: '#5C7C5C',
-              600: '#496649',
-              700: '#3A523A',
+              50: '#FFF7FA',
+              100: '#F8DDE7',
+              200: '#DDF2E6',
+              500: '#C9B6E4',
+              600: '#9A7DB8',
+              700: '#7B628F',
             }
           },
           boxShadow: {
@@ -49,7 +49,7 @@
     }
 
     body {
-      background-color: #FAF9F6;
+      background-color: #FFFDF9;
       color: #1C1917;
     }
 
@@ -61,11 +61,11 @@
       background: transparent;
     }
     ::-webkit-scrollbar-thumb {
-      background: #D6D3D1;
+      background: #E8DDE2;
       border-radius: 999px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #A8A29E;
+      background: #CDBBC4;
     }
 
     @keyframes popBounce {
@@ -91,7 +91,7 @@
     }
     .drop-zone-active {
       background-color: rgba(92, 124, 92, 0.08) !important;
-      border-color: #5C7C5C !important;
+      border-color: #C9B6E4 !important;
       box-shadow: inset 0 0 0 2px rgba(92, 124, 92, 0.25);
     }
 
@@ -105,7 +105,182 @@
     .monthly-day-rose { background: #FFECEF; }
     .monthly-day-today { box-shadow: 0 0 0 3px rgba(124, 153, 124, 0.14); }
     .monthly-day-selected { box-shadow: 0 0 0 3px rgba(199, 216, 199, 0.55); }
+  
+    /* =========================================================
+       MY PLANNER PASTEL THEME
+       Palette: Pink / Peach / Yellow / Mint / Blue / Lavender
+       ========================================================= */
+    :root {
+      --pastel-pink: #F8DDE7;
+      --pastel-peach: #FCE3CF;
+      --pastel-yellow: #FFF0B8;
+      --pastel-mint: #DDF2E6;
+      --pastel-blue: #DDEAF8;
+      --pastel-lavender: #E9DDF7;
+    }
+
+    .pastel-pink { background:#F8DDE7 !important; }
+    .pastel-peach { background:#FCE3CF !important; }
+    .pastel-yellow { background:#FFF0B8 !important; }
+    .pastel-mint { background:#DDF2E6 !important; }
+    .pastel-blue { background:#DDEAF8 !important; }
+    .pastel-lavender { background:#E9DDF7 !important; }
+
+    /* Keep the existing sage classes functional, but make them pastel. */
+    .bg-sage-50 { background-color:#FFF7FA !important; }
+    .bg-sage-100 { background-color:#F8DDE7 !important; }
+    .bg-sage-200 { background-color:#DDF2E6 !important; }
+    .bg-sage-500 { background-color:#C9B6E4 !important; }
+    .bg-sage-600 { background-color:#B79AD3 !important; }
+    .bg-sage-700 { background-color:#8D6FA8 !important; }
+
+    .text-sage-600 { color:#9A7DB8 !important; }
+    .text-sage-700 { color:#7B628F !important; }
+    .border-sage-200 { border-color:#DDF2E6 !important; }
+    .border-sage-400 { border-color:#C9B6E4 !important; }
+
+    .hover\:bg-sage-100:hover { background-color:#F8DDE7 !important; }
+    .hover\:bg-sage-200:hover { background-color:#DDF2E6 !important; }
+    .hover\:bg-sage-700:hover { background-color:#8D6FA8 !important; }
+    .hover\:border-sage-400:hover { border-color:#C9B6E4 !important; }
+
+    /* Soft calendar palette */
+    .monthly-day-pink { background:#F8DDE7 !important; }
+    .monthly-day-peach { background:#FCE3CF !important; }
+    .monthly-day-yellow { background:#FFF0B8 !important; }
+    .monthly-day-mint { background:#DDF2E6 !important; }
+    .monthly-day-blue { background:#DDEAF8 !important; }
+    .monthly-day-lilac { background:#E9DDF7 !important; }
+    .monthly-day-rose { background:#F8DDE7 !important; }
+
   </style>
+
+<style id="my-planner-pastel-v2">
+  :root{
+    --pink:#F8DDE7;
+    --peach:#FCE3CF;
+    --yellow:#FFF0B8;
+    --mint:#DDF2E6;
+    --blue:#DDEAF8;
+    --lavender:#E9DDF7;
+    --pink-deep:#E9AFC5;
+    --peach-deep:#E9B98F;
+    --yellow-deep:#E6CD72;
+    --mint-deep:#A8D6B8;
+    --blue-deep:#AFCBE8;
+    --lavender-deep:#C7A9DF;
+  }
+
+  body{
+    background:
+      radial-gradient(circle at 8% 5%, rgba(248,221,231,.72), transparent 24%),
+      radial-gradient(circle at 92% 8%, rgba(233,221,247,.72), transparent 25%),
+      radial-gradient(circle at 12% 92%, rgba(221,242,230,.62), transparent 25%),
+      radial-gradient(circle at 92% 88%, rgba(252,227,207,.60), transparent 24%),
+      #FFFDF9 !important;
+  }
+
+  /* Cards get a gentle pastel sheen instead of flat white */
+  .bg-white{
+    background:
+      linear-gradient(135deg, rgba(255,255,255,.98), rgba(255,250,252,.94)) !important;
+    box-shadow: 0 5px 22px rgba(188,158,177,.10) !important;
+  }
+
+  header{
+    background: rgba(255,253,249,.88) !important;
+    box-shadow: 0 4px 18px rgba(188,158,177,.10);
+  }
+
+  /* Main pastel accent */
+  .bg-sage-50{background:#FFF7FA !important}
+  .bg-sage-100{background:#F8DDE7 !important}
+  .bg-sage-200{background:#DDF2E6 !important}
+  .bg-sage-500{
+    background:linear-gradient(135deg,#E9BFD0,#CBB5E5) !important;
+  }
+  .bg-sage-600{
+    background:linear-gradient(135deg,#D9A9BF,#B99AD5) !important;
+  }
+  .bg-sage-700{background:#8F709F !important}
+  .text-sage-600{color:#9A6F91 !important}
+  .text-sage-700{color:#80618B !important}
+  .border-sage-200{border-color:#DDF2E6 !important}
+  .border-sage-400{border-color:#D5B6E5 !important}
+
+  .hover\:bg-sage-100:hover{background:#F8DDE7 !important}
+  .hover\:bg-sage-200:hover{background:#DDF2E6 !important}
+  .hover\:bg-sage-700:hover{background:#8F709F !important}
+  .hover\:border-sage-400:hover{border-color:#D5B6E5 !important}
+
+  /* Buttons / controls */
+  button.bg-sage-600,
+  button.bg-sage-500{
+    box-shadow:0 5px 14px rgba(185,154,213,.22);
+  }
+  button.bg-sage-600:hover,
+  button.bg-sage-500:hover{
+    filter:saturate(1.08) brightness(1.02);
+    transform:translateY(-1px);
+  }
+
+  /* Pastel calendar = more playful */
+  .monthly-day-pink{
+    background:linear-gradient(145deg,#F8DDE7,#FCE8EF) !important;
+    border-color:#F0C7D6 !important;
+  }
+  .monthly-day-peach{
+    background:linear-gradient(145deg,#FCE3CF,#FFF0E3) !important;
+    border-color:#F1D0B5 !important;
+  }
+  .monthly-day-yellow{
+    background:linear-gradient(145deg,#FFF0B8,#FFF8D8) !important;
+    border-color:#EEDC91 !important;
+  }
+  .monthly-day-mint{
+    background:linear-gradient(145deg,#DDF2E6,#ECFAF1) !important;
+    border-color:#BFE2CC !important;
+  }
+  .monthly-day-blue{
+    background:linear-gradient(145deg,#DDEAF8,#EEF6FF) !important;
+    border-color:#C3D9EE !important;
+  }
+  .monthly-day-lilac{
+    background:linear-gradient(145deg,#E9DDF7,#F5EEFC) !important;
+    border-color:#D5C2E8 !important;
+  }
+  .monthly-day-rose{
+    background:linear-gradient(145deg,#F8DDE7,#FDEEF3) !important;
+    border-color:#F0C7D6 !important;
+  }
+
+  /* Small colorful badges/pills */
+  .bg-amber-50{background:#FFF0B8 !important}
+  .bg-emerald-50{background:#DDF2E6 !important}
+  .bg-blue-50{background:#DDEAF8 !important}
+  .bg-violet-50{background:#E9DDF7 !important}
+  .bg-rose-50{background:#F8DDE7 !important}
+
+  /* Soft interaction glow */
+  .drop-zone-active{
+    background:linear-gradient(135deg,rgba(248,221,231,.55),rgba(233,221,247,.55)) !important;
+    border-color:#C7A9DF !important;
+    box-shadow:inset 0 0 0 2px rgba(199,169,223,.35),0 6px 20px rgba(199,169,223,.12) !important;
+  }
+
+  /* Subtle rainbow sheen for the app logo */
+  .bg-gradient-to-br.from-sage-500.to-emerald-600{
+    background:linear-gradient(135deg,#F1B9CE 0%,#F8DDA7 32%,#BFE3D0 63%,#CBB5E5 100%) !important;
+    color:#fff !important;
+    box-shadow:0 7px 20px rgba(210,170,198,.25) !important;
+  }
+
+  /* Keep text readable */
+  .text-stone-800{color:#403A40 !important}
+  .text-stone-700{color:#554D55 !important}
+  .text-stone-600{color:#685F68 !important}
+</style>
+
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-sage-100 selection:text-sage-700">
 
