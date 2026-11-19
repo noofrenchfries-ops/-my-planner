@@ -2398,6 +2398,7 @@
     function renderMonthlyHabitInsights() {
       const monthKey = getMonthKey();
       const { daysInMonth, elapsedDays } = getMonthDaysForAnalysis(monthKey);
+      const [year, month] = monthKey.split('-').map(Number);
       const overviewEl = document.getElementById('monthly-habit-overview');
       const summaryEl = document.getElementById('monthly-summary');
       const daysLabel = document.getElementById('monthly-habit-days-label');
@@ -2509,9 +2510,33 @@
       const monthData = ensureMonthRecord();
       monthData.goals.push({ text: '', done: false });
       saveStore();
-      renderMonthlyOverview();
-      const inputs = document.querySelectorAll('#monthly-goals-list input');
-      if (inputs.length) inputs[inputs.length - 1].focus();
+
+      // Re-render only the Goals list so the input stays stable while typing.
+      const list = document.getElementById('monthly-goals-list');
+      if (!list) return;
+      list.innerHTML = monthData.goals.map((g, idx) => `
+        <div class="flex items-center gap-2.5 bg-white rounded-xl border ${g.done ? 'border-sage-200' : 'border-stone-200'} px-3 py-2.5">
+          <button type="button" onclick="toggleMonthlyGoal(${idx})"
+            class="w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 ${g.done ? 'bg-sage-500 border-sage-500 text-white' : 'bg-white border-stone-300 hover:border-sage-500'} cursor-pointer">
+            ${g.done ? '<i data-lucide="check" class="w-3.5 h-3.5 stroke-[3]"></i>' : ''}
+          </button>
+          <input type="text" value="${escapeHtml(g.text || '')}" oninput="updateMonthlyGoal(${idx}, this.value)"
+            placeholder="Goal ${idx + 1}..."
+            class="w-full bg-transparent text-xs sm:text-sm focus:outline-none ${g.done ? 'line-through text-stone-400' : 'text-stone-800'}">
+          <button type="button" onclick="deleteMonthlyGoal(${idx})" class="p-1 text-stone-300 hover:text-rose-500 cursor-pointer">
+            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      `).join('');
+      lucide.createIcons();
+      const inputs = list.querySelectorAll('input');
+      if (inputs.length) {
+        const input = inputs[inputs.length - 1];
+        requestAnimationFrame(() => {
+          input.focus();
+          input.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      }
     }
 
     function deleteMonthlyGoal(idx) {
