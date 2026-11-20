@@ -268,16 +268,16 @@
     box-shadow:inset 0 0 0 2px rgba(199,169,223,.35),0 6px 20px rgba(199,169,223,.12) !important;
   }
 
-  /* Cute pastel rainbow app logo */
+  /* Cute pastel logo — soft lavender + pink, no rainbow */
   .bg-gradient-to-br.from-sage-500.to-emerald-600{
     background:
-      radial-gradient(circle at 25% 20%, rgba(255,255,255,.65) 0 10%, transparent 28%),
-      linear-gradient(135deg,#F7C6D9 0%,#FFD9B8 28%,#FFF0B8 48%,#CDEBD8 68%,#C9DDF4 84%,#DEC8F0 100%) !important;
-    color:#fff !important;
-    border:1px solid rgba(255,255,255,.9) !important;
+      radial-gradient(circle at 28% 22%, rgba(255,255,255,.72) 0 12%, transparent 30%),
+      linear-gradient(135deg,#E9DDF7 0%,#F6D6E3 100%) !important;
+    color:#8C6FA8 !important;
+    border:1px solid rgba(255,255,255,.95) !important;
     box-shadow:
-      0 7px 20px rgba(220,184,205,.25),
-      inset 0 1px 0 rgba(255,255,255,.8) !important;
+      0 7px 20px rgba(188,158,205,.22),
+      inset 0 1px 0 rgba(255,255,255,.9) !important;
     position:relative;
     overflow:hidden;
   }
@@ -287,20 +287,27 @@
     stroke-width:2.5;
   }
 
-
-  .finance-add-btn{
-    width:24px;height:24px;border-radius:8px;
+  /* Finance budget item controls */
+  .finance-budget-add-btn{
+    width:26px;height:26px;border-radius:9px;
     display:inline-flex;align-items:center;justify-content:center;
-    background:#F0EAF7;color:#8C6FA8;border:1px solid #E3D7EE;
-    font-size:15px;line-height:1;cursor:pointer;
+    background:#F0EAF7;color:#8C6FA8;
+    border:1px solid #E3D7EE;font-size:16px;line-height:1;
+    cursor:pointer;transition:.15s ease;
   }
-  .finance-add-btn:hover{background:#E7DDF0}
-  .finance-item-actions{display:flex;gap:3px;opacity:.5}
-  .finance-budget-row:hover .finance-item-actions{opacity:1}
-  .finance-item-action{
-    width:22px;height:22px;border-radius:7px;border:1px solid #E7E1E7;
-    background:#fff;font-size:10px;cursor:pointer;
+  .finance-budget-add-btn:hover{background:#E8DDF2;transform:translateY(-1px)}
+  .finance-budget-item-actions{
+    display:flex;align-items:center;gap:3px;opacity:.55;
+    transition:opacity .15s ease;
   }
+  .finance-budget-item-row:hover .finance-budget-item-actions{opacity:1}
+  .finance-budget-item-action{
+    width:24px;height:24px;border-radius:8px;display:flex;
+    align-items:center;justify-content:center;font-size:11px;
+    color:#8A818A;background:rgba(255,255,255,.8);
+    border:1px solid #E8E2E8;cursor:pointer;
+  }
+  .finance-budget-item-action:hover{background:#F4EEF7;color:#7B6092}
 
   /* Keep text readable */
   .text-stone-800{color:#403A40 !important}
@@ -1029,7 +1036,10 @@
               <h3 class="text-xs sm:text-sm font-extrabold text-stone-800">🌱 เงินออม & ลงทุน</h3>
               <span class="inline-flex mt-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-700">เป้าหมาย 10–20%</span>
             </div>
-            <div class="flex items-center gap-2"><span id="finance-fixed-total-wealth" class="text-xs font-extrabold text-stone-800">รวม ฿0</span><button type="button" onclick="openFinanceItemModal('wealth')" class="finance-add-btn">＋</button></div>
+            <div class="flex items-center gap-2">
+              <span id="finance-fixed-total-wealth" class="text-xs font-extrabold text-stone-800">รวม ฿0</span>
+              <button type="button" onclick="openFinanceFixedItemModal('wealth')" class="finance-budget-add-btn" title="เพิ่มรายการ">＋</button>
+            </div>
           </div>
           <div id="finance-fixed-group-wealth" class="space-y-2 mt-3"></div>
         </div>
@@ -1041,7 +1051,10 @@
               <h3 class="text-xs sm:text-sm font-extrabold text-stone-800">🏠 ค่าจำเป็น & รายจ่ายประจำ</h3>
               <span class="inline-flex mt-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-sky-100 text-sky-700">ส่วนใหญ่ 40–50%</span>
             </div>
-            <div class="flex items-center gap-2"><span id="finance-fixed-total-living" class="text-xs font-extrabold text-stone-800">รวม ฿0</span><button type="button" onclick="openFinanceItemModal('living')" class="finance-add-btn">＋</button></div>
+            <div class="flex items-center gap-2">
+              <span id="finance-fixed-total-living" class="text-xs font-extrabold text-stone-800">รวม ฿0</span>
+              <button type="button" onclick="openFinanceFixedItemModal('living')" class="finance-budget-add-btn" title="เพิ่มรายการ">＋</button>
+            </div>
           </div>
           <div id="finance-fixed-group-living" class="space-y-2 mt-3"></div>
         </div>
@@ -1053,7 +1066,10 @@
               <h3 class="text-xs sm:text-sm font-extrabold text-stone-800">🎉 งบความสุข & รางวัลชีวิต</h3>
               <span class="inline-flex mt-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-violet-100 text-violet-700">เป้าหมาย 10–15%</span>
             </div>
-            <div class="flex items-center gap-2"><span id="finance-fixed-total-fun" class="text-xs font-extrabold text-stone-800">รวม ฿0</span><button type="button" onclick="openFinanceItemModal('fun')" class="finance-add-btn">＋</button></div>
+            <div class="flex items-center gap-2">
+              <span id="finance-fixed-total-fun" class="text-xs font-extrabold text-stone-800">รวม ฿0</span>
+              <button type="button" onclick="openFinanceFixedItemModal('fun')" class="finance-budget-add-btn" title="เพิ่มรายการ">＋</button>
+            </div>
           </div>
           <div id="finance-fixed-group-fun" class="space-y-2 mt-3"></div>
         </div>
@@ -1062,41 +1078,47 @@
     </section>
 
 
-    <!-- Monthly Budget item editor -->
-    <div id="finance-item-modal" class="hidden fixed inset-0 z-[80] bg-stone-900/25 backdrop-blur-sm items-center justify-center p-4">
-      <div class="w-full max-w-sm bg-white rounded-2xl border border-stone-200 shadow-2xl p-5">
-        <div class="flex items-center justify-between mb-4">
+    <!-- Finance Budget Item Modal -->
+    <div id="finance-fixed-item-modal" class="hidden fixed inset-0 z-[80] bg-stone-900/30 backdrop-blur-sm items-center justify-center p-4">
+      <div class="w-full max-w-md bg-white rounded-3xl border border-stone-200 shadow-2xl p-5">
+        <div class="flex items-center justify-between gap-3 mb-4">
           <div>
-            <p class="text-[10px] font-bold text-stone-400">MONTHLY BUDGET</p>
-            <h3 id="finance-item-modal-title" class="text-base font-extrabold text-stone-800">เพิ่มรายการ</h3>
+            <p id="finance-fixed-item-modal-kicker" class="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Budget Item</p>
+            <h3 id="finance-fixed-item-modal-title" class="text-lg font-extrabold text-stone-800">เพิ่มรายการ</h3>
           </div>
-          <button type="button" onclick="closeFinanceItemModal()" class="w-8 h-8 rounded-xl bg-stone-100 text-stone-500">×</button>
+          <button type="button" onclick="closeFinanceFixedItemModal()" class="w-8 h-8 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-500 font-bold">×</button>
         </div>
 
-        <input type="hidden" id="finance-item-group">
-        <input type="hidden" id="finance-item-id">
+        <input type="hidden" id="finance-fixed-item-group">
+        <input type="hidden" id="finance-fixed-item-id">
 
-        <div class="grid grid-cols-[58px_1fr] gap-2.5">
-          <label>
-            <span class="text-[10px] font-bold text-stone-500">ไอคอน</span>
-            <input id="finance-item-emoji" maxlength="4" value="💰"
-              class="mt-1 w-full px-2 py-2.5 text-center bg-cream rounded-xl border border-stone-200 focus:outline-none focus:border-sage-500">
+        <div class="grid grid-cols-[72px_1fr] gap-3">
+          <label class="block">
+            <span class="text-[11px] font-bold text-stone-600">ไอคอน</span>
+            <input id="finance-fixed-item-emoji" maxlength="4" value="💰"
+              class="mt-1 w-full px-3 py-2.5 text-center text-lg bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500">
           </label>
-          <label>
-            <span class="text-[10px] font-bold text-stone-500">ชื่อรายการ</span>
-            <input id="finance-item-label" maxlength="40" placeholder="เช่น ค่าโทรศัพท์"
-              class="mt-1 w-full px-3 py-2.5 text-xs font-semibold bg-cream rounded-xl border border-stone-200 focus:outline-none focus:border-sage-500">
+          <label class="block">
+            <span class="text-[11px] font-bold text-stone-600">ชื่อรายการ</span>
+            <input id="finance-fixed-item-label" maxlength="40" placeholder="เช่น ค่าโทรศัพท์"
+              class="mt-1 w-full px-3 py-2.5 text-sm font-semibold bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500">
           </label>
         </div>
 
-        <div class="flex items-center justify-between mt-5">
-          <button id="finance-item-delete" type="button" onclick="deleteFinanceItem()"
-            class="hidden px-3 py-2 rounded-xl bg-rose-50 text-rose-600 text-[11px] font-bold">
-            🗑️ ลบ
+        <div class="flex justify-between gap-2 mt-5">
+          <button id="finance-fixed-item-delete" type="button" onclick="deleteFinanceFixedItem()"
+            class="hidden px-4 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold">
+            🗑️ ลบรายการ
           </button>
-          <div class="ml-auto flex gap-2">
-            <button type="button" onclick="closeFinanceItemModal()" class="px-3 py-2 rounded-xl bg-stone-100 text-stone-600 text-[11px] font-bold">ยกเลิก</button>
-            <button type="button" onclick="saveFinanceItem()" class="px-3 py-2 rounded-xl bg-sage-500 text-white text-[11px] font-bold">บันทึก</button>
+          <div class="flex gap-2 ml-auto">
+            <button type="button" onclick="closeFinanceFixedItemModal()"
+              class="px-4 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-600 text-xs font-bold">
+              ยกเลิก
+            </button>
+            <button type="button" onclick="saveFinanceFixedItem()"
+              class="px-4 py-2.5 rounded-xl bg-sage-500 hover:bg-sage-600 text-white text-xs font-bold">
+              บันทึก
+            </button>
           </div>
         </div>
       </div>
@@ -1778,7 +1800,7 @@
 
       const plan = store.financeFixedPlans[monthKey];
 
-      // Keep the original items and add an editable item list for each month.
+      // First-time migration: keep existing values and create editable item lists.
       if (!plan.items || typeof plan.items !== 'object') {
         plan.items = {};
         Object.entries(FINANCE_FIXED_BUDGET).forEach(([group, items]) => {
@@ -1788,7 +1810,8 @@
 
       Object.entries(FINANCE_FIXED_BUDGET).forEach(([group, defaults]) => {
         if (!plan[group] || typeof plan[group] !== 'object') plan[group] = {};
-        if (!Array.isArray(plan.items[group])) plan.items[group] = [];
+
+        // Make sure newly introduced defaults exist without deleting user's custom items.
         defaults.forEach(item => {
           if (!plan.items[group].some(x => x.id === item.id)) {
             plan.items[group].push({ ...item });
@@ -1800,6 +1823,11 @@
       return plan;
     }
 
+    function getFinanceFixedItems(group) {
+      const plan = ensureFinanceFixedPlan();
+      return Array.isArray(plan.items?.[group]) ? plan.items[group] : [];
+    }
+
     function updateFinanceFixedBudget(group, itemId, value) {
       const plan = ensureFinanceFixedPlan();
       plan[group][itemId] = Math.max(0, Number(value || 0));
@@ -1807,36 +1835,47 @@
       renderFinanceFixedBudget();
     }
 
-    function openFinanceItemModal(group, itemId = '') {
+    function openFinanceFixedItemModal(group, itemId = '') {
+      const modal = document.getElementById('finance-fixed-item-modal');
       const plan = ensureFinanceFixedPlan();
-      const item = itemId ? plan.items[group].find(x => x.id === itemId) : null;
+      const item = itemId ? getFinanceFixedItems(group).find(x => x.id === itemId) : null;
 
-      document.getElementById('finance-item-group').value = group;
-      document.getElementById('finance-item-id').value = item?.id || '';
-      document.getElementById('finance-item-emoji').value = item?.emoji || '💰';
-      document.getElementById('finance-item-label').value = item?.label || '';
-      document.getElementById('finance-item-modal-title').textContent = item ? 'แก้ไขรายการ' : 'เพิ่มรายการ';
-      document.getElementById('finance-item-delete').classList.toggle('hidden', !item);
+      document.getElementById('finance-fixed-item-group').value = group;
+      document.getElementById('finance-fixed-item-id').value = item?.id || '';
+      document.getElementById('finance-fixed-item-emoji').value = item?.emoji || '💰';
+      document.getElementById('finance-fixed-item-label').value = item?.label || '';
 
-      const modal = document.getElementById('finance-item-modal');
+      document.getElementById('finance-fixed-item-kicker').textContent =
+        group === 'wealth' ? 'เงินออม & ลงทุน' : group === 'living' ? 'ค่าจำเป็น & รายจ่ายประจำ' : 'งบความสุข & รางวัลชีวิต';
+      document.getElementById('finance-fixed-item-modal-title').textContent =
+        item ? 'แก้ไขรายการ' : 'เพิ่มรายการ';
+
+      const deleteBtn = document.getElementById('finance-fixed-item-delete');
+      deleteBtn.classList.toggle('hidden', !item);
+
       modal.classList.remove('hidden');
       modal.classList.add('flex');
+      modal.style.display = 'flex';
+      setTimeout(() => document.getElementById('finance-fixed-item-label').focus(), 30);
     }
 
-    function closeFinanceItemModal() {
-      const modal = document.getElementById('finance-item-modal');
+    function closeFinanceFixedItemModal() {
+      const modal = document.getElementById('finance-fixed-item-modal');
       modal.classList.add('hidden');
       modal.classList.remove('flex');
+      modal.style.display = 'none';
     }
 
-    function saveFinanceItem() {
-      const group = document.getElementById('finance-item-group').value;
-      const itemId = document.getElementById('finance-item-id').value;
-      const emoji = document.getElementById('finance-item-emoji').value.trim() || '💰';
-      const label = document.getElementById('finance-item-label').value.trim();
+    function saveFinanceFixedItem() {
+      const group = document.getElementById('finance-fixed-item-group').value;
+      const itemId = document.getElementById('finance-fixed-item-id').value;
+      const emoji = document.getElementById('finance-fixed-item-emoji').value.trim() || '💰';
+      const label = document.getElementById('finance-fixed-item-label').value.trim();
+
       if (!group || !label) return;
 
       const plan = ensureFinanceFixedPlan();
+      if (!Array.isArray(plan.items[group])) plan.items[group] = [];
 
       if (itemId) {
         const item = plan.items[group].find(x => x.id === itemId);
@@ -1845,33 +1884,33 @@
           item.label = label;
         }
       } else {
-        const id = `custom_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
-        plan.items[group].push({ id, emoji, label });
-        plan[group][id] = 0;
+        const newId = `custom_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
+        plan.items[group].push({ id: newId, emoji, label });
+        plan[group][newId] = 0;
       }
 
       saveStore();
       renderFinanceFixedBudget();
-      closeFinanceItemModal();
+      closeFinanceFixedItemModal();
     }
 
-    function deleteFinanceItem() {
-      const group = document.getElementById('finance-item-group').value;
-      const itemId = document.getElementById('finance-item-id').value;
+    function deleteFinanceFixedItem() {
+      const group = document.getElementById('finance-fixed-item-group').value;
+      const itemId = document.getElementById('finance-fixed-item-id').value;
       if (!group || !itemId) return;
 
       const plan = ensureFinanceFixedPlan();
-      const item = plan.items[group].find(x => x.id === itemId);
+      const item = plan.items[group]?.find(x => x.id === itemId);
       if (!item) return;
 
-      if (!confirm(`ลบ "${item.label}" ใช่ไหม?`)) return;
+      if (!confirm(`ลบ "${item.label}" ออกจากรายการงบประจำเดือนนี้ใช่ไหม?`)) return;
 
       plan.items[group] = plan.items[group].filter(x => x.id !== itemId);
       delete plan[group][itemId];
 
       saveStore();
       renderFinanceFixedBudget();
-      closeFinanceItemModal();
+      closeFinanceFixedItemModal();
     }
 
     function renderFinanceFixedBudget() {
@@ -1882,36 +1921,46 @@
         const container = document.getElementById(`finance-fixed-group-${group}`);
         if (!container) return;
 
+        const items = getFinanceFixedItems(group);
         let groupTotal = 0;
-        const items = plan.items[group] || [];
 
-        container.innerHTML = items.map(item => {
-          const value = Number(plan[group][item.id] || 0);
-          groupTotal += value;
+        if (!items.length) {
+          container.innerHTML = `
+            <div class="py-5 text-center rounded-xl border border-dashed border-stone-200 text-[10px] text-stone-400">
+              ยังไม่มีรายการ
+            </div>`;
+        } else {
+          container.innerHTML = items.map(item => {
+            const value = Number(plan[group]?.[item.id] || 0);
+            groupTotal += value;
 
-          return `
-            <div class="finance-budget-row flex items-center gap-2 p-2.5 rounded-xl border border-stone-200/80 bg-stone-50/60">
-              <div class="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-sm shrink-0">${item.emoji}</div>
-              <span class="text-[10px] sm:text-[11px] font-semibold text-stone-700 flex-1 min-w-0 truncate">${item.label}</span>
+            return `
+              <div class="finance-budget-item-row flex items-center gap-2 p-2.5 rounded-xl border border-stone-200/80 bg-stone-50/60">
+                <div class="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-sm shrink-0">${item.emoji}</div>
+                <span class="text-[10px] sm:text-[11px] font-semibold text-stone-700 flex-1 min-w-0 truncate" title="${item.label}">${item.label}</span>
 
-              <div class="relative w-[82px] shrink-0">
-                <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-stone-400">฿</span>
-                <input type="number" min="0" step="1" value="${value || ''}" placeholder="0.00"
-                  oninput="updateFinanceFixedBudget('${group}','${item.id}',this.value)"
-                  class="w-full pl-6 pr-2 py-1.5 text-[10px] sm:text-[11px] font-bold text-right bg-white rounded-lg border border-stone-200 focus:outline-none focus:border-sage-500">
+                <div class="relative w-[82px] shrink-0">
+                  <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-stone-400">฿</span>
+                  <input
+                    type="number" min="0" step="1"
+                    value="${value || ''}" placeholder="0.00"
+                    oninput="updateFinanceFixedBudget('${group}','${item.id}',this.value)"
+                    class="w-full pl-6 pr-2 py-1.5 text-[10px] sm:text-[11px] font-bold text-right bg-white rounded-lg border border-stone-200 focus:outline-none focus:border-sage-500"
+                  />
+                </div>
+
+                <div class="finance-budget-item-actions">
+                  <button type="button" class="finance-budget-item-action" onclick="openFinanceFixedItemModal('${group}','${item.id}')" title="แก้ไข">✏️</button>
+                  <button type="button" class="finance-budget-item-action" onclick="openFinanceFixedItemModal('${group}','${item.id}'); setTimeout(deleteFinanceFixedItem, 0)" title="ลบ">🗑️</button>
+                </div>
               </div>
-
-              <div class="finance-item-actions">
-                <button type="button" class="finance-item-action" onclick="openFinanceItemModal('${group}','${item.id}')" title="แก้ไข">✏️</button>
-                <button type="button" class="finance-item-action" onclick="openFinanceItemModal('${group}','${item.id}'); setTimeout(deleteFinanceItem, 0)" title="ลบ">🗑️</button>
-              </div>
-            </div>
-          `;
-        }).join('');
+            `;
+          }).join('');
+        }
 
         grandTotal += groupTotal;
-        const totalEl = document.getElementById(`finance-fixed-total-${group}`);
-        if (totalEl) totalEl.textContent = `รวม ฿${formatTHB(groupTotal)}`;
+        const groupTotalEl = document.getElementById(`finance-fixed-total-${group}`);
+        if (groupTotalEl) groupTotalEl.textContent = `รวม ฿${formatTHB(groupTotal)}`;
       });
 
       const totalEl = document.getElementById('finance-fixed-total');
