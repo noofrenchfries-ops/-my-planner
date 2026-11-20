@@ -2172,6 +2172,35 @@
     // =========================================================
     // 3. TAB SWITCHING & RENDERING ORCHESTRATOR
     // =========================================================
+    // Normalize stored Habit / Debt data before any render or Cloud Sync.
+    // These helpers are intentionally defensive so older/local Cloud data keeps working.
+    function normalizeHabits() {
+      if (!Array.isArray(store.habits)) store.habits = [];
+      store.habits = store.habits.map((habit, index) => ({
+        id: habit?.id || `hb-${Date.now()}-${index}`,
+        emoji: typeof habit?.emoji === 'string' && habit.emoji ? habit.emoji : '🌱',
+        name: typeof habit?.name === 'string' ? habit.name : '',
+        schedule: Array.isArray(habit?.schedule) && habit.schedule.length ? habit.schedule : [1,2,3,4,5,6,7],
+        logs: habit?.logs && typeof habit.logs === 'object' && !Array.isArray(habit.logs) ? habit.logs : {}
+      }));
+    }
+
+    function normalizeDebts() {
+      if (!Array.isArray(store.debts)) store.debts = [];
+      store.debts = store.debts.map((debt, index) => ({
+        id: debt?.id || `debt-${Date.now()}-${index}`,
+        name: typeof debt?.name === 'string' ? debt.name : '',
+        emoji: typeof debt?.emoji === 'string' && debt.emoji ? debt.emoji : '💳',
+        originalBalance: Math.max(0, Number(debt?.originalBalance ?? debt?.balance ?? 0) || 0),
+        balance: Math.max(0, Number(debt?.balance ?? 0) || 0),
+        monthlyPayment: Math.max(0, Number(debt?.monthlyPayment ?? 0) || 0),
+        dueDay: debt?.dueDay ?? '',
+        status: Number(debt?.balance ?? 0) <= 0 ? 'Paid Off' : (debt?.status || 'Active'),
+        notes: typeof debt?.notes === 'string' ? debt.notes : '',
+        paymentHistory: Array.isArray(debt?.paymentHistory) ? debt.paymentHistory : []
+      }));
+    }
+
     function loadStore() {
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
