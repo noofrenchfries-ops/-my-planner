@@ -4077,7 +4077,6 @@
     }
 
     function deleteWorkTask(id) {
-      if (!confirm('Delete this work task?')) return;
       store.workTasks = store.workTasks.filter(t => t.id !== id);
       Object.values(store.days || {}).forEach(day => {
         day.todos = (day.todos || []).filter(todo => todo.workTaskId !== id);
