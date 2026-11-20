@@ -1,0 +1,17 @@
+{
+  "name": "My Planner ✨",
+  "short_name": "My Planner",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FFFDF9",
+  "theme_color": "#F8DDE7",
+  "icons": [
+    {
+      "src": "./my-planner-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
