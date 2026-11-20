@@ -630,7 +630,8 @@
         <div class="flex items-center justify-between pb-3 border-b border-stone-100">
           <div>
             <h2 class="text-base font-bold text-stone-800">📝 To Day List</h2>
-div>
+          </div>
+        </div>
 
         <!-- Category Legend -->
         <div class="flex flex-wrap gap-1.5 py-2.5 border-b border-stone-100 text-[10px] font-semibold">
@@ -641,7 +642,7 @@ div>
         </div>
 
         <!-- Custom Time Blocks -->
-        <div id="time-blocks-list" class="mt-3 space-y-1.5 max-h-[640px] overflow-y-auto pr-1">
+        <div id="time-blocks-list" class="mt-3 space-y-1.5 max-h-[640px] overflow-y-auto">
           <!-- Rendered by JS -->
         </div>
         <button
@@ -2581,8 +2582,8 @@ div>
       container.innerHTML = blocks.map(block => {
         const cat = TB_CATEGORIES[block.category] || TB_CATEGORIES.work;
         return `
-          <div class="flex items-start gap-2">
-            <div class="flex-1 flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border ${cat.border} ${cat.bg} transition-all">
+          <div class="flex items-start gap-2 w-full">
+            <div class="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border ${cat.border} ${cat.bg} transition-all">
               <div class="flex items-center gap-2 min-w-0">
                 <button
                   type="button"
