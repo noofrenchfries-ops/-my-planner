@@ -754,7 +754,6 @@
         </div>
         <div class="flex flex-wrap gap-2">
           <button type="button" onclick="openWorkTaskModal()" class="px-4 py-2.5 rounded-xl bg-sage-600 hover:bg-sage-700 text-white text-xs font-bold cursor-pointer">＋ Add Task</button>
-          <button type="button" onclick="openTodayAtWorkModal()" class="px-4 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-white text-xs font-bold cursor-pointer">＋ Add Today at Work</button>
           <button type="button" onclick="toggleMasterTaskList()" class="px-4 py-2.5 rounded-xl bg-white border border-stone-200 hover:border-sage-400 text-stone-700 text-xs font-bold cursor-pointer">📋 Master Tasks</button>
         </div>
       </div>
@@ -856,6 +855,7 @@
           <h2 class="text-base font-bold text-stone-800">☀️ Today at Work</h2>
           <p class="text-[11px] text-stone-400 mt-1">Only the work you need to focus on today.</p>
         </div>
+        <button type="button" onclick="openTodayAtWorkModal()" aria-label="Add Today at Work" title="Add Today at Work" class="w-9 h-9 rounded-xl bg-stone-800 hover:bg-stone-700 text-white text-lg font-bold cursor-pointer flex items-center justify-center">＋</button>
       </div>
       <div id="work-today-list" class="space-y-2"></div>
     </section>
