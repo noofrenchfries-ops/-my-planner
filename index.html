@@ -2068,8 +2068,6 @@
       const item = plan.items[group]?.find(x => x.id === itemId);
       if (!item) return;
 
-      if (!confirm(`ลบ "${item.label}" ออกจากรายการงบประจำเดือนนี้ใช่ไหม?`)) return;
-
       plan.items[group] = plan.items[group].filter(x => x.id !== itemId);
       delete plan[group][itemId];
 
