@@ -1038,7 +1038,7 @@
             </div>
             <div class="flex items-center gap-2">
               <span id="finance-fixed-total-wealth" class="text-xs font-extrabold text-stone-800">รวม ฿0</span>
-              <button type="button" onclick="openFinanceFixedItemModal('wealth')" class="finance-budget-add-btn" title="เพิ่มรายการ">＋</button>
+              <button type="button" onclick="window.openFinanceFixedItemModal('wealth')" class="finance-budget-add-btn" title="เพิ่มรายการ">＋</button>
             </div>
           </div>
           <div id="finance-fixed-group-wealth" class="space-y-2 mt-3"></div>
@@ -1053,7 +1053,7 @@
             </div>
             <div class="flex items-center gap-2">
               <span id="finance-fixed-total-living" class="text-xs font-extrabold text-stone-800">รวม ฿0</span>
-              <button type="button" onclick="openFinanceFixedItemModal('living')" class="finance-budget-add-btn" title="เพิ่มรายการ">＋</button>
+              <button type="button" onclick="window.openFinanceFixedItemModal('living')" class="finance-budget-add-btn" title="เพิ่มรายการ">＋</button>
             </div>
           </div>
           <div id="finance-fixed-group-living" class="space-y-2 mt-3"></div>
@@ -1068,7 +1068,7 @@
             </div>
             <div class="flex items-center gap-2">
               <span id="finance-fixed-total-fun" class="text-xs font-extrabold text-stone-800">รวม ฿0</span>
-              <button type="button" onclick="openFinanceFixedItemModal('fun')" class="finance-budget-add-btn" title="เพิ่มรายการ">＋</button>
+              <button type="button" onclick="window.openFinanceFixedItemModal('fun')" class="finance-budget-add-btn" title="เพิ่มรายการ">＋</button>
             </div>
           </div>
           <div id="finance-fixed-group-fun" class="space-y-2 mt-3"></div>
@@ -2115,8 +2115,8 @@
                 </div>
 
                 <div class="finance-budget-item-actions">
-                  <button type="button" class="finance-budget-item-action" onclick="openFinanceFixedItemModal('${group}','${item.id}')" title="แก้ไข">✏️</button>
-                  <button type="button" class="finance-budget-item-action" onclick="openFinanceFixedItemModal('${group}','${item.id}'); setTimeout(deleteFinanceFixedItem, 0)" title="ลบ">🗑️</button>
+                  <button type="button" class="finance-budget-item-action" onclick="window.openFinanceFixedItemModal('${group}','${item.id}')" title="แก้ไข">✏️</button>
+                  <button type="button" class="finance-budget-item-action" onclick="window.openFinanceFixedItemModal('${group}','${item.id}'); setTimeout(window.deleteFinanceFixedItem, 0)" title="ลบ">🗑️</button>
                 </div>
               </div>
             `;
@@ -2131,6 +2131,14 @@
       const totalEl = document.getElementById('finance-fixed-total');
       if (totalEl) totalEl.textContent = `฿${formatTHB(grandTotal)}`;
     }
+
+    // Expose Finance Budget actions explicitly for inline HTML buttons.
+    // This keeps Add / Edit / Delete working even if the page is loaded in a scoped context.
+    window.openFinanceFixedItemModal = openFinanceFixedItemModal;
+    window.closeFinanceFixedItemModal = closeFinanceFixedItemModal;
+    window.saveFinanceFixedItem = saveFinanceFixedItem;
+    window.deleteFinanceFixedItem = deleteFinanceFixedItem;
+    window.updateFinanceFixedBudget = updateFinanceFixedBudget;
 
     // =========================================================
     // 3. TAB SWITCHING & RENDERING ORCHESTRATOR
