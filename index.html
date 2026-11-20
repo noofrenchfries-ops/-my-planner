@@ -1763,7 +1763,172 @@
     // =========================================================
     // 2. APPLICATION STATE & SEED DATA
     // =========================================================
-    // Monthly fixed-budget add-on (separate from transactions)
+    let currentDateStr = getTodayISO();
+    let todoFilter = 'all';
+    window.currentSelfRating = 5;
+    let draggedContentId = null;
+    let currentSurpriseId = null;
+
+    // Finance Tracker State
+    let financeMonthStr = getTodayISO().slice(0, 7); // YYYY-MM
+    let financeEntryType = 'expense';
+    let financeFilter = 'all';
+
+    let store = {
+      days: {},
+      habits: [],
+      contents: [],
+      transactions: [],
+      debts: [],
+      workTasks: [],
+      workRoutines: [],
+      workProfile: { position: 'Product Marketing (BD)', jd: '', actual: '' }
+    };
+
+    function getTodayISO() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    function parseISO(isoStr) {
+      const [y, m, d] = isoStr.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+
+    function formatISO(dateObj) {
+      return `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+    }
+
+    function getSeedData() {
+      const today = new Date();
+      const todayStr = formatISO(today);
+
+      // Find Monday of current week for realistic habit logs
+      const day = today.getDay();
+      const diff = day === 0 ? -6 : 1 - day;
+      const mon = new Date(today);
+      mon.setDate(today.getDate() + diff);
+      const monStr = formatISO(mon);
+
+      return {
+        days: {
+          [todayStr]: {
+            mood: 'great',
+            priorities: [
+              { text: 'Finalize the main plan and this week’s content schedule', done: true },
+              { text: 'Reply to customer chats and check inventory', done: false },
+              { text: 'Drink 2L of water and sleep before 10 PM', done: false }
+            ],
+            timeBlocks: [
+              { id: 'tb-demo-1', start: '08:00', end: '09:00', title: 'Coffee + check today’s plan', category: 'personal', done: true },
+              { id: 'tb-demo-2', start: '09:00', end: '11:00', title: 'Plan and write scripts for 3 videos', category: 'work', done: false },
+              { id: 'tb-demo-3', start: '12:00', end: '13:00', title: 'Lunch break & relaxing walk', category: 'rest', done: false },
+              { id: 'tb-demo-4', start: '15:00', end: '16:00', title: 'Weekly update meeting and summary', category: 'work', done: false },
+              { id: 'tb-demo-5', start: '18:00', end: '18:30', title: 'Exercise / stretch for 30 minutes', category: 'health', done: false }
+            ],
+            todos: [
+              { id: 'td-1', text: 'Send weekly summary file', priority: 'urgent', done: true },
+              { id: 'td-2', text: 'Organize desk and clear documents', priority: 'normal', done: false },
+              { id: 'td-3', text: 'Find ideas for a new room corner', priority: 'chill', done: false }
+            ],
+            selfRatings: [],
+            reflection: 'Started the morning feeling great. Time blocking helps me focus on one important task at a time without feeling overwhelmed. ✨'
+          }
+        },
+        habits: [
+          { id: 'hb-1', emoji: '💧', name: 'Drink 2L of water', schedule: [1,2,3,4,5,6,7], logs: { [monStr]: true, [todayStr]: true } },
+          { id: 'hb-2', emoji: '🏃', name: 'Exercise for 30 minutes', schedule: [1,2,3,4,5,6,7], logs: { [monStr]: true } },
+          { id: 'hb-3', emoji: '📖', name: 'Read 15 pages', schedule: [1,2,3,4,5,6,7], logs: { [todayStr]: true } }
+        ],
+        contents: [
+          {
+            id: 'ct-1',
+            title: '3 minimalist desk setup tips that look 200% better on camera',
+            platform: 'TikTok',
+            pillar: 'Tips & Tricks',
+            status: 'idea',
+            notes: 'Hook: If your desk never looks quite right, try these 3 changes\n1. Use side natural light\n2. Hide cables out of frame\n3. Add a green plant against cream tones'
+          },
+          {
+            id: 'ct-2',
+            title: 'Behind the scenes: packing a large nationwide order 📦',
+            platform: 'Instagram',
+            pillar: 'Behind the Scenes',
+            status: 'idea',
+            notes: 'Film a short timelapse with chill music and thank the customers'
+          },
+          {
+            id: 'ct-3',
+            title: 'Review a favorite item that makes everyday planning easier ✨',
+            platform: 'YouTube',
+            pillar: 'Product Highlight',
+            status: 'idea',
+            notes: 'Show how it is actually used from morning to bedtime'
+          },
+          {
+            id: 'ct-4',
+            title: 'One Day With Me: a relaxed minimalist workday',
+            platform: 'TikTok',
+            pillar: 'Lifestyle',
+            status: 'script',
+            notes: 'Focus on morning light, coffee-making sounds, and planner writing'
+          },
+          {
+            id: 'ct-5',
+            title: '5 time-saving ideas for office workers',
+            platform: 'Facebook',
+            pillar: 'Tips & Tricks',
+            status: 'posted',
+            notes: 'Post as a 5-image carousel; great share potential'
+          }
+        ],
+        transactions: [
+          {
+            id: 'tx-1',
+            type: 'income',
+            amount: 35000,
+            categoryId: 'salary',
+            note: 'Monthly salary',
+            date: todayStr
+          },
+          {
+            id: 'tx-2',
+            type: 'income',
+            amount: 4500,
+            categoryId: 'freelance',
+            note: 'Graphic design and short video editing',
+            date: todayStr
+          },
+          {
+            id: 'tx-3',
+            type: 'expense',
+            amount: 145,
+            categoryId: 'food',
+            note: 'Americano + breakfast bread',
+            date: todayStr
+          },
+          {
+            id: 'tx-4',
+            type: 'expense',
+            amount: 320,
+            categoryId: 'travel',
+            note: 'BTS and motorcycle taxi',
+            date: todayStr
+          },
+          {
+            id: 'tx-5',
+            type: 'expense',
+            amount: 890,
+            categoryId: 'shopping',
+            note: 'Planner notebook and desk accessories',
+            date: todayStr
+          }
+        ],
+        debts: []
+      };
+    }
+
+        // Monthly fixed-budget add-on (separate from transactions)
     const FINANCE_FIXED_BUDGET = {
       wealth: [
         { id: 'emergency', emoji: '🛡️', label: 'เงินสำรองฉุกเฉิน' },
@@ -2009,7 +2174,21 @@
     }
 
     function cloudConfigured() {
-      return Boolean(SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase);
+      return Boolean(
+        SUPABASE_URL &&
+        SUPABASE_ANON_KEY &&
+        window.supabase &&
+        typeof window.supabase.createClient === 'function'
+      );
+    }
+
+    function ensureSupabaseClient() {
+      if (supabaseClient) return supabaseClient;
+      if (!cloudConfigured()) return null;
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+      });
+      return supabaseClient;
     }
 
     function setCloudStatus(text, state='offline') {
@@ -2033,18 +2212,18 @@
     }
 
     function initCloud() {
-      if (!cloudConfigured()) {
-        setCloudStatus('Local only', 'offline');
+      const client = ensureSupabaseClient();
+      if (!client) {
+        setCloudStatus('Offline', 'offline');
         return;
       }
-      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
-      supabaseClient.auth.onAuthStateChange(async (_event, session) => {
+      client.auth.onAuthStateChange(async (_event, session) => {
         cloudUser = session?.user || null;
         updateAuthButton();
         if (cloudUser) await hydrateFromCloud();
         else setCloudStatus('Signed out', 'offline');
       });
-      supabaseClient.auth.getSession().then(async ({ data }) => {
+      client.auth.getSession().then(async ({ data }) => {
         cloudUser = data.session?.user || null;
         updateAuthButton();
         if (cloudUser) await hydrateFromCloud();
@@ -2065,14 +2244,15 @@
 
     async function handleAuthSubmit(e) {
       e.preventDefault();
-      if (!cloudConfigured()) return showToast('Cloud is not configured yet');
+      const client = ensureSupabaseClient();
+      if (!client) return showToast('Cloud connection is not ready — please refresh and try again');
       const email = document.getElementById('auth-email').value.trim();
       const password = document.getElementById('auth-password').value;
       const remember = document.getElementById('remember-login').checked;
       try {
-        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        const { error } = await client.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        if (!remember) await supabaseClient.auth.signOut({ scope: 'local' });
+        if (!remember) await client.auth.signOut({ scope: 'local' });
         closeModal('auth-modal');
         showToast('Welcome back ✨');
       } catch (err) {
