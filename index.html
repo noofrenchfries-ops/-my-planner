@@ -1965,6 +1965,13 @@
 
       const plan = store.financeFixedPlans[monthKey];
 
+      if (!plan.deletedItems || typeof plan.deletedItems !== 'object') {
+        plan.deletedItems = {};
+      }
+      Object.keys(FINANCE_FIXED_BUDGET).forEach(group => {
+        if (!Array.isArray(plan.deletedItems[group])) plan.deletedItems[group] = [];
+      });
+
       // First-time migration: keep existing values and create editable item lists.
       if (!plan.items || typeof plan.items !== 'object') {
         plan.items = {};
@@ -1978,10 +1985,10 @@
 
         // Make sure newly introduced defaults exist without deleting user's custom items.
         defaults.forEach(item => {
-          if (!plan.items[group].some(x => x.id === item.id)) {
+          if (!plan.deletedItems[group].includes(item.id) && !plan.items[group].some(x => x.id === item.id)) {
             plan.items[group].push({ ...item });
           }
-          if (!(item.id in plan[group])) plan[group][item.id] = 0;
+          if (!plan.deletedItems[group].includes(item.id) && !(item.id in plan[group])) plan[group][item.id] = 0;
         });
       });
 
@@ -2071,9 +2078,32 @@
       plan.items[group] = plan.items[group].filter(x => x.id !== itemId);
       delete plan[group][itemId];
 
+      const isDefaultItem = FINANCE_FIXED_BUDGET[group]?.some(x => x.id === itemId);
+      if (isDefaultItem && !plan.deletedItems[group].includes(itemId)) {
+        plan.deletedItems[group].push(itemId);
+      }
+
       saveStore();
       renderFinanceFixedBudget();
       closeFinanceFixedItemModal();
+    }
+
+    function deleteFinanceFixedItemByRow(group, itemId) {
+      if (!group || !itemId) return;
+
+      const plan = ensureFinanceFixedPlan();
+      if (!Array.isArray(plan.items?.[group])) return;
+
+      plan.items[group] = plan.items[group].filter(x => x.id !== itemId);
+      delete plan[group][itemId];
+
+      const isDefaultItem = FINANCE_FIXED_BUDGET[group]?.some(x => x.id === itemId);
+      if (isDefaultItem && !plan.deletedItems[group].includes(itemId)) {
+        plan.deletedItems[group].push(itemId);
+      }
+
+      saveStore();
+      renderFinanceFixedBudget();
     }
 
     function renderFinanceFixedBudget() {
@@ -2114,7 +2144,7 @@
 
                 <div class="finance-budget-item-actions">
                   <button type="button" class="finance-budget-item-action" onclick="window.openFinanceFixedItemModal('${group}','${item.id}')" title="แก้ไข">✏️</button>
-                  <button type="button" class="finance-budget-item-action" onclick="window.openFinanceFixedItemModal('${group}','${item.id}')" title="ลบ">🗑️</button>
+                  <button type="button" class="finance-budget-item-action" onclick="window.deleteFinanceFixedItemByRow('${group}','${item.id}')" title="ลบ">🗑️</button>
                 </div>
               </div>
             `;
@@ -2136,6 +2166,7 @@
     window.closeFinanceFixedItemModal = closeFinanceFixedItemModal;
     window.saveFinanceFixedItem = saveFinanceFixedItem;
     window.deleteFinanceFixedItem = deleteFinanceFixedItem;
+    window.deleteFinanceFixedItemByRow = deleteFinanceFixedItemByRow;
     window.updateFinanceFixedBudget = updateFinanceFixedBudget;
 
     // =========================================================
