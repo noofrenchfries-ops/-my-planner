@@ -154,6 +154,26 @@
     .monthly-day-rose { background:#F8DDE7 !important; }
 
   
+  /* Mobile calendar polish — visual/layout only */  @media (max-width: 640px){
+    #monthly-calendar{
+      gap:6px !important;
+    }
+    #monthly-calendar > div{
+      min-height:52px !important;
+    }
+    #monthly-calendar > button{
+      min-height:52px !important;
+      padding:6px !important;
+      border-radius:14px !important;
+    }
+    #monthly-calendar > button .mt-2{
+      margin-top:5px !important;
+    }
+    #monthly-calendar-month{
+      font-size:11px !important;
+    }
+  }
+
   /* Mobile polish — layout only, no app logic changes */
   @media (max-width: 640px){
     body{overflow-x:hidden;}
@@ -4411,9 +4431,12 @@
 
     function monthTabButtonHtml(dateObj, onClick, active = false, isCurrent = false) {
       const label = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(dateObj);
-      return `<button type="button" onclick="${onClick}" class="min-w-0 rounded-xl border px-3 py-2.5 sm:py-3 text-left transition-all cursor-pointer ${active ? 'bg-sage-100 border-sage-400 shadow-xs' : 'bg-cream border-stone-200 hover:border-sage-300 hover:bg-sage-50/50'}">
-        <div class="text-[10px] sm:text-[11px] font-semibold ${active ? 'text-sage-700' : 'text-stone-400'}">${isCurrent ? 'Current' : active ? 'Selected' : ' '}</div>
-        <div class="text-xs sm:text-sm font-extrabold ${active ? 'text-sage-800' : 'text-stone-700'} truncate">${label}</div>
+      const shortLabel = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(dateObj);
+      return `<button type="button" onclick="${onClick}" class="min-w-0 rounded-xl border px-2.5 sm:px-3 py-2.5 sm:py-3 text-left transition-all cursor-pointer ${active ? 'bg-sage-100 border-sage-400 shadow-xs' : 'bg-cream border-stone-200 hover:border-sage-300 hover:bg-sage-50/50'}">
+        <div class="text-[9px] sm:text-[11px] font-semibold ${active ? 'text-sage-700' : 'text-stone-400'}">${isCurrent ? 'Current' : active ? 'Selected' : ' '}</div>
+        <div class="text-xs sm:text-sm font-extrabold ${active ? 'text-sage-800' : 'text-stone-700'} truncate">
+          <span class="sm:hidden">${shortLabel}</span><span class="hidden sm:inline">${label}</span>
+        </div>
       </button>`;
     }
 
@@ -4630,7 +4653,7 @@
             class="min-h-[58px] sm:min-h-[72px] rounded-xl border text-left p-2 transition-all cursor-pointer ${stateClass}">
             <div class="flex items-start justify-between gap-1">
               <span class="text-xs sm:text-sm font-extrabold ${isToday || isSelected ? 'text-sage-700' : 'text-stone-700'}">${day}</span>
-              ${isToday ? '<span class="text-[8px] sm:text-[9px] font-bold text-sage-600">Today</span>' : ''}
+              ${isToday ? '<span class="hidden sm:inline text-[8px] sm:text-[9px] font-bold text-sage-600">Today</span><span class="sm:hidden w-1.5 h-1.5 rounded-full bg-sage-500 shrink-0"></span>' : ''}
             </div>
             <div class="mt-2 flex items-center gap-1">
               ${hasPlan ? '<span class="w-1.5 h-1.5 rounded-full bg-sage-500"></span>' : ''}
