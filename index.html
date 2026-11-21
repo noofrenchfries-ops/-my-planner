@@ -1338,7 +1338,7 @@
           <p class="text-xs text-stone-400 mt-1">A simple look at your spending this month</p>
         </div>
       </div>
-      <div id="money-insights" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+      <div id="money-insights" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
     </section>
 
 </main>
@@ -3379,7 +3379,7 @@
       } else {
         summaryText = `เดือนนี้มีรายจ่ายรวม <b>฿${formatTHB(totalExpense)}</b> แต่ยังไม่มีรายรับที่บันทึกไว้ ลองดูหมวดที่ใช้จ่ายสูงที่สุดเพื่อช่วยวางแผนเดือนหน้านะ`;
       }
-      cards.push(`<div class="rounded-xl bg-amber-50 border border-amber-200/70 p-4 md:col-span-2"><p class="text-xs font-bold text-stone-800 mb-1">💬 Money Summary</p><p class="text-xs text-stone-700 leading-relaxed">${summaryText}</p></div>`);
+      cards.push(`<div class="rounded-xl bg-amber-50 border border-amber-200/70 p-4 md:col-span-3"><p class="text-xs font-bold text-stone-800 mb-1">💬 Money Summary</p><p class="text-xs text-stone-700 leading-relaxed">${summaryText}</p></div>`);
 
       el.innerHTML = cards.join('');
     }
