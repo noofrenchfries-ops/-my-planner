@@ -1086,11 +1086,14 @@
             <span>🗓️</span>
             <span>Monthly Budget Plan</span>
           </h2>
-          <p class="text-xs text-stone-400 mt-1">กำหนดงบประจำของแต่ละเดือน แยกจาก Transaction ด้านล่าง</p>
+          <p class="text-xs text-stone-400 mt-1">กำหนดงบหลักครั้งเดียว รายการและจำนวนเงินจะเชื่อมต่อทุกเดือน แยกจาก Transaction ด้านล่าง</p>
         </div>
-        <div class="text-right">
+        <div class="flex items-center gap-3">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[9px] font-bold">🔄 เชื่อมทุกเดือน</span>
+          <div class="text-right">
           <p class="text-[10px] font-semibold text-stone-400">งบประจำรวม</p>
           <p id="finance-fixed-total" class="text-lg font-extrabold text-stone-800">฿0</p>
+          </div>
         </div>
       </div>
 
@@ -1145,137 +1148,6 @@
     </section>
 
 
-
-    <!-- Recurring / Fixed Expenses -->
-    <section class="bg-rose-50/40 rounded-2xl border border-rose-200/70 shadow-soft p-4 sm:p-5">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-        <div>
-          <h2 class="text-base font-bold text-stone-800 flex items-center gap-2">
-            <span>🔁</span>
-            <span>Fixed Expenses</span>
-          </h2>
-          <p class="text-xs text-stone-400 mt-1">ค่าใช้จ่ายที่ต้องจ่ายทุกเดือน ระบบจะเพิ่มเป็น Transaction ให้อัตโนมัติ</p>
-        </div>
-        <button type="button" onclick="window.openFinanceRecurringModal()" class="px-3.5 py-2 rounded-xl bg-white border border-rose-200 text-rose-600 text-xs font-bold hover:bg-rose-50">
-          ＋ เพิ่มค่าใช้จ่ายประจำ
-        </button>
-      </div>
-      <div id="finance-recurring-list" class="space-y-2.5"></div>
-    </section>
-
-    <!-- Finance Budget Item Modal -->
-    <div id="finance-fixed-item-modal" class="hidden fixed inset-0 z-[80] bg-stone-900/30 backdrop-blur-sm items-center justify-center p-4">
-      <div class="w-full max-w-md bg-white rounded-3xl border border-stone-200 shadow-2xl p-5">
-        <div class="flex items-center justify-between gap-3 mb-4">
-          <div>
-            <p id="finance-fixed-item-modal-kicker" class="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Budget Item</p>
-            <h3 id="finance-fixed-item-modal-title" class="text-lg font-extrabold text-stone-800">เพิ่มรายการ</h3>
-          </div>
-          <button type="button" onclick="window.closeFinanceFixedItemModal()" class="w-8 h-8 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-500 font-bold">×</button>
-        </div>
-
-        <input type="hidden" id="finance-fixed-item-group">
-        <input type="hidden" id="finance-fixed-item-id">
-
-        <div class="grid grid-cols-[72px_1fr] gap-3">
-          <label class="block">
-            <span class="text-[11px] font-bold text-stone-600">ไอคอน</span>
-            <input id="finance-fixed-item-emoji" maxlength="4" value="💰"
-              class="mt-1 w-full px-3 py-2.5 text-center text-lg bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500">
-          </label>
-          <label class="block">
-            <span class="text-[11px] font-bold text-stone-600">ชื่อรายการ</span>
-            <input id="finance-fixed-item-label" maxlength="40" placeholder="เช่น ค่าโทรศัพท์"
-              class="mt-1 w-full px-3 py-2.5 text-sm font-semibold bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500">
-          </label>
-        </div>
-
-        <div class="flex justify-between gap-2 mt-5">
-          <button id="finance-fixed-item-delete" type="button" onclick="window.deleteFinanceFixedItem()"
-            class="hidden px-4 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold">
-            🗑️ ลบรายการ
-          </button>
-          <div class="flex gap-2 ml-auto">
-            <button type="button" onclick="closeFinanceFixedItemModal()"
-              class="px-4 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-600 text-xs font-bold">
-              ยกเลิก
-            </button>
-            <button type="button" onclick="window.saveFinanceFixedItem()"
-              class="px-4 py-2.5 rounded-xl bg-sage-500 hover:bg-sage-600 text-white text-xs font-bold">
-              บันทึก
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
-
-
-    <!-- Recurring Expense Modal -->
-    <div id="finance-recurring-modal" class="hidden fixed inset-0 z-[80] bg-stone-900/30 backdrop-blur-sm items-center justify-center p-4">
-      <div class="w-full max-w-md bg-white rounded-3xl border border-stone-200 shadow-2xl p-5">
-        <div class="flex items-center justify-between gap-3 mb-4">
-          <div>
-            <p class="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Fixed Expense</p>
-            <h3 id="finance-recurring-modal-title" class="text-lg font-extrabold text-stone-800">เพิ่มค่าใช้จ่ายประจำ</h3>
-          </div>
-          <button type="button" onclick="window.closeFinanceRecurringModal()" class="w-8 h-8 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-500 font-bold">×</button>
-        </div>
-
-        <input type="hidden" id="finance-recurring-id">
-
-        <div class="grid grid-cols-[72px_1fr] gap-3">
-          <label class="block">
-            <span class="text-[11px] font-bold text-stone-600">ไอคอน</span>
-            <input id="finance-recurring-emoji" maxlength="4" value="💸"
-              class="mt-1 w-full px-3 py-2.5 text-center text-lg bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500">
-          </label>
-          <label class="block">
-            <span class="text-[11px] font-bold text-stone-600">ชื่อรายการ</span>
-            <input id="finance-recurring-label" maxlength="40" placeholder="เช่น ค่าเช่าห้อง"
-              class="mt-1 w-full px-3 py-2.5 text-sm font-semibold bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500">
-          </label>
-        </div>
-
-        <label class="block mt-3">
-          <span class="text-[11px] font-bold text-stone-600">จำนวนเงินต่อเดือน</span>
-          <div class="relative mt-1">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-stone-400">฿</span>
-            <input id="finance-recurring-amount" type="number" min="0" step="1" placeholder="0"
-              class="w-full pl-8 pr-3 py-2.5 text-sm font-bold bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500">
-          </div>
-        </label>
-
-        <label class="block mt-3">
-          <span class="text-[11px] font-bold text-stone-600">หมวดรายจ่าย</span>
-          <select id="finance-recurring-category"
-            class="mt-1 w-full px-3 py-2.5 text-sm font-semibold bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500">
-            <option value="bills">🏠 Bills / Lodging</option>
-            <option value="health">💊 Health</option>
-            <option value="other">🎁 Other</option>
-            <option value="debt">💳 Debt / Loan</option>
-          </select>
-        </label>
-
-        <div class="flex justify-between gap-2 mt-5">
-          <button id="finance-recurring-delete" type="button" onclick="window.deleteFinanceRecurringExpense(document.getElementById('finance-recurring-id').value)"
-            class="hidden px-4 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold">
-            🗑️ ลบรายการ
-          </button>
-          <div class="flex gap-2 ml-auto">
-            <button type="button" onclick="window.closeFinanceRecurringModal()"
-              class="px-4 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-600 text-xs font-bold">
-              ยกเลิก
-            </button>
-            <button type="button" onclick="window.saveFinanceRecurringExpense()"
-              class="px-4 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold">
-              บันทึก
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- Two-Column Workspace: Left (Entry Form + Category Breakdown) | Right (Transaction History) -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
@@ -2060,7 +1932,7 @@
       };
     }
 
-        // Monthly fixed-budget add-on (separate from transactions)
+        // Monthly Budget Plan — one master plan shared across all months.
     const FINANCE_FIXED_BUDGET = {
       wealth: [
         { id: 'emergency', emoji: '🛡️', label: 'เงินสำรองฉุกเฉิน' },
@@ -2084,43 +1956,92 @@
         plan[group] = {};
         items.forEach(item => plan[group][item.id] = 0);
       });
+      plan.deletedItems = {};
+      plan.items = {};
+      Object.entries(FINANCE_FIXED_BUDGET).forEach(([group, items]) => {
+        plan.deletedItems[group] = [];
+        plan.items[group] = items.map(item => ({ ...item }));
+      });
       return plan;
     }
 
-    function ensureFinanceFixedPlan(monthKey = financeMonthStr) {
-      if (!store.financeFixedPlans || typeof store.financeFixedPlans !== 'object') {
-        store.financeFixedPlans = {};
-      }
-      if (!store.financeFixedPlans[monthKey]) {
-        store.financeFixedPlans[monthKey] = createFinanceFixedPlan();
-      }
+    function ensureFinanceFixedPlan() {
+      if (!store.financeFixedMasterPlan || typeof store.financeFixedMasterPlan !== 'object') {
+        // Migrate the currently selected month's plan so existing data is kept.
+        const legacy = store.financeFixedPlans?.[financeMonthStr];
+        store.financeFixedMasterPlan = legacy && typeof legacy === 'object'
+          ? JSON.parse(JSON.stringify(legacy))
+          : createFinanceFixedPlan();
 
-      const plan = store.financeFixedPlans[monthKey];
+        if (!store.financeFixedMasterPlan.items || typeof store.financeFixedMasterPlan.items !== 'object') {
+          store.financeFixedMasterPlan.items = {};
+        }
+        if (!store.financeFixedMasterPlan.deletedItems || typeof store.financeFixedMasterPlan.deletedItems !== 'object') {
+          store.financeFixedMasterPlan.deletedItems = {};
+        }
 
-      if (!plan.deletedItems || typeof plan.deletedItems !== 'object') {
-        plan.deletedItems = {};
-      }
-      Object.keys(FINANCE_FIXED_BUDGET).forEach(group => {
-        if (!Array.isArray(plan.deletedItems[group])) plan.deletedItems[group] = [];
-      });
-
-      // First-time migration: keep existing values and create editable item lists.
-      if (!plan.items || typeof plan.items !== 'object') {
-        plan.items = {};
-        Object.entries(FINANCE_FIXED_BUDGET).forEach(([group, items]) => {
-          plan.items[group] = items.map(item => ({ ...item }));
+        Object.entries(FINANCE_FIXED_BUDGET).forEach(([group, defaults]) => {
+          if (!Array.isArray(store.financeFixedMasterPlan.items[group])) {
+            store.financeFixedMasterPlan.items[group] = defaults.map(item => ({ ...item }));
+          }
+          if (!Array.isArray(store.financeFixedMasterPlan.deletedItems[group])) {
+            store.financeFixedMasterPlan.deletedItems[group] = [];
+          }
+          if (!store.financeFixedMasterPlan[group] || typeof store.financeFixedMasterPlan[group] !== 'object') {
+            store.financeFixedMasterPlan[group] = {};
+          }
         });
+
+        // Migrate the old Fixed Expenses entries into the Living budget once.
+        const recurringItems = Array.isArray(store.financeRecurringExpenses) ? store.financeRecurringExpenses : [];
+        recurringItems.forEach(item => {
+          if (!item?.label) return;
+          const targetId = item.id || ('recurring_' + Date.now());
+          const existing = store.financeFixedMasterPlan.items.living.find(x => x.id === targetId || x.label === item.label);
+          if (existing) {
+            existing.emoji = item.emoji || existing.emoji;
+            existing.label = item.label;
+            store.financeFixedMasterPlan.living[existing.id] = Number(item.amount || 0);
+          } else {
+            store.financeFixedMasterPlan.items.living.push({
+              id: targetId,
+              emoji: item.emoji || '💸',
+              label: item.label
+            });
+            store.financeFixedMasterPlan.living[targetId] = Number(item.amount || 0);
+          }
+        });
+
+        // Remove only transactions that were auto-created by the temporary Fixed Expenses feature.
+        if (Array.isArray(store.transactions)) {
+          store.transactions = store.transactions.filter(tx =>
+            !tx.recurringId && !String(tx.id || '').startsWith('tx-recurring-')
+          );
+        }
+
+        delete store.financeRecurringExpenses;
+        delete store.financeRecurringTransactions;
+
+        saveStore();
       }
+
+      const plan = store.financeFixedMasterPlan;
+
+      if (!plan.deletedItems || typeof plan.deletedItems !== 'object') plan.deletedItems = {};
+      if (!plan.items || typeof plan.items !== 'object') plan.items = {};
 
       Object.entries(FINANCE_FIXED_BUDGET).forEach(([group, defaults]) => {
-        if (!plan[group] || typeof plan[group] !== 'object') plan[group] = {};
+        if (!Array.isArray(plan.deletedItems[group])) plan.deletedItems[group] = [];
+        if (!Array.isArray(plan.items[group])) plan.items[group] = [];
 
-        // Make sure newly introduced defaults exist without deleting user's custom items.
         defaults.forEach(item => {
           if (!plan.deletedItems[group].includes(item.id) && !plan.items[group].some(x => x.id === item.id)) {
             plan.items[group].push({ ...item });
           }
-          if (!plan.deletedItems[group].includes(item.id) && !(item.id in plan[group])) plan[group][item.id] = 0;
+          if (!plan.deletedItems[group].includes(item.id) && !(item.id in (plan[group] || {}))) {
+            if (!plan[group] || typeof plan[group] !== 'object') plan[group] = {};
+            plan[group][item.id] = 0;
+          }
         });
       });
 
@@ -2238,176 +2159,6 @@
       renderFinanceFixedBudget();
     }
 
-    const FINANCE_RECURRING_DEFAULTS = [
-      { id: 'rent', emoji: '🏠', label: 'ค่าเช่าห้อง', amount: 0, categoryId: 'bills', active: true },
-      { id: 'life-insurance', emoji: '🛡️', label: 'ค่าประกันชีวิต', amount: 0, categoryId: 'bills', active: true }
-    ];
-
-    function ensureFinanceRecurringExpenses() {
-      if (!Array.isArray(store.financeRecurringExpenses)) {
-        store.financeRecurringExpenses = FINANCE_RECURRING_DEFAULTS.map(item => ({ ...item }));
-        saveStore();
-      }
-
-      FINANCE_RECURRING_DEFAULTS.forEach(defaultItem => {
-        if (!store.financeRecurringExpenses.some(item => item.id === defaultItem.id)) {
-          store.financeRecurringExpenses.push({ ...defaultItem });
-        }
-      });
-
-      return store.financeRecurringExpenses;
-    }
-
-    function ensureFinanceRecurringTransactions(monthKey = financeMonthStr) {
-      const recurringItems = ensureFinanceRecurringExpenses();
-      let changed = false;
-
-      recurringItems
-        .filter(item => item.active && Number(item.amount) > 0)
-        .forEach(item => {
-          const exists = (store.transactions || []).some(tx =>
-            tx.type === 'expense' &&
-            tx.recurringId === item.id &&
-            tx.date &&
-            tx.date.startsWith(monthKey)
-          );
-
-          if (!exists) {
-            const lastDay = new Date(
-              Number(monthKey.slice(0, 4)),
-              Number(monthKey.slice(5, 7)),
-              0
-            ).getDate();
-            const day = String(Math.min(5, lastDay)).padStart(2, '0');
-
-            store.transactions.unshift({
-              id: 'tx-recurring-' + item.id + '-' + monthKey,
-              type: 'expense',
-              amount: Number(item.amount),
-              categoryId: item.categoryId || 'bills',
-              note: item.label,
-              date: monthKey + '-' + day,
-              recurringId: item.id,
-              recurringMonth: monthKey
-            });
-            changed = true;
-          }
-        });
-
-      if (changed) saveStore();
-    }
-
-    function renderFinanceRecurringExpenses() {
-      const el = document.getElementById('finance-recurring-list');
-      if (!el) return;
-
-      const items = ensureFinanceRecurringExpenses();
-
-      if (!items.length) {
-        el.innerHTML = '<div class="py-5 text-center rounded-xl border border-dashed border-stone-200 text-xs text-stone-400">ยังไม่มีค่าใช้จ่ายประจำ</div>';
-        return;
-      }
-
-      el.innerHTML = items.map(item => {
-        const amount = Number(item.amount || 0);
-        const statusText = item.active ? 'เพิ่มอัตโนมัติทุกเดือน' : 'ปิดใช้งาน';
-        const statusClass = item.active ? 'bg-emerald-100 text-emerald-700' : 'bg-stone-100 text-stone-400';
-        return [
-          '<div class="flex items-center gap-3 p-3 rounded-xl border border-stone-200/80 bg-white">',
-          '<button type="button" onclick="window.toggleFinanceRecurringExpense(\'' + item.id + '\')" title="เปิด/ปิดรายการ" class="w-8 h-8 rounded-xl shrink-0 flex items-center justify-center ' + statusClass + '">' + (item.active ? '✓' : '−') + '</button>',
-          '<div class="w-9 h-9 rounded-xl bg-rose-50 flex items-center justify-center text-lg shrink-0">' + (item.emoji || '💸') + '</div>',
-          '<div class="min-w-0 flex-1"><p class="text-xs sm:text-sm font-bold text-stone-800 truncate">' + escapeHtml(item.label) + '</p><p class="text-[10px] text-stone-400 mt-0.5">' + statusText + '</p></div>',
-          '<span class="text-xs sm:text-sm font-extrabold text-stone-800 shrink-0">฿' + formatTHB(amount) + ' / เดือน</span>',
-          '<button type="button" onclick="window.openFinanceRecurringModal(\'' + item.id + '\')" class="finance-budget-item-action" title="แก้ไข">✏️</button>',
-          '<button type="button" onclick="window.deleteFinanceRecurringExpense(\'' + item.id + '\')" class="finance-budget-item-action" title="ลบ">🗑️</button>',
-          '</div>'
-        ].join('');
-      }).join('');
-    }
-
-    function openFinanceRecurringModal(itemId = '') {
-      const item = itemId ? ensureFinanceRecurringExpenses().find(x => x.id === itemId) : null;
-      document.getElementById('finance-recurring-id').value = item?.id || '';
-      document.getElementById('finance-recurring-emoji').value = item?.emoji || '💸';
-      document.getElementById('finance-recurring-label').value = item?.label || '';
-      document.getElementById('finance-recurring-amount').value = item?.amount || '';
-      document.getElementById('finance-recurring-category').value = item?.categoryId || 'bills';
-      document.getElementById('finance-recurring-modal-title').textContent = item ? 'แก้ไขค่าใช้จ่ายประจำ' : 'เพิ่มค่าใช้จ่ายประจำ';
-      document.getElementById('finance-recurring-delete').classList.toggle('hidden', !item);
-
-      const modal = document.getElementById('finance-recurring-modal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-      modal.style.display = 'flex';
-      setTimeout(() => document.getElementById('finance-recurring-label')?.focus(), 30);
-    }
-
-    function closeFinanceRecurringModal() {
-      const modal = document.getElementById('finance-recurring-modal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-      modal.style.display = 'none';
-    }
-
-    function saveFinanceRecurringExpense() {
-      const id = document.getElementById('finance-recurring-id').value;
-      const emoji = document.getElementById('finance-recurring-emoji').value.trim() || '💸';
-      const label = document.getElementById('finance-recurring-label').value.trim();
-      const amount = Math.max(0, Number(document.getElementById('finance-recurring-amount').value || 0));
-      const categoryId = document.getElementById('finance-recurring-category').value || 'bills';
-
-      if (!label || amount <= 0) return;
-
-      const items = ensureFinanceRecurringExpenses();
-      if (id) {
-        const item = items.find(x => x.id === id);
-        if (item) {
-          item.emoji = emoji;
-          item.label = label;
-          item.amount = amount;
-          item.categoryId = categoryId;
-        }
-      } else {
-        items.push({
-          id: 'recurring_' + Date.now(),
-          emoji,
-          label,
-          amount,
-          categoryId,
-          active: true
-        });
-      }
-
-      saveStore();
-      renderFinanceRecurringExpenses();
-      renderFinanceTracker();
-      closeFinanceRecurringModal();
-    }
-
-    function toggleFinanceRecurringExpense(id) {
-      const item = ensureFinanceRecurringExpenses().find(x => x.id === id);
-      if (!item) return;
-      item.active = item.active === false;
-      saveStore();
-      renderFinanceTracker();
-    }
-
-    function deleteFinanceRecurringExpense(id) {
-      const items = ensureFinanceRecurringExpenses();
-      const item = items.find(x => x.id === id);
-      if (!item) return;
-
-      items.splice(items.indexOf(item), 1);
-      saveStore();
-      renderFinanceTracker();
-    }
-
-    window.openFinanceRecurringModal = openFinanceRecurringModal;
-    window.closeFinanceRecurringModal = closeFinanceRecurringModal;
-    window.saveFinanceRecurringExpense = saveFinanceRecurringExpense;
-    window.toggleFinanceRecurringExpense = toggleFinanceRecurringExpense;
-    window.deleteFinanceRecurringExpense = deleteFinanceRecurringExpense;
-
     function renderFinanceFixedBudget() {
       const plan = ensureFinanceFixedPlan();
       let grandTotal = 0;
@@ -2463,7 +2214,6 @@
     }
 
     // Expose Finance Budget actions explicitly for inline HTML buttons.
-    // This keeps Add / Edit / Delete working even if the page is loaded in a scoped context.
     window.openFinanceFixedItemModal = openFinanceFixedItemModal;
     window.closeFinanceFixedItemModal = closeFinanceFixedItemModal;
     window.saveFinanceFixedItem = saveFinanceFixedItem;
@@ -3599,9 +3349,7 @@
       const monthDateObj = new Date(y, m - 1, 1);
       document.getElementById('finance-month-display').textContent = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(monthDateObj);
       renderFinanceMonthTabs();
-      ensureFinanceRecurringTransactions(financeMonthStr);
       renderFinanceFixedBudget();
-      renderFinanceRecurringExpenses();
 
       // Filter transactions for the selected month
       const monthTx = (store.transactions || []).filter(t => t.date && t.date.startsWith(financeMonthStr));
