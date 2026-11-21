@@ -1149,6 +1149,53 @@
 
 
 
+    <!-- Finance Budget Item Modal -->
+    <div id="finance-fixed-item-modal" class="hidden fixed inset-0 z-[80] bg-stone-900/30 backdrop-blur-sm items-center justify-center p-4">
+      <div class="w-full max-w-md bg-white rounded-3xl border border-stone-200 shadow-2xl p-5">
+        <div class="flex items-center justify-between gap-3 mb-4">
+          <div>
+            <p id="finance-fixed-item-modal-kicker" class="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Monthly Budget</p>
+            <h3 id="finance-fixed-item-modal-title" class="text-lg font-extrabold text-stone-800">เพิ่มรายการ</h3>
+          </div>
+          <button type="button" onclick="window.closeFinanceFixedItemModal()" class="w-8 h-8 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-500 font-bold">×</button>
+        </div>
+
+        <input type="hidden" id="finance-fixed-item-group">
+        <input type="hidden" id="finance-fixed-item-id">
+
+        <div class="grid grid-cols-[72px_1fr] gap-3">
+          <label class="block">
+            <span class="text-[11px] font-bold text-stone-600">ไอคอน</span>
+            <input id="finance-fixed-item-emoji" maxlength="4" value="💰"
+              class="mt-1 w-full px-3 py-2.5 text-center text-lg bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500">
+          </label>
+          <label class="block">
+            <span class="text-[11px] font-bold text-stone-600">ชื่อรายการ</span>
+            <input id="finance-fixed-item-label" maxlength="40" placeholder="เช่น ค่าเช่าห้อง"
+              class="mt-1 w-full px-3 py-2.5 text-sm font-semibold bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500">
+          </label>
+        </div>
+
+        <div class="flex justify-between gap-2 mt-5">
+          <button id="finance-fixed-item-delete" type="button"
+            onclick="window.deleteFinanceFixedItem()"
+            class="hidden px-4 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold">
+            🗑️ ลบรายการ
+          </button>
+          <div class="flex gap-2 ml-auto">
+            <button type="button" onclick="window.closeFinanceFixedItemModal()"
+              class="px-4 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-600 text-xs font-bold">
+              ยกเลิก
+            </button>
+            <button type="button" onclick="window.saveFinanceFixedItem()"
+              class="px-4 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold">
+              บันทึก
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Two-Column Workspace: Left (Entry Form + Category Breakdown) | Right (Transaction History) -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
 
