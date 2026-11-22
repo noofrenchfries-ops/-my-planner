@@ -2725,7 +2725,9 @@
     function renderTimeBlocks(dayData) {
       const container = document.getElementById('time-blocks-list');
       normalizeTimeBlocks(dayData);
-      const blocks = [...dayData.timeBlocks].sort((a, b) => a.start.localeCompare(b.start));
+
+      // Keep the user's manual order. Do not sort by time.
+      const blocks = [...dayData.timeBlocks];
 
       if (blocks.length === 0) {
         container.innerHTML = `
@@ -2741,7 +2743,16 @@
       container.innerHTML = blocks.map(block => {
         const cat = TB_CATEGORIES[block.category] || TB_CATEGORIES.work;
         return `
-          <div class="flex items-start gap-2 w-full">
+          <div data-timeblock-id="${block.id}" class="time-block-item flex items-start gap-2 w-full transition-all">
+            <button
+              type="button"
+              data-timeblock-drag-handle
+              title="ลากเพื่อจัดลำดับ"
+              aria-label="ลากเพื่อจัดลำดับ"
+              class="w-6 shrink-0 self-stretch flex items-center justify-center rounded-lg text-stone-400 hover:text-sage-700 hover:bg-white/70 cursor-grab active:cursor-grabbing touch-none select-none"
+            >
+              <span class="text-sm leading-none">⠿</span>
+            </button>
             <div class="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border ${cat.border} ${cat.bg} transition-all">
               <div class="flex items-center gap-2 min-w-0">
                 <button
@@ -2784,7 +2795,79 @@
           </div>
         `;
       }).join('');
+
+      bindTimeBlockDragAndDrop();
       lucide.createIcons();
+    }
+
+    function bindTimeBlockDragAndDrop() {
+      const container = document.getElementById('time-blocks-list');
+      if (!container) return;
+
+      container.querySelectorAll('[data-timeblock-drag-handle]').forEach(handle => {
+        handle.addEventListener('pointerdown', startTimeBlockDrag);
+      });
+    }
+
+    function startTimeBlockDrag(event) {
+      if (event.button !== undefined && event.button !== 0) return;
+
+      const handle = event.currentTarget;
+      const item = handle.closest('[data-timeblock-id]');
+      const container = document.getElementById('time-blocks-list');
+      if (!item || !container) return;
+
+      event.preventDefault();
+      handle.setPointerCapture?.(event.pointerId);
+
+      window.timeBlockDragState = {
+        item,
+        container,
+        pointerId: event.pointerId
+      };
+
+      item.classList.add('opacity-60', 'scale-[0.99]', 'shadow-lg', 'z-10');
+      document.body.classList.add('select-none');
+
+      handle.addEventListener('pointermove', moveTimeBlockDrag);
+      handle.addEventListener('pointerup', endTimeBlockDrag, { once: true });
+      handle.addEventListener('pointercancel', endTimeBlockDrag, { once: true });
+    }
+
+    function moveTimeBlockDrag(event) {
+      const state = window.timeBlockDragState;
+      if (!state || event.pointerId !== state.pointerId) return;
+
+      const items = [...state.container.querySelectorAll('[data-timeblock-id]')].filter(el => el !== state.item);
+      const target = items.find(el => {
+        const rect = el.getBoundingClientRect();
+        return event.clientY < rect.top + rect.height / 2;
+      });
+
+      if (target) {
+        state.container.insertBefore(state.item, target);
+      } else if (items.length) {
+        state.container.appendChild(state.item);
+      }
+    }
+
+    function endTimeBlockDrag(event) {
+      const state = window.timeBlockDragState;
+      if (!state || event.pointerId !== state.pointerId) return;
+
+      const { item, container } = state;
+      item.classList.remove('opacity-60', 'scale-[0.99]', 'shadow-lg', 'z-10');
+      document.body.classList.remove('select-none');
+
+      const dayData = ensureDayRecord(currentDateStr);
+      normalizeTimeBlocks(dayData);
+
+      const orderedIds = [...container.querySelectorAll('[data-timeblock-id]')].map(el => el.dataset.timeblockId);
+      const byId = new Map(dayData.timeBlocks.map(block => [block.id, block]));
+      dayData.timeBlocks = orderedIds.map(id => byId.get(id)).filter(Boolean);
+
+      saveStore();
+      window.timeBlockDragState = null;
     }
 
     function renderSelfCheckIn(dayData) {
