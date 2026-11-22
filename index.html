@@ -932,132 +932,142 @@
   </main>
 
   <!-- ========================================================= -->
-  <!-- TAB 3: CONTENT STUDIO (IDEA BANK + SURPRISE ME + KANBAN)  -->
+  <!-- TAB: IDEA — IDEAS, SOMEDAY LIST, KITCHEN & CONTENT         -->
   <!-- ========================================================= -->
-  <main id="view-tab-content" class="hidden flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
+  <main id="view-tab-content" class="hidden flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-4">
 
-    <!-- Top Action Bar -->
-    <div class="bg-white rounded-2xl border border-stone-200/80 shadow-soft p-4 sm:p-5 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
-      <!-- Quick Add Content Idea Form -->
-      <form onsubmit="addQuickContentIdea(event)" class="flex-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-        <div class="flex-1 relative">
-          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm">💡</span>
-          <input
-            type="text"
-            id="content-quick-title"
-            required
-            placeholder="Write a new content idea here... (e.g. 3 desk setup tips)"
-            class="w-full pl-9 pr-3.5 py-2.5 text-xs sm:text-sm bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500"
-          />
+    <!-- Things I Want to Do -->
+    <section class="bg-white rounded-2xl border border-stone-200/80 shadow-soft overflow-hidden">
+      <button type="button" onclick="toggleIdeaSection('dreams')" class="w-full p-4 sm:p-5 flex items-center justify-between gap-3 text-left cursor-pointer">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="text-lg">🌱</span>
+          <div class="min-w-0">
+            <h2 class="text-base font-bold text-stone-800">Things I Want to Do</h2>
+            <p class="text-[11px] text-stone-400 mt-0.5">สิ่งที่อยากทำสักวัน — ยังไม่ต้องกำหนดว่าเมื่อไหร่</p>
+          </div>
+          <span id="someday-items-count" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-700">0</span>
         </div>
-
-        <div class="flex flex-wrap sm:flex-nowrap items-center gap-2">
-          <select id="content-quick-platform" class="px-3 py-2.5 text-xs font-semibold bg-cream rounded-xl border border-stone-200 text-stone-700 focus:outline-none">
-            <option value="TikTok">🎵 TikTok</option>
-            <option value="Instagram">📸 Instagram</option>
-            <option value="Facebook">📘 Facebook</option>
-            <option value="YouTube">▶️ YouTube</option>
-          </select>
-
-          <select id="content-quick-pillar" class="px-3 py-2.5 text-xs font-semibold bg-cream rounded-xl border border-stone-200 text-stone-700 focus:outline-none">
-            <option value="Tips & Tricks">💡 Tips & Tricks</option>
-            <option value="Product Highlight">✨ Product Highlight</option>
-            <option value="Behind the Scenes">🎬 Behind the Scenes</option>
-            <option value="Lifestyle">🌿 Lifestyle</option>
-          </select>
-
-          <button type="submit" class="px-4 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-white text-xs font-bold transition-colors shrink-0 cursor-pointer">
-            + Save Idea
-          </button>
-        </div>
-      </form>
-
-      <!-- Prominent Surprise Me Button -->
-      <button
-        onclick="openSurpriseModal()"
-        class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-sage-600 via-emerald-600 to-teal-600 hover:opacity-95 shadow-soft transition-all active:scale-95 shrink-0 cursor-pointer"
-      >
-        <span class="text-base">🎲</span>
-        <span>Surprise Me</span>
+        <span id="idea-section-icon-dreams" class="text-stone-400 text-sm shrink-0">⌃</span>
       </button>
-    </div>
 
-
-    <!-- Kitchen Idea Notes -->
-    <section class="bg-white rounded-2xl border border-stone-200/80 shadow-soft p-4 sm:p-5">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-        <div>
-          <h2 class="text-base font-bold text-stone-800 flex items-center gap-1.5">
-            <span>🍳</span>
-            <span>Kitchen Ideas</span>
-          </h2>
-          <p class="text-[11px] text-stone-400 mt-1">จดวัตถุดิบที่มีอยู่ และเมนูที่อยากทำจากของที่มี</p>
-        </div>
-        <span id="kitchen-notes-save-status" class="text-[10px] text-stone-400">Auto-saved</span>
+      <div id="idea-section-body-dreams" class="border-t border-stone-100 px-4 sm:px-5 pb-5 pt-4">
+        <div id="someday-items-list" class="space-y-2"></div>
+        <form onsubmit="addSomedayItem(event)" class="flex gap-2 mt-3">
+          <input id="someday-item-input" type="text" maxlength="120"
+            placeholder="เช่น อยากลองไลฟ์ TikTok, อยากเรียน Marketing เพิ่ม..."
+            class="flex-1 min-w-0 px-3 py-2.5 text-xs sm:text-sm bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500">
+          <button type="submit" class="px-3.5 py-2.5 rounded-xl bg-sage-600 hover:bg-sage-700 text-white text-xs font-bold cursor-pointer shrink-0">＋ เพิ่ม</button>
+        </form>
       </div>
+    </section>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-xs font-bold text-stone-700 mb-1.5">🥬 วัตถุดิบที่มีตอนนี้</label>
-          <textarea id="kitchen-ingredients" rows="7"
-            oninput="updateKitchenNote('ingredients', this.value)"
-            placeholder="เช่น\nไข่ 4 ฟอง\nกะเพรา 1 กำ\nเห็ด\nหมูสับ..."
-            class="w-full p-3.5 text-xs sm:text-sm bg-cream rounded-xl border border-stone-200/80 focus:bg-white focus:outline-none focus:border-sage-500 leading-relaxed placeholder:text-stone-400"></textarea>
+    <!-- Kitchen -->
+    <section class="bg-white rounded-2xl border border-stone-200/80 shadow-soft overflow-hidden">
+      <button type="button" onclick="toggleIdeaSection('kitchen')" class="w-full p-4 sm:p-5 flex items-center justify-between gap-3 text-left cursor-pointer">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="text-lg">🍳</span>
+          <div class="min-w-0">
+            <h2 class="text-base font-bold text-stone-800">Kitchen Ideas</h2>
+            <p class="text-[11px] text-stone-400 mt-0.5">จดวัตถุดิบที่มีอยู่ และเมนูที่อยากทำจากของที่มี</p>
+          </div>
         </div>
+        <span id="idea-section-icon-kitchen" class="text-stone-400 text-sm shrink-0">⌃</span>
+      </button>
 
-        <div>
-          <label class="block text-xs font-bold text-stone-700 mb-1.5">🍳 เมนูที่ทำได้ / อยากทำ</label>
-          <textarea id="kitchen-menus" rows="7"
-            oninput="updateKitchenNote('menus', this.value)"
-            placeholder="เช่น\nผัดกะเพราไข่ดาว\nเห็ดผัดไข่\nข้าวผัด..."
-            class="w-full p-3.5 text-xs sm:text-sm bg-cream rounded-xl border border-stone-200/80 focus:bg-white focus:outline-none focus:border-sage-500 leading-relaxed placeholder:text-stone-400"></textarea>
+      <div id="idea-section-body-kitchen" class="border-t border-stone-100 px-4 sm:px-5 pb-5 pt-4">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-1.5">
+              <label class="text-xs font-bold text-stone-700">🥬 วัตถุดิบที่มีตอนนี้</label>
+              <span id="kitchen-notes-save-status" class="text-[10px] text-stone-400">Auto-saved</span>
+            </div>
+            <textarea id="kitchen-ingredients" rows="7"
+              oninput="updateKitchenNote('ingredients', this.value)"
+              placeholder="เช่น
+ไข่ 4 ฟอง
+กะเพรา 1 กำ
+เห็ด
+หมูสับ..."
+              class="w-full p-3.5 text-xs sm:text-sm bg-cream rounded-xl border border-stone-200/80 focus:bg-white focus:outline-none focus:border-sage-500 leading-relaxed placeholder:text-stone-400"></textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1.5">🍳 เมนูที่ทำได้ / อยากทำ</label>
+            <textarea id="kitchen-menus" rows="7"
+              oninput="updateKitchenNote('menus', this.value)"
+              placeholder="เช่น
+ผัดกะเพราไข่ดาว
+เห็ดผัดไข่
+ข้าวผัด..."
+              class="w-full p-3.5 text-xs sm:text-sm bg-cream rounded-xl border border-stone-200/80 focus:bg-white focus:outline-none focus:border-sage-500 leading-relaxed placeholder:text-stone-400"></textarea>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Workspace Layout: Left Sidebar (Idea Bank) + Main Board (4-Column Kanban) -->
-    <div class="flex flex-col lg:flex-row gap-5 items-start">
+    <!-- Content Workspace -->
+    <section class="bg-white rounded-2xl border border-stone-200/80 shadow-soft overflow-hidden">
+      <button type="button" onclick="toggleIdeaSection('content')" class="w-full p-4 sm:p-5 flex items-center justify-between gap-3 text-left cursor-pointer">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="text-lg">📣</span>
+          <div class="min-w-0">
+            <h2 class="text-base font-bold text-stone-800">Content</h2>
+            <p class="text-[11px] text-stone-400 mt-0.5">เก็บไอเดียคลิปและดูสถานะการทำคอนเทนต์ — เผื่อวันหนึ่งทำจริงจังขึ้น</p>
+          </div>
+        </div>
+        <span id="idea-section-icon-content" class="text-stone-400 text-sm shrink-0">⌄</span>
+      </button>
 
-      <!-- Left Sidebar: Idea Bank -->
-      <aside
-        ondragover="handleDragOver(event)"
-        ondragleave="handleDragLeave(event)"
-        ondrop="handleContentDrop(event, 'idea')"
-        class="w-full lg:w-[30%] xl:w-[28%] bg-white rounded-2xl border border-stone-200/80 shadow-soft p-4 sm:p-5 flex flex-col lg:max-h-[calc(100vh-13rem)] transition-colors"
-      >
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="text-base font-bold text-stone-800 flex items-center gap-1.5">
-            <span>📦</span>
-            <span>Idea Bank</span>
-          </h2>
-          <span id="idea-bank-counter" class="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-amber-100 text-amber-800">0</span>
+      <div id="idea-section-body-content" class="hidden border-t border-stone-100 px-4 sm:px-5 pb-5 pt-4">
+        <div class="bg-cream rounded-2xl border border-stone-200/80 p-4 sm:p-5 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+          <form onsubmit="addQuickContentIdea(event)" class="flex-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+            <div class="flex-1 relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm">💡</span>
+              <input type="text" id="content-quick-title" required
+                placeholder="เขียนไอเดียคลิปใหม่... เช่น เดินรีวิวของที่ชอบ"
+                class="w-full pl-9 pr-3.5 py-2.5 text-xs sm:text-sm bg-white rounded-xl border border-stone-200 focus:outline-none focus:border-sage-500">
+            </div>
+            <div class="flex flex-wrap sm:flex-nowrap items-center gap-2">
+              <select id="content-quick-platform" class="px-3 py-2.5 text-xs font-semibold bg-white rounded-xl border border-stone-200 text-stone-700 focus:outline-none">
+                <option value="TikTok">🎵 TikTok</option>
+                <option value="Instagram">📸 Instagram</option>
+                <option value="Facebook">📘 Facebook</option>
+                <option value="YouTube">▶️ YouTube</option>
+              </select>
+              <select id="content-quick-pillar" class="px-3 py-2.5 text-xs font-semibold bg-white rounded-xl border border-stone-200 text-stone-700 focus:outline-none">
+                <option value="Tips & Tricks">💡 Tips & Tricks</option>
+                <option value="Product Highlight">✨ Product Highlight</option>
+                <option value="Behind the Scenes">🎬 Behind the Scenes</option>
+                <option value="Lifestyle">🌿 Lifestyle</option>
+              </select>
+              <button type="submit" class="px-4 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-white text-xs font-bold transition-colors shrink-0 cursor-pointer">＋ Save Idea</button>
+            </div>
+          </form>
+          <button onclick="openSurpriseModal()" class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-sage-600 via-emerald-600 to-teal-600 hover:opacity-95 shadow-soft transition-all active:scale-95 shrink-0 cursor-pointer">
+            <span class="text-base">🎲</span><span>Surprise Me</span>
+          </button>
         </div>
 
-        <!-- Search Input -->
-        <div class="relative mb-3">
-          <i data-lucide="search" class="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
-          <input
-            type="text"
-            id="idea-bank-search"
-            oninput="renderContentStudio()"
-            placeholder="Search ideas..."
-            class="w-full pl-8 pr-3 py-2 text-xs bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500"
-          />
+        <div class="flex flex-col lg:flex-row gap-5 items-start mt-4">
+          <aside ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleContentDrop(event, 'idea')"
+            class="w-full lg:w-[30%] xl:w-[28%] bg-white rounded-2xl border border-stone-200/80 shadow-card p-4 sm:p-5 flex flex-col lg:max-h-[calc(100vh-13rem)] transition-colors">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-stone-800 flex items-center gap-1.5"><span>📦</span><span>Idea Bank</span></h3>
+              <span id="idea-bank-counter" class="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-amber-100 text-amber-800">0</span>
+            </div>
+            <div class="relative mb-3">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+              <input type="text" id="idea-bank-search" oninput="renderContentStudio()" placeholder="Search ideas..."
+                class="w-full pl-8 pr-3 py-2 text-xs bg-cream rounded-xl border border-stone-200 focus:bg-white focus:outline-none focus:border-sage-500">
+            </div>
+            <div id="idea-bank-container" class="space-y-2.5 overflow-y-auto flex-1 pr-1 min-h-[240px]"></div>
+          </aside>
+
+          <section class="w-full lg:w-[70%] xl:w-[72%] grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div id="kanban-columns-wrapper" class="contents"></div>
+          </section>
         </div>
-
-        <!-- Unscheduled Ideas List -->
-        <div id="idea-bank-container" class="space-y-2.5 overflow-y-auto flex-1 pr-1 min-h-[240px]">
-          <!-- Rendered by JS -->
-        </div>
-      </aside>
-
-      <!-- Main Kanban Board: 4 Workflow Columns -->
-      <section class="w-full lg:w-[70%] xl:w-[72%] grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <!-- Rendered by JS -->
-        <div id="kanban-columns-wrapper" class="contents"></div>
-      </section>
-
-    </div>
+      </div>
+    </section>
   </main>
 
   <!-- ========================================================= -->
@@ -1866,6 +1876,8 @@
       debts: [],
       workTasks: [],
       workRoutines: [],
+      somedayItems: [],
+      ideaSectionState: { dreams: true, kitchen: true, content: false },
       workProfile: { position: 'Product Marketing (BD)', jd: '', actual: '' }
     };
 
@@ -2342,6 +2354,20 @@
             store.transactions = getSeedData().transactions;
           }
           if (!Array.isArray(store.workTasks)) store.workTasks = [];
+          if (!Array.isArray(store.somedayItems)) {
+            store.somedayItems = [
+              { id: 'sd-1', text: 'อยากไลฟ์สดใน TikTok', done: false },
+              { id: 'sd-2', text: 'อยากลงคลิปใน TikTok', done: false },
+              { id: 'sd-3', text: 'อยากสร้างโปรไฟล์ใน Fastwork', done: false },
+              { id: 'sd-4', text: 'อยากทำคลิปแคสเกมลง YouTube', done: false },
+              { id: 'sd-5', text: 'อยากหางานพาร์ทไทม์', done: false },
+              { id: 'sd-6', text: 'อยากซื้อของกิ๊ปช้อบมาทำเครื่องประดับน่ารัก ๆ', done: false },
+              { id: 'sd-7', text: 'อยากเรียนคอร์ส / เพิ่มความรู้ Marketing', done: false }
+            ];
+          }
+          if (!store.ideaSectionState || typeof store.ideaSectionState !== 'object') {
+            store.ideaSectionState = { dreams: true, kitchen: true, content: false };
+          }
           if (!store.kitchenNotes || typeof store.kitchenNotes !== 'object') store.kitchenNotes = { ingredients: '', menus: '' };
           if (typeof store.kitchenNotes.ingredients !== 'string') store.kitchenNotes.ingredients = '';
           if (typeof store.kitchenNotes.menus !== 'string') store.kitchenNotes.menus = '';
@@ -3023,11 +3049,106 @@
       }
     }
 
+    function getSomedayItems() {
+      if (!Array.isArray(store.somedayItems)) store.somedayItems = [];
+      return store.somedayItems;
+    }
+
+    function renderSomedayIdeas() {
+      const container = document.getElementById('someday-items-list');
+      const count = document.getElementById('someday-items-count');
+      if (!container) return;
+      const items = getSomedayItems();
+      if (count) count.textContent = items.filter(item => !item.done).length;
+
+      if (!items.length) {
+        container.innerHTML = `
+          <div class="py-6 text-center rounded-xl border border-dashed border-stone-200 bg-cream/60 text-xs text-stone-400">
+            ยังไม่มีสิ่งที่อยากทำ ลองจดสิ่งที่อยู่ในหัวไว้ก่อน 🌱
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = items.map(item => `
+        <div class="group flex items-center gap-2.5 p-2.5 rounded-xl border border-stone-200/80 bg-cream/60 hover:bg-white transition-all">
+          <button type="button" onclick="toggleSomedayItem('${item.id}')"
+            class="w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 cursor-pointer ${item.done ? 'bg-sage-500 border-sage-500 text-white' : 'bg-white border-stone-300 hover:border-sage-500'}">
+            ${item.done ? '<i data-lucide="check" class="w-3.5 h-3.5 stroke-[3]"></i>' : ''}
+          </button>
+          <input type="text" value="${escapeHtml(item.text || '')}"
+            oninput="updateSomedayItem('${item.id}', this.value)"
+            class="flex-1 min-w-0 bg-transparent text-xs sm:text-sm font-semibold focus:outline-none ${item.done ? 'line-through text-stone-400' : 'text-stone-800'}"
+            placeholder="สิ่งที่อยากทำสักวัน...">
+          <button type="button" onclick="deleteSomedayItem('${item.id}')"
+            class="p-1 rounded-lg text-stone-300 hover:text-rose-600 opacity-70 sm:opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" aria-label="Delete">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function addSomedayItem(e) {
+      e.preventDefault();
+      const input = document.getElementById('someday-item-input');
+      const text = input?.value.trim();
+      if (!text) return;
+      getSomedayItems().unshift({ id: 'sd-' + Date.now(), text, done: false });
+      input.value = '';
+      saveStore();
+      renderSomedayIdeas();
+      showToast('🌱 Added to Things I Want to Do');
+    }
+
+    function updateSomedayItem(id, text) {
+      const item = getSomedayItems().find(x => x.id === id);
+      if (!item) return;
+      item.text = text;
+      saveStore();
+    }
+
+    function toggleSomedayItem(id) {
+      const item = getSomedayItems().find(x => x.id === id);
+      if (!item) return;
+      item.done = !item.done;
+      saveStore();
+      renderSomedayIdeas();
+    }
+
+    function deleteSomedayItem(id) {
+      store.somedayItems = getSomedayItems().filter(x => x.id !== id);
+      saveStore();
+      renderSomedayIdeas();
+    }
+
+    function toggleIdeaSection(section) {
+      if (!store.ideaSectionState || typeof store.ideaSectionState !== 'object') {
+        store.ideaSectionState = { dreams: true, kitchen: true, content: false };
+      }
+      store.ideaSectionState[section] = !store.ideaSectionState[section];
+      saveStore();
+      applyIdeaSectionState();
+    }
+
+    function applyIdeaSectionState() {
+      const state = store.ideaSectionState || { dreams: true, kitchen: true, content: false };
+      ['dreams', 'kitchen', 'content'].forEach(section => {
+        const body = document.getElementById('idea-section-body-' + section);
+        const icon = document.getElementById('idea-section-icon-' + section);
+        if (!body) return;
+        const open = state[section] !== false;
+        body.classList.toggle('hidden', !open);
+        if (icon) icon.textContent = open ? '⌃' : '⌄';
+      });
+    }
+
     // =========================================================
     // 5. TAB 2: CONTENT STUDIO RENDER & ACTIONS
     // =========================================================
     function renderContentStudio() {
+      renderSomedayIdeas();
       renderKitchenNotes();
+      applyIdeaSectionState();
       const search = document.getElementById('idea-bank-search').value.trim().toLowerCase();
       const allIdeas = store.contents.filter(c => c.status === 'idea');
       document.getElementById('idea-bank-counter').textContent = allIdeas.length;
