@@ -2381,8 +2381,10 @@
           if (typeof store.workProfile.actual !== 'string') store.workProfile.actual = '';
           normalizeHabits();
           normalizeDebts();
+          ensureIdeaStore();
         } else {
           store = getSeedData();
+          ensureIdeaStore();
           saveStore();
         }
       } catch (e) {
@@ -2512,6 +2514,7 @@
           store = data.data;
           normalizeHabits();
           normalizeDebts();
+          ensureIdeaStore();
           ensureWorkStore();
           localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
           renderDailyPlanner(); renderMonthlyOverview(); renderContentStudio(); renderFinanceTracker(); renderWorkDashboard();
@@ -3049,8 +3052,25 @@
       }
     }
 
+    function ensureIdeaStore() {
+      if (!Array.isArray(store.somedayItems)) {
+        store.somedayItems = [
+          { id: 'sd-1', text: 'อยากไลฟ์สดใน TikTok', done: false },
+          { id: 'sd-2', text: 'อยากลงคลิปใน TikTok', done: false },
+          { id: 'sd-3', text: 'อยากสร้างโปรไฟล์ใน Fastwork', done: false },
+          { id: 'sd-4', text: 'อยากทำคลิปแคสเกมลง YouTube', done: false },
+          { id: 'sd-5', text: 'อยากหางานพาร์ทไทม์', done: false },
+          { id: 'sd-6', text: 'อยากซื้อของกิ๊ปช้อบมาทำเครื่องประดับน่ารัก ๆ', done: false },
+          { id: 'sd-7', text: 'อยากเรียนคอร์ส / เพิ่มความรู้ Marketing', done: false }
+        ];
+      }
+      if (!store.ideaSectionState || typeof store.ideaSectionState !== 'object') {
+        store.ideaSectionState = { dreams: true, kitchen: true, content: false };
+      }
+    }
+
     function getSomedayItems() {
-      if (!Array.isArray(store.somedayItems)) store.somedayItems = [];
+      ensureIdeaStore();
       return store.somedayItems;
     }
 
