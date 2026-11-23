@@ -2835,31 +2835,59 @@
       window.timeBlockDragState = {
         item,
         container,
-        pointerId: event.pointerId
+        pointerId: event.pointerId,
+        moved: false
       };
 
       item.classList.add('opacity-60', 'scale-[0.99]', 'shadow-lg', 'z-10');
       document.body.classList.add('select-none');
 
-      handle.addEventListener('pointermove', moveTimeBlockDrag);
-      handle.addEventListener('pointerup', endTimeBlockDrag, { once: true });
-      handle.addEventListener('pointercancel', endTimeBlockDrag, { once: true });
+      // Listen on the document so dragging keeps working even after the pointer
+      // leaves the small handle. This is especially important on touch screens.
+      document.addEventListener('pointermove', moveTimeBlockDrag);
+      document.addEventListener('pointerup', endTimeBlockDrag, { once: true });
+      document.addEventListener('pointercancel', endTimeBlockDrag, { once: true });
     }
 
     function moveTimeBlockDrag(event) {
       const state = window.timeBlockDragState;
       if (!state || event.pointerId !== state.pointerId) return;
 
-      const items = [...state.container.querySelectorAll('[data-timeblock-id]')].filter(el => el !== state.item);
-      const target = items.find(el => {
+      event.preventDefault();
+      state.moved = true;
+
+      const elements = [...state.container.querySelectorAll('[data-timeblock-id]')];
+      const items = elements.filter(el => el !== state.item);
+
+      // Find the item directly under the pointer and use its midpoint to decide
+      // whether the dragged item belongs before or after it.
+      const underPointer = items.find(el => {
         const rect = el.getBoundingClientRect();
-        return event.clientY < rect.top + rect.height / 2;
+        return event.clientY >= rect.top && event.clientY <= rect.bottom;
       });
 
-      if (target) {
-        state.container.insertBefore(state.item, target);
-      } else if (items.length) {
-        state.container.appendChild(state.item);
+      if (underPointer) {
+        const rect = underPointer.getBoundingClientRect();
+        if (event.clientY < rect.top + rect.height / 2) {
+          state.container.insertBefore(state.item, underPointer);
+        } else {
+          state.container.insertBefore(state.item, underPointer.nextSibling);
+        }
+        return;
+      }
+
+      // Above the first item.
+      if (items.length) {
+        const firstRect = items[0].getBoundingClientRect();
+        if (event.clientY < firstRect.top) {
+          state.container.insertBefore(state.item, items[0]);
+          return;
+        }
+        // Below the last item.
+        const last = items[items.length - 1];
+        if (event.clientY > last.getBoundingClientRect().bottom) {
+          state.container.appendChild(state.item);
+        }
       }
     }
 
@@ -2870,6 +2898,8 @@
       const { item, container } = state;
       item.classList.remove('opacity-60', 'scale-[0.99]', 'shadow-lg', 'z-10');
       document.body.classList.remove('select-none');
+
+      document.removeEventListener('pointermove', moveTimeBlockDrag);
 
       const dayData = ensureDayRecord(currentDateStr);
       normalizeTimeBlocks(dayData);
