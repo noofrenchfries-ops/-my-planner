@@ -507,6 +507,18 @@
           <div id="monthly-calendar" class="grid grid-cols-7 gap-1.5 sm:gap-2"></div>
         </div>
 
+        <div class="rounded-2xl bg-cream border border-stone-200/80 p-4 mb-5">
+          <div class="flex items-start justify-between gap-3 mb-3">
+            <div>
+              <h3 class="font-bold text-sm text-stone-800 mb-1">🎯 Weekly Goals</h3>
+              <p id="weekly-goals-range" class="text-[11px] text-stone-400">This week</p>
+            </div>
+            <span class="text-[10px] font-bold text-sage-700 bg-sage-100 px-2 py-1 rounded-full">This Week</span>
+          </div>
+          <div id="weekly-goals-list" class="space-y-2"></div>
+          <button type="button" onclick="addWeeklyGoal()" class="mt-3 px-3 py-1.5 rounded-xl text-xs font-bold text-sage-700 bg-sage-100 hover:bg-sage-200 cursor-pointer">＋ Add Goal</button>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
           <div class="rounded-2xl bg-cream border border-stone-200/80 p-4">
             <h3 class="font-bold text-sm text-stone-800 mb-1">🎯 Monthly Goals</h3>
@@ -4841,11 +4853,15 @@
             { text: '', done: false },
             { text: '', done: false }
           ],
+          weeklyGoals: {},
           focus: ''
         };
       }
       if (!Array.isArray(store.months[monthKey].goals)) {
         store.months[monthKey].goals = [];
+      }
+      if (!store.months[monthKey].weeklyGoals || typeof store.months[monthKey].weeklyGoals !== 'object') {
+        store.months[monthKey].weeklyGoals = {};
       }
       return store.months[monthKey];
     }
@@ -5250,6 +5266,96 @@
       ].join('');
     }
 
+    function getWeekKey(date = monthlyViewDate) {
+      const d = new Date(date);
+      const day = d.getDay();
+      const diffToMonday = day === 0 ? -6 : 1 - day;
+      d.setDate(d.getDate() + diffToMonday);
+      return formatISO(d);
+    }
+
+    function getWeekRangeLabel(date = monthlyViewDate) {
+      const start = new Date(date);
+      const day = start.getDay();
+      const diffToMonday = day === 0 ? -6 : 1 - day;
+      start.setDate(start.getDate() + diffToMonday);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 6);
+
+      const fmt = new Intl.DateTimeFormat('en-US', { day: 'numeric', month: 'short' });
+      return `${fmt.format(start)} – ${fmt.format(end)}`;
+    }
+
+    function ensureWeeklyGoals(weekKey = getWeekKey()) {
+      const monthKey = getMonthKey(new Date(weekKey));
+      const monthData = ensureMonthRecord(monthKey);
+      if (!monthData.weeklyGoals || typeof monthData.weeklyGoals !== 'object') {
+        monthData.weeklyGoals = {};
+      }
+      if (!Array.isArray(monthData.weeklyGoals[weekKey])) {
+        monthData.weeklyGoals[weekKey] = [
+          { text: '', done: false },
+          { text: '', done: false },
+          { text: '', done: false }
+        ];
+      }
+      return monthData.weeklyGoals[weekKey];
+    }
+
+    function renderWeeklyGoals() {
+      const weekKey = getWeekKey();
+      const goals = ensureWeeklyGoals(weekKey);
+      const rangeEl = document.getElementById('weekly-goals-range');
+      const listEl = document.getElementById('weekly-goals-list');
+      if (!rangeEl || !listEl) return;
+
+      rangeEl.textContent = `Week of ${getWeekRangeLabel()}`;
+      listEl.innerHTML = goals.map((g, idx) => `
+        <div class="flex items-center gap-2.5 bg-white rounded-xl border ${g.done ? 'border-sage-200' : 'border-stone-200'} px-3 py-2.5">
+          <button type="button" onclick="toggleWeeklyGoal(${idx})"
+            class="w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 ${g.done ? 'bg-sage-500 border-sage-500 text-white' : 'bg-white border-stone-300 hover:border-sage-500'} cursor-pointer">
+            ${g.done ? '<i data-lucide="check" class="w-3.5 h-3.5 stroke-[3]"></i>' : ''}
+          </button>
+          <input type="text" value="${escapeHtml(g.text || '')}" oninput="updateWeeklyGoal(${idx}, this.value)"
+            placeholder="Goal ${idx + 1}..."
+            class="w-full bg-transparent text-xs sm:text-sm focus:outline-none ${g.done ? 'line-through text-stone-400' : 'text-stone-800'}">
+          <button type="button" onclick="deleteWeeklyGoal(${idx})" class="p-1 text-stone-300 hover:text-rose-500 cursor-pointer">
+            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function addWeeklyGoal() {
+      const goals = ensureWeeklyGoals();
+      goals.push({ text: '', done: false });
+      saveStore();
+      renderWeeklyGoals();
+    }
+
+    function toggleWeeklyGoal(idx) {
+      const goals = ensureWeeklyGoals();
+      if (!goals[idx]) return;
+      goals[idx].done = !goals[idx].done;
+      saveStore();
+      renderWeeklyGoals();
+    }
+
+    function updateWeeklyGoal(idx, text) {
+      const goals = ensureWeeklyGoals();
+      if (!goals[idx]) return;
+      goals[idx].text = text;
+      saveStore();
+    }
+
+    function deleteWeeklyGoal(idx) {
+      const goals = ensureWeeklyGoals();
+      goals.splice(idx, 1);
+      saveStore();
+      renderWeeklyGoals();
+    }
+
     function renderMonthlyOverview() {
       const monthKey = getMonthKey();
       const monthData = ensureMonthRecord(monthKey);
@@ -5260,6 +5366,7 @@
 
       document.getElementById('monthly-overview-label').textContent = label;
       renderMonthlyMonthTabs();
+      renderWeeklyGoals();
       document.getElementById('monthly-focus-input').value = monthData.focus || '';
       renderMonthlyCalendar();
       renderMonthlyHabitInsights();
