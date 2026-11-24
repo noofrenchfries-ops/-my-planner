@@ -247,6 +247,41 @@
     nav::-webkit-scrollbar{display:none;}
   }
 
+
+  /* Master Task List — keep a compact row feel on narrowed desktop windows */
+  @media (min-width:480px) and (max-width:1199px){
+    #work-task-list{gap:6px !important}
+    #work-task-list > div:not(.py-8){padding:9px 10px !important;border-radius:12px !important}
+    .work-master-task-grid{
+      grid-template-columns:22px minmax(0,1fr) 58px 76px 82px 58px !important;
+      gap:6px !important;
+    }
+    .work-master-task-grid > div{
+      min-width:0;
+    }
+    .work-master-task-grid > div:nth-child(2) > div:first-child{
+      font-size:11px !important;
+    }
+    .work-master-task-grid > div:nth-child(2) > div:nth-child(2),
+    .work-master-task-grid > div:nth-child(2) > div:nth-child(3),
+    .work-master-task-grid > div:nth-child(3),
+    .work-master-task-grid > div:nth-child(4){
+      font-size:9px !important;
+    }
+    .work-master-task-grid > div:nth-child(4){
+      white-space:nowrap;
+    }
+    .work-master-task-grid > div:nth-child(5) span{
+      padding:4px 6px !important;
+      font-size:8px !important;
+    }
+    .work-master-task-grid > div:last-child{
+      gap:1px !important;
+    }
+    .work-master-task-grid > div:last-child button{
+      padding:4px !important;
+    }
+  }
 </style>
 
 <style id="my-planner-pastel-v2">
@@ -4523,7 +4558,7 @@
         const priorityClass = task.priority === 'Urgent' ? 'text-rose-600' : task.priority === 'High' ? 'text-orange-600' : 'text-stone-500';
         return `
           <div class="p-3 rounded-xl border ${overdue ? 'border-rose-200 bg-rose-50/50' : 'border-stone-200/80 bg-white'}">
-            <div class="grid grid-cols-1 lg:grid-cols-[32px_minmax(0,2fr)_1.1fr_1fr_1.1fr_auto] gap-2 items-center">
+            <div class="work-master-task-grid grid grid-cols-1 lg:grid-cols-[32px_minmax(0,2fr)_1.1fr_1fr_1.1fr_auto] gap-2 items-center">
               <div class="text-[10px] font-bold text-stone-400">${idx + 1}</div>
               <div class="min-w-0">
                 <div class="text-xs sm:text-sm font-bold text-stone-800 truncate">${escapeHtml(task.name)}</div>
