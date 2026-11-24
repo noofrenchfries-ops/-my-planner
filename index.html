@@ -174,20 +174,51 @@
     }
   }
 
-  /* Mobile calendar polish — visual/layout only */  @media (max-width: 640px){
+  /* Monthly calendar — balanced, airy, cute spacing */
+  #monthly-calendar{
+    gap:8px !important;
+  }
+  #monthly-calendar > div,
+  #monthly-calendar > button{
+    min-height:82px !important;
+  }
+  #monthly-calendar > button{
+    padding:9px !important;
+    border-radius:15px !important;
+  }
+  #monthly-calendar > button .monthly-work-deadline-badge{
+    margin-top:auto !important;
+    padding-top:5px;
+  }
+  #monthly-calendar > button .monthly-work-deadline-preview{
+    margin-top:3px !important;
+    line-height:1.15;
+  }
+  #monthly-calendar > button .monthly-work-deadline-preview > div{
+    margin-top:2px;
+  }
+
+  @media (max-width: 640px){
     #monthly-calendar{
       gap:6px !important;
     }
-    #monthly-calendar > div{
-      min-height:52px !important;
+    #monthly-calendar > div,
+    #monthly-calendar > button{
+      min-height:58px !important;
     }
     #monthly-calendar > button{
-      min-height:52px !important;
-      padding:6px !important;
+      padding:7px !important;
       border-radius:14px !important;
     }
+    #monthly-calendar > button .monthly-work-deadline-preview{
+      display:none !important;
+    }
+    #monthly-calendar > button .monthly-work-deadline-badge{
+      margin-top:auto !important;
+      padding-top:3px;
+    }
     #monthly-calendar > button .mt-2{
-      margin-top:5px !important;
+      margin-top:4px !important;
     }
     #monthly-calendar-month{
       font-size:11px !important;
@@ -5339,7 +5370,7 @@
         if (!dayButton) return;
 
         const badge = document.createElement('div');
-        badge.className = 'mt-1.5 flex items-center gap-1';
+        badge.className = 'monthly-work-deadline-badge mt-1.5 flex items-center gap-1';
         const count = document.createElement('span');
         count.className = 'text-[8px] font-bold text-violet-700 bg-violet-50 px-1.5 py-0.5 rounded-full';
         count.textContent = '💼 ' + tasks.length;
@@ -5347,7 +5378,7 @@
         dayButton.appendChild(badge);
 
         const preview = document.createElement('div');
-        preview.className = 'mt-1 space-y-0.5 hidden sm:block';
+        preview.className = 'monthly-work-deadline-preview mt-1 space-y-0.5 hidden sm:block';
         tasks.slice(0, 2).forEach(task => {
           const row = document.createElement('div');
           row.className = 'text-[8px] leading-tight text-violet-800 font-semibold truncate' + (task.status === 'Completed' ? ' line-through opacity-50' : '');
