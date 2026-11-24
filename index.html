@@ -4499,6 +4499,7 @@
                 <span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${statusClass}">${escapeHtml(task.status)}</span>
                 <span class="text-[10px] text-stone-400">${escapeHtml(task.category || 'Other')}</span>
               </div>
+              ${task.remark ? `<div class="text-[10px] text-stone-500 mt-1 ml-7 leading-relaxed">${escapeHtml(task.remark)}</div>` : ''}
             </div>
             <div class="flex gap-1.5 ml-7 sm:ml-0">
               <button type="button" onclick="openTodayAtWorkModal('${task.id}')" class="px-2.5 py-1.5 rounded-lg bg-stone-100 text-stone-600 text-[10px] font-bold cursor-pointer">Edit</button>
@@ -4522,6 +4523,7 @@
                 <span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${statusClass}">${escapeHtml(task.status)}</span>
                 <span class="text-[10px] text-stone-400">From Master Tasks</span>
               </div>
+              ${task.remark ? `<div class="text-[10px] text-stone-500 mt-1 ml-7 leading-relaxed">${escapeHtml(task.remark)}</div>` : ''}
             </div>
             <div class="flex gap-1.5 ml-7 sm:ml-0">
               <button type="button" onclick="openWorkTaskModal('${task.id}')" class="px-2.5 py-1.5 rounded-lg bg-stone-100 text-stone-600 text-[10px] font-bold cursor-pointer">Edit</button>
