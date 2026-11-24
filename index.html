@@ -1454,15 +1454,11 @@
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-bold text-stone-700 mb-1">Category</label>
-            <select id="work-task-category" class="w-full px-3 py-2.5 text-xs font-semibold bg-cream rounded-xl border border-stone-200 focus:outline-none">
-              <option>🎨 Content & Digital</option>
-              <option>📊 Research & Strategy</option>
-              <option>🛍️ Product & Catalog</option>
-              <option>🤝 Sales Support</option>
-              <option>📦 Supplier & Sourcing</option>
-              <option>📋 Admin & Report</option>
-              <option>🎪 Project & Event</option></select>
+            <div class="flex items-center justify-between gap-2 mb-1">
+              <label class="block text-xs font-bold text-stone-700">Category</label>
+              <button type="button" onclick="openWorkCategoryManager()" class="text-[10px] font-bold text-sage-700 hover:text-sage-800 cursor-pointer">⚙️ จัดการ</button>
+            </div>
+            <select id="work-task-category" class="w-full px-3 py-2.5 text-xs font-semibold bg-cream rounded-xl border border-stone-200 focus:outline-none"></select>
           </div>
           <div id="work-task-priority-wrap">
             <label class="block text-xs font-bold text-stone-700 mb-1">Priority</label>
@@ -1505,6 +1501,30 @@
     </div>
   </div>
 
+  <!-- WORK CATEGORY MANAGER -->
+  <div id="work-category-modal" class="hidden fixed inset-0 z-[60] bg-stone-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-float border border-stone-100 animate-modal">
+      <div class="flex items-center justify-between pb-3 border-b border-stone-100">
+        <div>
+          <h3 class="text-base font-bold text-stone-800">🏷️ My Work Categories</h3>
+          <p class="text-[10px] text-stone-400 mt-1">จัดหมวดหมู่งานของตัวเองได้ตามลักษณะงาน</p>
+        </div>
+        <button type="button" onclick="closeModal('work-category-modal')" class="p-1.5 rounded-full text-stone-400 hover:bg-stone-100 cursor-pointer">✕</button>
+      </div>
+      <div id="work-category-list" class="space-y-2 mt-4 max-h-64 overflow-y-auto pr-1"></div>
+      <div class="mt-4 p-3 rounded-xl bg-cream border border-stone-200">
+        <label class="block text-xs font-bold text-stone-700 mb-1">เพิ่ม Category ใหม่</label>
+        <div class="flex gap-2">
+          <input id="new-work-category" class="flex-1 min-w-0 px-3 py-2.5 text-sm bg-white rounded-xl border border-stone-200 focus:outline-none focus:border-sage-500" placeholder="เช่น 🏗️ Project Site" onkeydown="if(event.key==='Enter'){event.preventDefault();addWorkCategory();}" />
+          <button type="button" onclick="addWorkCategory()" class="px-3.5 py-2.5 rounded-xl bg-sage-600 hover:bg-sage-700 text-white text-xs font-bold cursor-pointer">＋ เพิ่ม</button>
+        </div>
+      </div>
+      <div class="flex justify-end mt-4 pt-3 border-t border-stone-100">
+        <button type="button" onclick="closeModal('work-category-modal')" class="px-4 py-2 rounded-xl text-xs font-bold text-stone-600 hover:bg-stone-100 cursor-pointer">เสร็จแล้ว</button>
+      </div>
+    </div>
+  </div>
+
   <!-- WORK ROUTINE MODAL -->
   <div id="work-routine-modal" class="hidden fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-float border border-stone-100 animate-modal">
@@ -1520,15 +1540,11 @@
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-bold text-stone-700 mb-1">Category</label>
-            <select id="work-routine-category" class="w-full px-3 py-2.5 text-xs font-semibold bg-cream rounded-xl border border-stone-200 focus:outline-none">
-              <option>🎨 Content & Digital</option>
-              <option>📊 Research & Strategy</option>
-              <option>🛍️ Product & Catalog</option>
-              <option>🤝 Sales Support</option>
-              <option>📦 Supplier & Sourcing</option>
-              <option>📋 Admin & Report</option>
-              <option>🎪 Project & Event</option></select>
+            <div class="flex items-center justify-between gap-2 mb-1">
+              <label class="block text-xs font-bold text-stone-700">Category</label>
+              <button type="button" onclick="openWorkCategoryManager()" class="text-[10px] font-bold text-sage-700 hover:text-sage-800 cursor-pointer">⚙️ จัดการ</button>
+            </div>
+            <select id="work-routine-category" class="w-full px-3 py-2.5 text-xs font-semibold bg-cream rounded-xl border border-stone-200 focus:outline-none"></select>
           </div>
           <div>
             <label class="block text-xs font-bold text-stone-700 mb-1">Frequency</label>
@@ -4224,6 +4240,24 @@
       if (!Array.isArray(store.workTodayTasks)) store.workTodayTasks = [];
       if (!Array.isArray(store.workRoutines)) store.workRoutines = [];
 
+      const defaultWorkCategories = [
+        '🎨 Content & Digital',
+        '📊 Research & Strategy',
+        '🛍️ Product & Catalog',
+        '🤝 Sales Support',
+        '📦 Supplier & Sourcing',
+        '📋 Admin & Report',
+        '🎪 Project & Event'
+      ];
+      if (!Array.isArray(store.workCategories) || !store.workCategories.length) {
+        const existing = [
+          ...store.workTasks.map(t => t?.category),
+          ...store.workTodayTasks.map(t => t?.category),
+          ...store.workRoutines.map(r => r?.category)
+        ].filter(Boolean);
+        store.workCategories = [...new Set([...defaultWorkCategories, ...existing])];
+      }
+
       // v2.2: consolidate work categories into 7 clearer groups.
       const categoryMap = {
         '🎉 Event': '🎪 Project & Event',
@@ -4505,6 +4539,94 @@
         </div>`).join('');
     }
 
+    function getWorkCategories() {
+      ensureWorkStore();
+      return store.workCategories;
+    }
+
+    function renderWorkCategoryOptions(selectId, selectedValue = '') {
+      const select = document.getElementById(selectId);
+      if (!select) return;
+      const categories = getWorkCategories();
+      select.innerHTML = categories.map(cat => `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`).join('');
+      if (selectedValue && categories.includes(selectedValue)) select.value = selectedValue;
+      else if (categories.length) select.value = categories[0];
+    }
+
+    function renderWorkCategoryManager() {
+      const list = document.getElementById('work-category-list');
+      if (!list) return;
+      const categories = getWorkCategories();
+      list.innerHTML = categories.length ? categories.map((cat, idx) => `
+        <div class="flex items-center gap-2 p-2.5 rounded-xl border border-stone-200 bg-white">
+          <input value="${escapeHtml(cat)}" oninput="updateWorkCategory(${idx}, this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" class="flex-1 min-w-0 bg-transparent px-1 py-1 text-xs font-semibold text-stone-700 focus:outline-none" />
+          <button type="button" onclick="deleteWorkCategory(${idx})" class="w-7 h-7 shrink-0 rounded-lg text-stone-300 hover:text-rose-500 hover:bg-rose-50 cursor-pointer" title="ลบ">🗑️</button>
+        </div>
+      `).join('') : `
+        <div class="py-5 text-center rounded-xl border border-dashed border-stone-200 bg-stone-50/60 text-xs text-stone-400">ยังไม่มี Category — เพิ่มหมวดแรกของคุณได้เลย ✨</div>`;
+    }
+
+    function openWorkCategoryManager() {
+      ensureWorkStore();
+      renderWorkCategoryManager();
+      document.getElementById('work-category-modal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('new-work-category')?.focus(), 50);
+    }
+
+    function addWorkCategory() {
+      ensureWorkStore();
+      const input = document.getElementById('new-work-category');
+      const value = input?.value.trim();
+      if (!value) return;
+      if (store.workCategories.some(cat => cat.toLowerCase() === value.toLowerCase())) {
+        showToast('Category นี้มีอยู่แล้ว');
+        input.focus();
+        return;
+      }
+      store.workCategories.push(value);
+      saveStore();
+      renderWorkCategoryManager();
+      renderWorkCategoryOptions('work-task-category', value);
+      renderWorkCategoryOptions('work-routine-category', value);
+      input.value = '';
+      input.focus();
+    }
+
+    function updateWorkCategory(index, value) {
+      ensureWorkStore();
+      const next = value.trim();
+      const old = store.workCategories[index];
+      if (!old || !next || next === old) return;
+      if (store.workCategories.some((cat, i) => i !== index && cat.toLowerCase() === next.toLowerCase())) {
+        showToast('Category นี้มีอยู่แล้ว');
+        renderWorkCategoryManager();
+        return;
+      }
+      store.workCategories[index] = next;
+      store.workTasks = store.workTasks.map(task => task.category === old ? { ...task, category: next } : task);
+      store.workTodayTasks = store.workTodayTasks.map(task => task.category === old ? { ...task, category: next } : task);
+      store.workRoutines = store.workRoutines.map(routine => routine.category === old ? { ...routine, category: next } : routine);
+      saveStore();
+      renderWorkCategoryOptions('work-task-category', next);
+      renderWorkCategoryOptions('work-routine-category', next);
+    }
+
+    function deleteWorkCategory(index) {
+      ensureWorkStore();
+      const category = store.workCategories[index];
+      if (!category) return;
+      const inUse = [...store.workTasks, ...store.workTodayTasks, ...store.workRoutines].some(item => item.category === category);
+      if (inUse) {
+        showToast('Category นี้กำลังถูกใช้งานอยู่');
+        return;
+      }
+      store.workCategories.splice(index, 1);
+      saveStore();
+      renderWorkCategoryManager();
+      renderWorkCategoryOptions('work-task-category');
+      renderWorkCategoryOptions('work-routine-category');
+    }
+
     function openTodayAtWorkModal(id = '') {
       ensureWorkStore();
       const task = id ? store.workTodayTasks.find(t => t.id === id) : null;
@@ -4512,7 +4634,7 @@
       document.getElementById('work-task-mode').value = 'today-only';
       document.getElementById('work-task-modal-heading').textContent = task ? '☀️ Edit Today at Work' : '☀️ Add Today at Work';
       document.getElementById('work-task-name').value = task?.name || '';
-      document.getElementById('work-task-category').value = task?.category || '🎨 Content & Digital';
+      renderWorkCategoryOptions('work-task-category', task?.category || '');
       document.getElementById('work-task-priority').value = task?.priority || 'Medium';
       document.getElementById('work-task-deadline').value = '';
       document.getElementById('work-task-status').value = task?.status || 'Not Started';
@@ -4678,7 +4800,7 @@
       document.getElementById('work-routine-id').value = routine?.id || '';
       document.getElementById('work-routine-modal-heading').textContent = routine ? '🔁 Edit Routine Task' : '🔁 Add Routine Task';
       document.getElementById('work-routine-name').value = routine?.name || '';
-      document.getElementById('work-routine-category').value = routine?.category || '📁 Report';
+      renderWorkCategoryOptions('work-routine-category', routine?.category || '');
       document.getElementById('work-routine-frequency').value = routine?.frequency || 'Monthly';
       document.getElementById('work-routine-schedule').value = routine?.schedule || '';
       document.getElementById('work-routine-modal').classList.remove('hidden');
