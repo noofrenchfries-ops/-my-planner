@@ -5369,14 +5369,6 @@
         const dayButton = calendar.querySelector('[data-calendar-date="' + dateKey + '"]');
         if (!dayButton) return;
 
-        const badge = document.createElement('div');
-        badge.className = 'monthly-work-deadline-badge mt-1.5 flex items-center gap-1';
-        const count = document.createElement('span');
-        count.className = 'text-[8px] font-bold text-violet-700 bg-violet-50 px-1.5 py-0.5 rounded-full';
-        count.textContent = '💼 ' + tasks.length;
-        badge.appendChild(count);
-        dayButton.appendChild(badge);
-
         const preview = document.createElement('div');
         preview.className = 'monthly-work-deadline-preview mt-1 space-y-0.5 hidden sm:block';
         tasks.slice(0, 2).forEach(task => {
