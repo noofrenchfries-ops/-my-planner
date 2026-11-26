@@ -4733,7 +4733,7 @@
       document.getElementById('work-task-mode').value = 'master';
       document.getElementById('work-task-modal-heading').textContent = task ? '💼 Edit Work Task' : '💼 Add Work Task';
       document.getElementById('work-task-name').value = task?.name || '';
-      document.getElementById('work-task-category').value = task?.category || '🎨 Content & Digital';
+      renderWorkCategoryOptions('work-task-category', task?.category || '');
       document.getElementById('work-task-priority').value = task?.priority || 'Medium';
       document.getElementById('work-task-deadline').value = task?.deadline || '';
       document.getElementById('work-task-status').value = task?.status || 'Not Started';
