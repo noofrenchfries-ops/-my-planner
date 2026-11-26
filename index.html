@@ -4626,10 +4626,33 @@
     function renderWorkCategoryOptions(selectId, selectedValue = '') {
       const select = document.getElementById(selectId);
       if (!select) return;
-      const categories = getWorkCategories();
+
+      // Always guarantee a usable category list, even if older LocalStorage data is empty.
+      ensureWorkStore();
+      const fallbackCategories = [
+        '🎨 Content & Digital',
+        '📊 Research & Strategy',
+        '🛍️ Product & Catalog',
+        '🤝 Sales Support',
+        '📦 Supplier & Sourcing',
+        '📋 Admin & Report',
+        '🎪 Project & Event'
+      ];
+      const categories = Array.isArray(store.workCategories) && store.workCategories.length
+        ? store.workCategories
+        : fallbackCategories;
+
+      if (!Array.isArray(store.workCategories) || !store.workCategories.length) {
+        store.workCategories = [...fallbackCategories];
+        saveStore();
+      }
+
       select.innerHTML = categories.map(cat => `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`).join('');
-      if (selectedValue && categories.includes(selectedValue)) select.value = selectedValue;
-      else if (categories.length) select.value = categories[0];
+      if (selectedValue && categories.includes(selectedValue)) {
+        select.value = selectedValue;
+      } else if (categories.length) {
+        select.value = categories[0];
+      }
     }
 
     function renderWorkCategoryManager() {
